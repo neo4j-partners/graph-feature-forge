@@ -43,20 +43,29 @@ RELATIONSHIP_TABLES = [
 def make_spark_executor(spark_session: Any = None) -> SQLExecutor:
     """Create an executor using a Spark session.
 
-    Works on Databricks clusters where ``spark`` is a global.
-    Pass an explicit session for Databricks Connect or testing.
+    On serverless tasks, PySpark is pre-installed so ``SparkSession``
+    is tried first.  Falls back to ``DatabricksSession`` (databricks-connect)
+    for local development.  Pass an explicit session to skip auto-detection.
     """
     if spark_session is None:
-        # On Databricks clusters, spark is a global in notebook scope.
-        # Callers should pass it explicitly; this import is a fallback.
+        # Try PySpark first (available on serverless and cluster tasks).
         try:
-            from databricks.connect import DatabricksSession
-            spark_session = DatabricksSession.builder.getOrCreate()
-        except Exception as exc:
-            raise RuntimeError(
-                "No Spark session available. Pass one explicitly or "
-                "run on a Databricks cluster."
-            ) from exc
+            from pyspark.sql import SparkSession
+            spark_session = SparkSession.builder.getOrCreate()
+        except Exception:
+            pass
+
+        # Fall back to Databricks Connect (local development).
+        if spark_session is None:
+            try:
+                from databricks.connect import DatabricksSession
+                spark_session = DatabricksSession.builder.getOrCreate()
+            except Exception as exc:
+                raise RuntimeError(
+                    "No Spark session available. Pass one explicitly, "
+                    "provide --warehouse-id for SDK execution, or "
+                    "run on a Databricks cluster."
+                ) from exc
 
     def execute(query: str) -> QueryResult:
         return [row.asDict() for row in spark_session.sql(query).collect()]
@@ -202,9 +211,8 @@ class StructuredDataAccess:
         """Customer demographics and account summary.
 
         Used for risk profile alignment: annual income, credit score,
-        account types and balances, portfolio composition by sector.
-        The customer table has no risk_profile field — that information
-        lives only in the unstructured documents.
+        risk profile, employment status, account types and balances,
+        portfolio composition by sector.
         """
         customer_query = f"""
         SELECT
@@ -217,7 +225,9 @@ class StructuredDataAccess:
             c.annual_income,
             c.credit_score,
             c.date_of_birth,
-            c.registration_date
+            c.registration_date,
+            c.risk_profile,
+            c.employment_status
         FROM {self._t('customer')} c
         ORDER BY c.customer_id
         """
@@ -245,8 +255,8 @@ class StructuredDataAccess:
 
         Used for data quality gap analysis: which customer fields are
         populated vs null, and which fields mentioned in profile
-        documents (occupation, employer, risk_profile, investment
-        philosophy) are absent from the schema entirely.
+        documents (occupation, employer, investment philosophy) are
+        absent from the schema entirely.
         """
         query = f"SELECT * FROM {self._t('customer')} ORDER BY customer_id"
         rows = self._sql(query)
@@ -360,6 +370,12 @@ class StructuredDataAccess:
                 details.append(f"Date of birth: {dob}")
             if reg:
                 details.append(f"Member since: {reg}")
+            risk = c.get("risk_profile", "")
+            if risk:
+                details.append(f"Risk profile: {risk}")
+            emp = c.get("employment_status", "")
+            if emp:
+                details.append(f"Employment: {emp}")
             lines.append("  " + " | ".join(details))
 
             cust_accounts = acct_map.get(cid, [])
@@ -411,7 +427,6 @@ class StructuredDataAccess:
         missing_fields = [
             ("occupation", "Job title and role"),
             ("employer", "Company or organization"),
-            ("risk_profile", "Risk tolerance level"),
             ("investment_philosophy", "Investment approach and strategy"),
             ("life_stage", "Career/life stage (mid-career, pre-retirement, etc.)"),
             ("financial_goals", "Stated financial objectives"),

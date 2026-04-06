@@ -1,24 +1,29 @@
 [project]
 name = "semantic-auth"
 version = "0.1.0"
-description = "Graph enrichment pipeline replacing Genie/Knowledge Agent/MAS with direct LLM calls"
-requires-python = ">=3.11"
+description = "Semantic auth pipeline replacing Genie, Knowledge Agent, and Supervisor Agent with direct LLM calls"
+requires-python = ">=3.12"
 dependencies = [
     "databricks-sdk>=0.74.0",
+    "dspy>=3.0.4",
+    "pydantic>=2.10.0,<2.12",
     "python-dotenv>=1.0.0",
 ]
 
+[tool.uv.sources]
+databricks-job-runner = { path = "../databricks-job-runner", editable = true }
+
 [project.optional-dependencies]
+cli = [
+    "databricks-job-runner",
+]
 dev = [
     "pytest>=8.0",
     "ruff>=0.4.0",
 ]
-# Phase 2+ dependencies
+# MLflow tracing (optional, for --enable-tracing flag)
 enrichment = [
-    "dspy>=3.0.4",
     "mlflow[databricks]>=3.7",
-    "pydantic>=2.10.0,<2.12",  # serverless runtime (Python 3.10) typing_extensions lacks Sentinel
-    "neo4j>=5.17.0",
 ]
 
 [build-system]

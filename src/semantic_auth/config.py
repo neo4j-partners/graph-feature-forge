@@ -1,4 +1,4 @@
-"""Configuration for the semantic-auth enrichment pipeline.
+"""Configuration for the semantic-auth pipeline.
 
 Loads settings from environment variables with sensible defaults.
 On Databricks clusters, WorkspaceClient auto-discovers credentials.
@@ -9,7 +9,7 @@ Locally, set DATABRICKS_HOST and DATABRICKS_TOKEN (or use a
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass
@@ -21,7 +21,7 @@ class Config:
     source_schema: str = "raw_data"
 
     # semantic-auth catalog (enrichment artifacts)
-    catalog: str = "semantic-graph-enrichment"
+    catalog: str = "semantic-auth"
     schema: str = "enrichment"
     volume: str = "source-data"
 
