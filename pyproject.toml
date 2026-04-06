@@ -10,12 +10,9 @@ dependencies = [
     "python-dotenv>=1.0.0",
 ]
 
-[tool.uv.sources]
-databricks-job-runner = { path = "../databricks-job-runner", editable = true }
-
 [project.optional-dependencies]
 cli = [
-    "databricks-job-runner",
+    "databricks-job-runner>=0.3.0",
 ]
 dev = [
     "pytest>=8.0",

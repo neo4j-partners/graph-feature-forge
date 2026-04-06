@@ -65,7 +65,7 @@ Four layers, each depending only on the layer below:
 
 ## Dependencies
 
-- `databricks-job-runner` is a sibling project at `../databricks-job-runner` (editable install).
+- `databricks-job-runner` is installed from PyPI (`>=0.3.0`).
 - `enrichment` extras (DSPy, MLflow, Pydantic, neo4j) are Phase 2+ — not needed for infrastructure/data access work.
 
 ## Environment
