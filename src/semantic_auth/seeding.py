@@ -280,21 +280,87 @@ def load_document_graph(session: Any, embeddings_path: str) -> dict[str, int]:
 # ---------------------------------------------------------------------------
 
 
-def create_indexes(session: Any) -> None:
-    """Create vector and full-text indexes on Chunk nodes."""
-    session.run(
-        "CREATE VECTOR INDEX chunk_embedding_index IF NOT EXISTS "
-        "FOR (c:Chunk) ON (c.embedding) "
-        "OPTIONS {indexConfig: {"
-        "  `vector.dimensions`: 1024, "
-        "  `vector.similarity_function`: 'cosine'"
-        "}}"
-    )
-    session.run(
-        "CREATE FULLTEXT INDEX chunk_text_index IF NOT EXISTS "
-        "FOR (c:Chunk) ON EACH [c.text]"
-    )
-    print("    Created vector and full-text indexes")
+def create_indexes(driver: Any, database: str, wait: bool = True, timeout: int = 120) -> None:
+    """Create vector and full-text indexes on Chunk nodes.
+
+    Uses separate sessions for each DDL command (Neo4j Aura requires
+    schema commands to run in their own auto-commit transactions on
+    fresh sessions).
+
+    Args:
+        driver: Neo4j driver instance.
+        database: Neo4j database name.
+        wait: If True, poll until indexes are ONLINE before returning.
+        timeout: Maximum seconds to wait for indexes to come online.
+    """
+    import time
+
+    # Log server info for debugging
+    with driver.session(database=database) as s:
+        info = s.run("CALL dbms.components() YIELD name, versions RETURN name, versions").single()
+        if info:
+            print(f"    Neo4j: {info['name']} {info['versions']}")
+
+        # Show existing indexes before creation
+        existing = list(s.run("SHOW INDEXES YIELD name, type, state RETURN name, type, state"))
+        if existing:
+            print(f"    Existing indexes: {[(r['name'], r['type'], r['state']) for r in existing]}")
+        else:
+            print("    No existing indexes")
+
+    # Create each index in its own session
+    index_cmds = [
+        (
+            "chunk_embedding_index",
+            "CREATE VECTOR INDEX chunk_embedding_index IF NOT EXISTS "
+            "FOR (c:Chunk) ON (c.embedding) "
+            "OPTIONS {indexConfig: {"
+            "  `vector.dimensions`: 1024, "
+            "  `vector.similarity_function`: 'cosine'"
+            "}}",
+        ),
+        (
+            "chunk_text_index",
+            "CREATE FULLTEXT INDEX chunk_text_index IF NOT EXISTS "
+            "FOR (c:Chunk) ON EACH [c.text]",
+        ),
+    ]
+
+    for idx_name, cypher in index_cmds:
+        try:
+            with driver.session(database=database) as s:
+                s.run(cypher).consume()
+            print(f"    {idx_name}: CREATE command OK")
+        except Exception as exc:
+            print(f"    {idx_name}: CREATE failed: {type(exc).__name__}: {exc}")
+
+    # Verify indexes exist after creation
+    with driver.session(database=database) as s:
+        after = list(s.run("SHOW INDEXES YIELD name, type, state RETURN name, type, state"))
+        print(f"    Indexes after creation: {[(r['name'], r['type'], r['state']) for r in after]}")
+
+    if not wait:
+        return
+
+    target_indexes = {"chunk_embedding_index", "chunk_text_index"}
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        with driver.session(database=database) as s:
+            result = s.run(
+                "SHOW INDEXES YIELD name, state "
+                "WHERE name IN $names "
+                "RETURN name, state",
+                names=list(target_indexes),
+            )
+            statuses = {record["name"]: record["state"] for record in result}
+        if all(statuses.get(n) == "ONLINE" for n in target_indexes):
+            print("    Indexes ONLINE")
+            return
+        time.sleep(2)
+
+    pending = {n: statuses.get(n, "MISSING") for n in target_indexes
+               if statuses.get(n) != "ONLINE"}
+    print(f"    WARNING: indexes not ONLINE after {timeout}s: {pending}")
 
 
 # ---------------------------------------------------------------------------
@@ -365,9 +431,9 @@ def seed_neo4j(
             for name, n in doc_counts.items():
                 print(f"    {name}: {n}")
 
-            # Step 5: Indexes
-            print("\n  Creating indexes ...")
-            create_indexes(session)
+        # Step 5: Indexes (uses separate sessions per DDL command)
+        print("\n  Creating indexes ...")
+        create_indexes(driver, neo4j_database)
 
     finally:
         driver.close()

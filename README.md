@@ -29,8 +29,19 @@ uv run pytest
 uv sync --extra cli
 ```
 
+### Option A: One-command script
+
 ```bash
-# Run Full Pipeline
+# Run all steps (upload → load → seed → enrich)
+./run_pipeline.sh
+
+# Stop after seeding Neo4j (skip enrichment)
+./run_pipeline.sh --seed
+```
+
+### Option B: Manual steps
+
+```bash
 # Upload raw data (CSV, HTML, embeddings) to UC volume
 uv run python -m cli upload --data
 
