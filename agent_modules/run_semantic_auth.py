@@ -1,10 +1,15 @@
-"""Full pipeline: synthesis -> DSPy analyzers -> structured output.
+"""Full pipeline: extract -> synthesis -> analyzers -> resolve -> filter -> write-back.
 
-Replaces the Supervisor Agent-backed pipeline from the workshop (Lab 7)
-with direct LLM calls against ``databricks-claude-sonnet-4-6``.
+Implements the enrichment loop described in graph_enrichment_v3.md:
 
-The runner auto-attaches the ``semantic_auth`` wheel when this script is
-submitted (matches ``wheel_package="semantic_auth"`` in ``cli/__init__.py``).
+1. Extract graph state from Neo4j to Delta tables (Spark Connector)
+2. Load structured data from Delta tables
+3. Retrieve relevant documents via embeddings
+4. Synthesize gap analysis via LLM
+5. Run four DSPy analyzers for schema-level suggestions
+6. Resolve schema-level suggestions into instance proposals
+7. Filter instance proposals by confidence
+8. Write HIGH-confidence proposals back to Neo4j
 
 Usage:
     python -m cli upload --wheel
@@ -15,25 +20,45 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 import time
+import uuid
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Semantic Auth Pipeline")
-    parser.add_argument("--source-catalog", default="neo4j_augmentation_demo")
-    parser.add_argument("--source-schema", default="raw_data")
-    parser.add_argument("--catalog-name", default="semantic-auth")
-    parser.add_argument("--schema-name", default="enrichment")
-    parser.add_argument("--volume-name", default="source-data")
-    parser.add_argument("--llm-endpoint", default="databricks-claude-sonnet-4-6")
-    parser.add_argument("--embedding-endpoint", default="databricks-gte-large-en")
-    parser.add_argument("--warehouse-id", default=None)
+    from semantic_auth import inject_params
+
+    inject_params()
+
+    # Config from .env (forwarded by Runner as KEY=VALUE params)
+    source_catalog = os.getenv("SOURCE_CATALOG", "neo4j_augmentation_demo")
+    source_schema = os.getenv("SOURCE_SCHEMA", "raw_data")
+    catalog_name = os.getenv("CATALOG_NAME", "semantic-auth")
+    schema_name = os.getenv("SCHEMA_NAME", "enrichment")
+    volume_name = os.getenv("VOLUME_NAME", "source-data")
+    llm_endpoint = os.getenv("LLM_ENDPOINT", "databricks-claude-sonnet-4-6")
+    embedding_endpoint = os.getenv("EMBEDDING_ENDPOINT", "databricks-gte-large-en")
+    neo4j_uri = os.getenv("NEO4J_URI")
+    neo4j_username = os.getenv("NEO4J_USERNAME")
+    neo4j_password = os.getenv("NEO4J_PASSWORD")
+    neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
+
+    # Behavioral flags (parsed separately from inject_params key=value pairs)
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--skip-extraction", action="store_true")
+    parser.add_argument("--execute", action="store_true")
     parser.add_argument("--enable-tracing", action="store_true")
-    args = parser.parse_args()
+    flags, _ = parser.parse_known_args()
+
+    enable_tracing = flags.enable_tracing
+    skip_extraction = flags.skip_extraction or not neo4j_uri
+    execute = flags.execute
+
+    run_id = uuid.uuid4().hex[:12]
 
     print("=" * 60)
-    print("Semantic Auth Pipeline")
+    print(f"Semantic Auth Pipeline  (run {run_id})")
     print("=" * 60)
 
     # -- Step 1: Databricks auth -------------------------------------------
@@ -59,107 +84,122 @@ def main() -> None:
         sys.exit(1)
 
     # Export for LiteLLM's Databricks provider auto-detection
-    import os
     os.environ["DATABRICKS_HOST"] = host
     os.environ["DATABRICKS_TOKEN"] = token
 
-    # -- Step 2: MLflow tracing (optional) ---------------------------------
+    # -- Step 2: Neo4j extraction (Gap 0) ----------------------------------
 
-    if args.enable_tracing:
+    if not skip_extraction:
+        if not all([neo4j_uri, neo4j_username, neo4j_password]):
+            print("ERROR: Neo4j connection required for extraction.")
+            print("  Set NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD in .env,")
+            print("  or pass --skip-extraction to use existing Delta tables.")
+            sys.exit(1)
+
+        from semantic_auth.extraction import extract_graph
+
+        try:
+            from pyspark.sql import SparkSession
+            spark = SparkSession.builder.getOrCreate()
+        except Exception:
+            print("ERROR: Neo4j Spark Connector requires a Spark session.")
+            print("  Run on a Databricks cluster with the Neo4j Spark Connector JAR,")
+            print("  or pass --skip-extraction to use existing Delta tables.")
+            sys.exit(1)
+
+        print("\nStep 1/4: Extracting graph from Neo4j ...")
+        t0 = time.time()
+        extract_graph(
+            spark=spark,
+            uri=neo4j_uri,
+            username=neo4j_username,
+            password=neo4j_password,
+            database=neo4j_database,
+            catalog=source_catalog,
+            schema=source_schema,
+        )
+        elapsed = time.time() - t0
+        print(f"  Extraction complete in {elapsed:.1f}s")
+    else:
+        print("\n  Skipping Neo4j extraction (--skip-extraction)")
+
+    # -- Step 3: MLflow tracing (optional) ---------------------------------
+
+    if enable_tracing:
         import mlflow
 
         mlflow.dspy.autolog()
         print("  MLflow DSPy tracing enabled")
 
-    # -- Step 3: Configure DSPy with standard LM ---------------------------
-    #
-    # Uses the LiteLLM ``databricks/`` provider which speaks the
-    # OpenAI-compatible chat completions API that Databricks foundation
-    # model endpoints expose.  No custom BaseLM adapter needed.
+    # -- Step 4: Configure DSPy with standard LM ---------------------------
 
     import dspy
 
     lm = dspy.LM(
-        f"databricks/{args.llm_endpoint}",
+        f"databricks/{llm_endpoint}",
         api_key=token,
         api_base=f"{host}/serving-endpoints",
         temperature=0.1,
-        max_tokens=4000,
+        max_tokens=30000,
     )
 
     # Quick validation before running the full pipeline
     try:
-        test_result = lm("Say hello")
-        print(f"  DSPy configured: {args.llm_endpoint} (validated)")
+        lm("Say hello")
+        print(f"  DSPy configured: {llm_endpoint} (validated)")
     except Exception as exc:
         print(f"  DSPy LM validation failed: {type(exc).__name__}: {exc}")
         print(f"  Host: {host}")
-        print(f"  Trying openai/ provider fallback...")
+        print("  Trying openai/ provider fallback...")
         lm = dspy.LM(
-            f"openai/{args.llm_endpoint}",
+            f"openai/{llm_endpoint}",
             api_key=token,
             api_base=f"{host}/serving-endpoints",
             temperature=0.1,
-            max_tokens=4000,
+            max_tokens=30000,
         )
         try:
-            test_result = lm("Say hello")
-            print(f"  DSPy configured: openai/{args.llm_endpoint} (validated)")
+            lm("Say hello")
+            print(f"  DSPy configured: openai/{llm_endpoint} (validated)")
         except Exception as exc2:
             print(f"  openai/ provider also failed: {type(exc2).__name__}: {exc2}")
             sys.exit(1)
 
     dspy.configure(lm=lm)
 
-    # -- Step 4: Structured data access ------------------------------------
+    # -- Step 5: Structured data access ------------------------------------
 
-    from semantic_auth.structured_data import (
-        StructuredDataAccess,
-        make_sdk_executor,
-        make_spark_executor,
-    )
+    from semantic_auth.structured_data import StructuredDataAccess, make_spark_executor
 
-    # Prefer Spark when available (serverless/cluster) — avoids warehouse cold start.
-    # Fall back to SDK executor with warehouse_id for local development.
-    try:
-        executor = make_spark_executor()
-        print("  Structured data: Spark executor")
-    except RuntimeError:
-        if args.warehouse_id:
-            executor = make_sdk_executor(args.warehouse_id)
-            print(f"  Structured data: SDK executor (warehouse {args.warehouse_id})")
-        else:
-            print("ERROR: No Spark session available and no WAREHOUSE_ID provided.")
-            print("  Provide WAREHOUSE_ID in .env for local execution,")
-            print("  or run on a cluster with Spark available.")
-            sys.exit(1)
+    executor = make_spark_executor()
+    print("  Structured data: Spark executor")
 
     data = StructuredDataAccess(
         execute_sql=executor,
-        catalog=args.source_catalog,
-        schema=args.source_schema,
+        catalog=source_catalog,
+        schema=source_schema,
     )
 
-    # -- Step 5: Document retrieval ----------------------------------------
+    # -- Step 6: Document retrieval ----------------------------------------
 
     from semantic_auth.retrieval import DocumentRetrieval, make_sdk_embedder
 
     embeddings_path = (
-        f"/Volumes/{args.catalog_name}/{args.schema_name}"
-        f"/{args.volume_name}/embeddings/document_chunks_embedded.json"
+        f"/Volumes/{catalog_name}/{schema_name}"
+        f"/{volume_name}/embeddings/document_chunks_embedded.json"
     )
-    embedder = make_sdk_embedder(args.embedding_endpoint)
+    embedder = make_sdk_embedder(embedding_endpoint)
     retrieval = DocumentRetrieval.from_json_path(embeddings_path, embedder)
     print(f"  Document retrieval: loaded from {embeddings_path}")
 
-    # -- Step 6: Synthesis (gap analysis) ----------------------------------
+    # -- Step 7: Synthesis (gap analysis) ----------------------------------
 
     from semantic_auth.synthesis import fetch_gap_analysis, make_sdk_caller
 
-    print("\nStep 1/2: Running gap analysis synthesis ...")
+    print("\nStep 2/4: Running gap analysis synthesis ...")
     t0 = time.time()
     llm_caller = make_sdk_caller(
-        endpoint=args.llm_endpoint,
+        endpoint=llm_endpoint,
         max_tokens=8192,
     )
     gap_analysis = fetch_gap_analysis(data, retrieval, llm_caller)
@@ -167,28 +207,68 @@ def main() -> None:
     print(f"  Synthesis complete: {len(gap_analysis):,} chars in {elapsed:.1f}s")
     print(f"  Preview: {gap_analysis[:200]}...")
 
-    # -- Step 7: DSPy analyzers --------------------------------------------
+    # -- Step 8: DSPy analyzers (schema-level) -----------------------------
 
-    from semantic_auth.analyzers import GraphAugmentationAnalyzer
-    from semantic_auth.reporting import print_response_summary
+    from semantic_auth.analyzers import GraphAugmentationAnalyzer, InstanceResolver
+    from semantic_auth.reporting import print_filtered_proposals, print_response_summary
+    from semantic_auth.schemas import FilteredProposals
 
-    print("\nStep 2/2: Running DSPy analyzers (4 concurrent) ...")
+    print("\nStep 3/4: Running DSPy analyzers (4 concurrent) ...")
     t0 = time.time()
     analyzer = GraphAugmentationAnalyzer()
     response = analyzer(document_context=gap_analysis)
     elapsed = time.time() - t0
 
-    # -- Step 8: Results ---------------------------------------------------
-
     print_response_summary(response)
 
-    print(f"\n  Pipeline complete in {elapsed:.1f}s (analyzer phase)")
+    print(f"\n  Schema-level analysis complete in {elapsed:.1f}s")
     print(f"  Total suggestions: {response.total_suggestions}")
     print(f"  High confidence:   {response.high_confidence_count}")
 
     if not response.success:
         print("\n  WARNING: Some analyses failed")
         sys.exit(1)
+
+    # -- Step 9: Instance resolution (Gap 1) -------------------------------
+
+    print("\nStep 4/4: Resolving to instance proposals ...")
+    t0 = time.time()
+    resolver = InstanceResolver()
+    resolution = resolver(response=response, document_context=gap_analysis)
+    elapsed = time.time() - t0
+    print(f"  Resolution complete in {elapsed:.1f}s")
+
+    if not resolution.proposals:
+        print("\n  No instance proposals generated. Pipeline complete.")
+        return
+
+    # -- Step 10: Confidence filtering (Gap 2) -----------------------------
+
+    filtered = FilteredProposals.from_proposals(resolution.proposals)
+    print_filtered_proposals(filtered)
+
+    # -- Step 11: Write-back to Neo4j (Gap 3) ------------------------------
+
+    if not filtered.auto_approve:
+        print("\n  No HIGH-confidence proposals to write. Pipeline complete.")
+        return
+
+    if not all([neo4j_uri, neo4j_username, neo4j_password]):
+        print("\n  No Neo4j connection configured — skipping write-back.")
+        print("  Set NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD to enable.")
+        return
+
+    from semantic_auth.writeback import Neo4jWriter
+
+    dry_run = not execute
+
+    with Neo4jWriter(neo4j_uri, neo4j_username, neo4j_password, neo4j_database) as writer:
+        writer.write_proposals(filtered.auto_approve, run_id=run_id, dry_run=dry_run)
+
+    if dry_run:
+        print("\n  Pass --execute to write these proposals to Neo4j.")
+
+    print(f"\n  Pipeline complete (run {run_id})")
 
 
 if __name__ == "__main__":

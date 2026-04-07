@@ -18,6 +18,7 @@ import dspy
 
 from semantic_auth.schemas import (
     ImpliedRelationshipsAnalysis,
+    InstanceResolutionResult,
     InvestmentThemesAnalysis,
     MissingAttributesAnalysis,
     NewEntitiesAnalysis,
@@ -87,4 +88,36 @@ class ImpliedRelationshipsSignature(dspy.Signature):
     )
     analysis: ImpliedRelationshipsAnalysis = dspy.OutputField(
         desc="Structured suggestions for new relationship types with properties"
+    )
+
+
+class InstanceResolutionSignature(dspy.Signature):
+    """Resolve schema-level graph suggestions into concrete instance-level proposals.
+
+    Given schema-level suggestions (new node types, relationship types, missing
+    attributes) and the full analysis context (customer data, portfolio holdings,
+    document excerpts), produce specific node-to-node enrichment proposals.
+
+    Each proposal must:
+    - Name a specific source node by its label and identifier (e.g., Customer C0001)
+    - Name a specific target node by its label and identifier (e.g., Sector RenewableEnergy)
+    - Specify the relationship type (e.g., INTERESTED_IN)
+    - Assign a confidence level: HIGH for explicit statements of interest or clear
+      evidence, MEDIUM for reasonable inferences, LOW for weak or ambiguous signals
+    - Cite the source document and quote the extracted phrase that supports it
+    - Explain the rationale
+
+    Only propose relationships where the evidence clearly supports a specific
+    connection between two identified entities.  Do not fabricate evidence or
+    propose relationships that cannot be traced to a document excerpt.
+    """
+
+    schema_suggestions: str = dspy.InputField(
+        desc="JSON-formatted schema-level suggestions from graph augmentation analysis"
+    )
+    document_context: str = dspy.InputField(
+        desc="Full analysis context: customer data, portfolio holdings, and document excerpts"
+    )
+    resolution: InstanceResolutionResult = dspy.OutputField(
+        desc="Concrete instance-level enrichment proposals with evidence for each"
     )

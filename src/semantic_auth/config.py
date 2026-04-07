@@ -32,6 +32,12 @@ class Config:
     # SQL warehouse ID (required for local SDK-based SQL execution)
     warehouse_id: str | None = None
 
+    # Neo4j connection (required for extraction and write-back)
+    neo4j_uri: str | None = None
+    neo4j_username: str | None = None
+    neo4j_password: str | None = None
+    neo4j_database: str = "neo4j"
+
     @classmethod
     def from_env(cls) -> Config:
         """Load configuration from environment variables."""
@@ -44,4 +50,8 @@ class Config:
             llm_endpoint=os.getenv("LLM_ENDPOINT", cls.llm_endpoint),
             embedding_endpoint=os.getenv("EMBEDDING_ENDPOINT", cls.embedding_endpoint),
             warehouse_id=os.getenv("WAREHOUSE_ID"),
+            neo4j_uri=os.getenv("NEO4J_URI"),
+            neo4j_username=os.getenv("NEO4J_USERNAME"),
+            neo4j_password=os.getenv("NEO4J_PASSWORD"),
+            neo4j_database=os.getenv("NEO4J_DATABASE", cls.neo4j_database),
         )

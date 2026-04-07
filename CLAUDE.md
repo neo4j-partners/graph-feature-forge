@@ -27,12 +27,16 @@ semantic-auth is a graph enrichment pipeline that replaces Databricks AI/BI serv
 ```bash
 uv sync                              # Install core dependencies
 uv sync --extra dev                   # Install dev tools (pytest, ruff)
+uv sync --extra cli                   # Install CLI (databricks-job-runner)
 uv sync --extra enrichment            # Install DSPy/MLflow/Pydantic for analysis
-pytest                                # Run tests
-ruff check .                          # Lint
-ruff format .                         # Format
-python -m cli upload --wheel          # Build wheel and upload to Databricks volume
-python -m cli submit run_semantic_auth.py  # Submit pipeline to Databricks serverless
+uv run pytest                         # Run tests
+uv run ruff check .                   # Lint
+uv run ruff format .                  # Format
+uv run python -m cli upload --wheel   # Build wheel and upload to Databricks volume
+uv run python -m cli submit run_semantic_auth.py  # Submit pipeline to Databricks serverless
+uv run python -m cli logs             # View logs from most recent run
+uv run python -m cli validate         # Verify uploaded files in remote workspace
+uv run python -m cli clean            # Delete remote workspace and job runs
 ```
 
 The `cli` module wraps `databricks-job-runner` — it reads `.env` and forwards values as CLI flags to the pipeline entry point (`agent_modules/run_semantic_auth.py`).

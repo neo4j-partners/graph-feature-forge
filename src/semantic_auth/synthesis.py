@@ -29,7 +29,7 @@ into ``GraphAugmentationAnalyzer``.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Callable
 
 from semantic_auth.retrieval import DocumentRetrieval
 from semantic_auth.structured_data import StructuredDataAccess

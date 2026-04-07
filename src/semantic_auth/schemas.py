@@ -138,6 +138,70 @@ class ImpliedRelationshipsAnalysis(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Instance-level proposals (Gap 1)
+# ---------------------------------------------------------------------------
+
+
+class NodeReference(BaseModel):
+    """Reference to a specific node in the graph."""
+
+    label: str = Field(..., description="Node label (e.g., 'Customer', 'Sector')")
+    key_property: str = Field(..., description="Property that identifies this node (e.g., 'customerId')")
+    key_value: str = Field(..., description="Value of the key property (e.g., 'C0001')")
+
+
+class InstanceProposal(BaseModel):
+    """A concrete enrichment proposal for a specific node-to-node relationship.
+
+    Unlike schema-level suggestions (SuggestedRelationship) which propose
+    new relationship *types*, an InstanceProposal names specific source and
+    target nodes and is directly writable as a Cypher MERGE statement.
+    """
+
+    source_node: NodeReference = Field(..., description="Source node of the proposed relationship")
+    target_node: NodeReference = Field(..., description="Target node of the proposed relationship")
+    relationship_type: str = Field(..., description="Relationship type (e.g., 'INTERESTED_IN')")
+    properties: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Additional properties for the relationship",
+    )
+    confidence: ConfidenceLevel = Field(
+        ..., description="Confidence level: HIGH auto-approves, MEDIUM flags for review, LOW queues for review"
+    )
+    source_document: str = Field(..., description="Document that contains the supporting evidence")
+    extracted_phrase: str = Field(..., description="Quoted phrase from the document supporting this proposal")
+    rationale: str = Field(..., description="Why this specific relationship should be added")
+
+
+class InstanceResolutionResult(BaseModel):
+    """Result of resolving schema-level suggestions into instance proposals."""
+
+    proposals: list[InstanceProposal] = Field(default_factory=list)
+    resolution_summary: str = Field(..., description="Summary of what was resolved and why")
+
+
+class FilteredProposals(BaseModel):
+    """Instance proposals partitioned by confidence level."""
+
+    auto_approve: list[InstanceProposal] = Field(default_factory=list)
+    flagged: list[InstanceProposal] = Field(default_factory=list)
+    review: list[InstanceProposal] = Field(default_factory=list)
+
+    @classmethod
+    def from_proposals(cls, proposals: list[InstanceProposal]) -> FilteredProposals:
+        """Partition proposals into confidence buckets."""
+        result = cls()
+        for p in proposals:
+            if p.confidence == ConfidenceLevel.HIGH:
+                result.auto_approve.append(p)
+            elif p.confidence == ConfidenceLevel.MEDIUM:
+                result.flagged.append(p)
+            else:
+                result.review.append(p)
+        return result
+
+
+# ---------------------------------------------------------------------------
 # Consolidated response
 # ---------------------------------------------------------------------------
 

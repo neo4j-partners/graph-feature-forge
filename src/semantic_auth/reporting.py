@@ -10,7 +10,9 @@ from semantic_auth.analyzers import AnalysisResult
 from semantic_auth.schemas import (
     AugmentationResponse,
     ConfidenceLevel,
+    FilteredProposals,
     ImpliedRelationshipsAnalysis,
+    InstanceProposal,
     InvestmentThemesAnalysis,
     MissingAttributesAnalysis,
     NewEntitiesAnalysis,
@@ -139,6 +141,62 @@ def print_response_summary(resp: AugmentationResponse) -> None:
         print(f"\n  --- Suggested Attributes ({len(resp.all_suggested_attributes)}) ---")
         for a in resp.all_suggested_attributes[:5]:
             print(f"    - {a.target_label}.{a.property_name}: {a.property_type} [{_conf(a)}]")
+
+    print("\n" + "=" * 70)
+
+
+# ---------------------------------------------------------------------------
+# Instance proposals and confidence filtering
+# ---------------------------------------------------------------------------
+
+
+def print_instance_proposal(proposal: InstanceProposal, index: int) -> None:
+    """Print a single instance proposal."""
+    src = proposal.source_node
+    tgt = proposal.target_node
+    print(
+        f"\n  {index}. ({src.label} {src.key_value})"
+        f"-[{proposal.relationship_type}]->"
+        f"({tgt.label} {tgt.key_value})"
+        f" [{_conf(proposal)}]"
+    )
+    print(f"     Source: {proposal.source_document}")
+    print(f"     Evidence: \"{proposal.extracted_phrase[:120]}{'...' if len(proposal.extracted_phrase) > 120 else ''}\"")
+    print(f"     Rationale: {proposal.rationale[:120]}{'...' if len(proposal.rationale) > 120 else ''}")
+
+
+def print_filtered_proposals(filtered: FilteredProposals) -> None:
+    """Print instance proposals grouped by confidence bucket."""
+    total = len(filtered.auto_approve) + len(filtered.flagged) + len(filtered.review)
+
+    print("\n" + "=" * 70)
+    print("INSTANCE PROPOSALS — CONFIDENCE FILTERING")
+    print("=" * 70)
+    print(f"\n  Total proposals: {total}")
+    print(f"  AUTO-APPROVE (HIGH):  {len(filtered.auto_approve)}")
+    print(f"  FLAGGED (MEDIUM):     {len(filtered.flagged)}")
+    print(f"  REVIEW (LOW):         {len(filtered.review)}")
+
+    if filtered.auto_approve:
+        print(f"\n{'─'*60}")
+        print("AUTO-APPROVE — will write to Neo4j")
+        print(f"{'─'*60}")
+        for i, p in enumerate(filtered.auto_approve, 1):
+            print_instance_proposal(p, i)
+
+    if filtered.flagged:
+        print(f"\n{'─'*60}")
+        print("FLAGGED — approved with flag, logged for review")
+        print(f"{'─'*60}")
+        for i, p in enumerate(filtered.flagged, 1):
+            print_instance_proposal(p, i)
+
+    if filtered.review:
+        print(f"\n{'─'*60}")
+        print("REVIEW — queued, not written")
+        print(f"{'─'*60}")
+        for i, p in enumerate(filtered.review, 1):
+            print_instance_proposal(p, i)
 
     print("\n" + "=" * 70)
 

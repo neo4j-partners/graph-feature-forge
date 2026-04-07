@@ -43,29 +43,13 @@ RELATIONSHIP_TABLES = [
 def make_spark_executor(spark_session: Any = None) -> SQLExecutor:
     """Create an executor using a Spark session.
 
-    On serverless tasks, PySpark is pre-installed so ``SparkSession``
-    is tried first.  Falls back to ``DatabricksSession`` (databricks-connect)
-    for local development.  Pass an explicit session to skip auto-detection.
+    On Databricks serverless and cluster tasks, PySpark is pre-installed.
+    Pass an explicit session to skip auto-detection.
     """
     if spark_session is None:
-        # Try PySpark first (available on serverless and cluster tasks).
-        try:
-            from pyspark.sql import SparkSession
-            spark_session = SparkSession.builder.getOrCreate()
-        except Exception:
-            pass
+        from pyspark.sql import SparkSession
 
-        # Fall back to Databricks Connect (local development).
-        if spark_session is None:
-            try:
-                from databricks.connect import DatabricksSession
-                spark_session = DatabricksSession.builder.getOrCreate()
-            except Exception as exc:
-                raise RuntimeError(
-                    "No Spark session available. Pass one explicitly, "
-                    "provide --warehouse-id for SDK execution, or "
-                    "run on a Databricks cluster."
-                ) from exc
+        spark_session = SparkSession.builder.getOrCreate()
 
     def execute(query: str) -> QueryResult:
         return [row.asDict() for row in spark_session.sql(query).collect()]

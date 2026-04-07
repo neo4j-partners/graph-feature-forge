@@ -24,6 +24,7 @@ from semantic_auth.schemas import (
     AugmentationAnalysis,
     AugmentationResponse,
     ImpliedRelationshipsAnalysis,
+    InstanceResolutionResult,
     InvestmentThemesAnalysis,
     MissingAttributesAnalysis,
     NewEntitiesAnalysis,
@@ -33,6 +34,7 @@ from semantic_auth.schemas import (
 )
 from semantic_auth.signatures import (
     ImpliedRelationshipsSignature,
+    InstanceResolutionSignature,
     InvestmentThemesSignature,
     MissingAttributesSignature,
     NewEntitiesSignature,
@@ -140,6 +142,56 @@ class ImpliedRelationshipsAnalyzer(dspy.Module):
             return AnalysisResult(
                 name="implied_relationships", success=False, error=str(e)
             )
+
+
+# ---------------------------------------------------------------------------
+# Instance resolver (Gap 1)
+# ---------------------------------------------------------------------------
+
+
+class InstanceResolver(dspy.Module):
+    """Resolve schema-level suggestions into concrete instance proposals.
+
+    Runs after ``GraphAugmentationAnalyzer`` to turn ontology-level
+    suggestions (e.g., "add INTERESTED_IN relationship type") into
+    specific enrichment proposals (e.g., "Customer C0001 INTERESTED_IN
+    Sector RenewableEnergy").
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.resolve = dspy.ChainOfThought(InstanceResolutionSignature)
+
+    def forward(
+        self,
+        response: AugmentationResponse,
+        document_context: str,
+    ) -> InstanceResolutionResult:
+        """Resolve an AugmentationResponse into instance proposals.
+
+        Args:
+            response: Schema-level output from GraphAugmentationAnalyzer.
+            document_context: The synthesis text containing structured data
+                context and document excerpts.
+
+        Returns:
+            InstanceResolutionResult with concrete proposals.
+        """
+        schema_json = response.model_dump_json(indent=2)
+
+        print("\n  Resolving schema suggestions to instance proposals ...")
+        t0 = time.time()
+
+        result = self.resolve(
+            schema_suggestions=schema_json,
+            document_context=document_context,
+        )
+
+        elapsed = time.time() - t0
+        resolution = result.resolution
+        print(f"  Resolved {len(resolution.proposals)} instance proposals in {elapsed:.1f}s")
+
+        return resolution
 
 
 # ---------------------------------------------------------------------------
