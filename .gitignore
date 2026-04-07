@@ -63,6 +63,9 @@ Desktop.ini
 $RECYCLE.BIN/
 *.lnk
 
+# Downloaded results
+results/
+
 # Databricks
 .databricks/
 BEST_PRACTICES.md

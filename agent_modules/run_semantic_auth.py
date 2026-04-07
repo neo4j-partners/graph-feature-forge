@@ -20,54 +20,79 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import io
 import os
 import sys
 import time
 import uuid
+from dataclasses import dataclass
+from typing import Any
 
 
-def main() -> None:
-    from semantic_auth import inject_params
+# ---------------------------------------------------------------------------
+# Pipeline configuration
+# ---------------------------------------------------------------------------
 
-    inject_params()
 
-    # Config from .env (forwarded by Runner as KEY=VALUE params)
-    source_catalog = os.getenv("SOURCE_CATALOG", "neo4j_augmentation_demo")
-    source_schema = os.getenv("SOURCE_SCHEMA", "raw_data")
-    catalog_name = os.getenv("CATALOG_NAME", "semantic-auth")
-    schema_name = os.getenv("SCHEMA_NAME", "enrichment")
-    volume_name = os.getenv("VOLUME_NAME", "source-data")
-    llm_endpoint = os.getenv("LLM_ENDPOINT", "databricks-claude-sonnet-4-6")
-    embedding_endpoint = os.getenv("EMBEDDING_ENDPOINT", "databricks-gte-large-en")
-    neo4j_uri = os.getenv("NEO4J_URI")
-    neo4j_username = os.getenv("NEO4J_USERNAME")
-    neo4j_password = os.getenv("NEO4J_PASSWORD")
-    neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
+@dataclass
+class PipelineConfig:
+    """Pipeline configuration from environment variables and CLI flags."""
 
-    # Behavioral flags (parsed separately from inject_params key=value pairs)
-    parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("--skip-extraction", action="store_true")
-    parser.add_argument("--execute", action="store_true")
-    parser.add_argument("--enable-tracing", action="store_true")
-    flags, _ = parser.parse_known_args()
+    source_catalog: str
+    source_schema: str
+    llm_endpoint: str
+    embedding_endpoint: str
+    neo4j_uri: str | None
+    neo4j_username: str | None
+    neo4j_password: str | None
+    neo4j_database: str
+    enable_tracing: bool
+    execute: bool
 
-    enable_tracing = flags.enable_tracing
-    skip_extraction = flags.skip_extraction or not neo4j_uri
-    execute = flags.execute
+    @classmethod
+    def from_env(cls) -> PipelineConfig:
+        """Load config from environment variables and CLI flags."""
+        from semantic_auth import inject_params
 
-    run_id = uuid.uuid4().hex[:12]
+        inject_params()
 
-    print("=" * 60)
-    print(f"Semantic Auth Pipeline  (run {run_id})")
-    print("=" * 60)
+        parser = argparse.ArgumentParser(add_help=False)
+        parser.add_argument("--execute", action="store_true")
+        parser.add_argument("--enable-tracing", action="store_true")
+        flags, _ = parser.parse_known_args()
 
-    # -- Step 1: Databricks auth -------------------------------------------
+        return cls(
+            source_catalog=os.getenv("SOURCE_CATALOG", "neo4j_augmentation_demo"),
+            source_schema=os.getenv("SOURCE_SCHEMA", "raw_data"),
+            llm_endpoint=os.getenv("LLM_ENDPOINT", "databricks-claude-sonnet-4-6"),
+            embedding_endpoint=os.getenv(
+                "EMBEDDING_ENDPOINT", "databricks-gte-large-en"
+            ),
+            neo4j_uri=os.getenv("NEO4J_URI"),
+            neo4j_username=os.getenv("NEO4J_USERNAME"),
+            neo4j_password=os.getenv("NEO4J_PASSWORD"),
+            neo4j_database=os.getenv("NEO4J_DATABASE", "neo4j"),
+            enable_tracing=flags.enable_tracing,
+            execute=flags.execute,
+        )
 
+
+# ---------------------------------------------------------------------------
+# Pipeline steps
+# ---------------------------------------------------------------------------
+
+
+def _authenticate() -> tuple[Any, str, str]:
+    """Connect to Databricks and return (client, host, token).
+
+    On serverless runtimes ``config.token`` is None, so the token is
+    extracted from the auth headers as a fallback.  The host and token
+    are also exported to ``os.environ`` for LiteLLM auto-detection.
+    """
     from databricks.sdk import WorkspaceClient
 
     wc = WorkspaceClient()
     host = wc.config.host
-    # On serverless runtime, config.token is None — extract from auth headers
     token = wc.config.token
     if not token:
         try:
@@ -83,55 +108,49 @@ def main() -> None:
         print("  a ~/.databrickscfg profile via DATABRICKS_PROFILE.")
         sys.exit(1)
 
-    # Export for LiteLLM's Databricks provider auto-detection
     os.environ["DATABRICKS_HOST"] = host
     os.environ["DATABRICKS_TOKEN"] = token
 
-    # -- Step 2: Neo4j extraction (Gap 0) ----------------------------------
+    return wc, host, token
 
-    if not skip_extraction:
-        if not all([neo4j_uri, neo4j_username, neo4j_password]):
-            print("ERROR: Neo4j connection required for extraction.")
-            print("  Set NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD in .env,")
-            print("  or pass --skip-extraction to use existing Delta tables.")
-            sys.exit(1)
 
-        from semantic_auth.extraction import extract_graph
+def _extract_graph(cfg: PipelineConfig) -> None:
+    """Extract graph state from Neo4j to Delta tables via Spark Connector."""
+    from semantic_auth.extraction import extract_graph
 
-        try:
-            from pyspark.sql import SparkSession
-            spark = SparkSession.builder.getOrCreate()
-        except Exception:
-            print("ERROR: Neo4j Spark Connector requires a Spark session.")
-            print("  Run on a Databricks cluster with the Neo4j Spark Connector JAR,")
-            print("  or pass --skip-extraction to use existing Delta tables.")
-            sys.exit(1)
+    try:
+        from pyspark.sql import SparkSession
 
-        print("\nStep 1/4: Extracting graph from Neo4j ...")
-        t0 = time.time()
-        extract_graph(
-            spark=spark,
-            uri=neo4j_uri,
-            username=neo4j_username,
-            password=neo4j_password,
-            database=neo4j_database,
-            catalog=source_catalog,
-            schema=source_schema,
-        )
-        elapsed = time.time() - t0
-        print(f"  Extraction complete in {elapsed:.1f}s")
-    else:
-        print("\n  Skipping Neo4j extraction (--skip-extraction)")
+        spark = SparkSession.builder.getOrCreate()
+    except Exception:
+        print("ERROR: Neo4j Spark Connector requires a Spark session.")
+        print("  Run on a Databricks cluster with the Neo4j Spark Connector JAR.")
+        sys.exit(1)
 
-    # -- Step 3: MLflow tracing (optional) ---------------------------------
+    print("\nStep 1/4: Extracting graph from Neo4j ...")
+    t0 = time.time()
+    extract_graph(
+        spark=spark,
+        uri=cfg.neo4j_uri,
+        username=cfg.neo4j_username,
+        password=cfg.neo4j_password,
+        database=cfg.neo4j_database,
+        catalog=cfg.source_catalog,
+        schema=cfg.source_schema,
+    )
+    elapsed = time.time() - t0
+    print(f"  Extraction complete in {elapsed:.1f}s")
 
+
+def _configure_dspy(
+    host: str, token: str, llm_endpoint: str, enable_tracing: bool
+) -> None:
+    """Configure DSPy LM with validation and provider fallback."""
     if enable_tracing:
         import mlflow
 
         mlflow.dspy.autolog()
         print("  MLflow DSPy tracing enabled")
-
-    # -- Step 4: Configure DSPy with standard LM ---------------------------
 
     import dspy
 
@@ -143,7 +162,6 @@ def main() -> None:
         max_tokens=30000,
     )
 
-    # Quick validation before running the full pipeline
     try:
         lm("Say hello")
         print(f"  DSPy configured: {llm_endpoint} (validated)")
@@ -167,51 +185,25 @@ def main() -> None:
 
     dspy.configure(lm=lm)
 
-    # -- Step 5: Structured data access ------------------------------------
 
-    from semantic_auth.structured_data import StructuredDataAccess, make_spark_executor
-
-    executor = make_spark_executor()
-    print("  Structured data: Spark executor")
-
-    data = StructuredDataAccess(
-        execute_sql=executor,
-        catalog=source_catalog,
-        schema=source_schema,
-    )
-
-    # -- Step 6: Document retrieval ----------------------------------------
-
-    from semantic_auth.retrieval import DocumentRetrieval, make_sdk_embedder
-
-    embeddings_path = (
-        f"/Volumes/{catalog_name}/{schema_name}"
-        f"/{volume_name}/embeddings/document_chunks_embedded.json"
-    )
-    embedder = make_sdk_embedder(embedding_endpoint)
-    retrieval = DocumentRetrieval.from_json_path(embeddings_path, embedder)
-    print(f"  Document retrieval: loaded from {embeddings_path}")
-
-    # -- Step 7: Synthesis (gap analysis) ----------------------------------
-
+def _run_synthesis(data: Any, retrieval: Any, llm_endpoint: str) -> str:
+    """Synthesize gap analysis from structured data and retrieved documents."""
     from semantic_auth.synthesis import fetch_gap_analysis, make_sdk_caller
 
     print("\nStep 2/4: Running gap analysis synthesis ...")
     t0 = time.time()
-    llm_caller = make_sdk_caller(
-        endpoint=llm_endpoint,
-        max_tokens=8192,
-    )
+    llm_caller = make_sdk_caller(endpoint=llm_endpoint, max_tokens=8192)
     gap_analysis = fetch_gap_analysis(data, retrieval, llm_caller)
     elapsed = time.time() - t0
     print(f"  Synthesis complete: {len(gap_analysis):,} chars in {elapsed:.1f}s")
     print(f"  Preview: {gap_analysis[:200]}...")
+    return gap_analysis
 
-    # -- Step 8: DSPy analyzers (schema-level) -----------------------------
 
-    from semantic_auth.analyzers import GraphAugmentationAnalyzer, InstanceResolver
-    from semantic_auth.reporting import print_filtered_proposals, print_response_summary
-    from semantic_auth.schemas import FilteredProposals
+def _run_analyzers(gap_analysis: str) -> Any:
+    """Run four concurrent DSPy analyzers for schema-level suggestions."""
+    from semantic_auth.analyzers import GraphAugmentationAnalyzer
+    from semantic_auth.reporting import print_response_summary
 
     print("\nStep 3/4: Running DSPy analyzers (4 concurrent) ...")
     t0 = time.time()
@@ -220,7 +212,6 @@ def main() -> None:
     elapsed = time.time() - t0
 
     print_response_summary(response)
-
     print(f"\n  Schema-level analysis complete in {elapsed:.1f}s")
     print(f"  Total suggestions: {response.total_suggestions}")
     print(f"  High confidence:   {response.high_confidence_count}")
@@ -229,7 +220,18 @@ def main() -> None:
         print("\n  WARNING: Some analyses failed")
         sys.exit(1)
 
-    # -- Step 9: Instance resolution (Gap 1) -------------------------------
+    return response
+
+
+def _resolve_proposals(response: Any, gap_analysis: str) -> Any | None:
+    """Resolve schema suggestions to instance proposals and filter by confidence.
+
+    Returns a :class:`FilteredProposals` instance, or ``None`` if no
+    instance proposals were generated.
+    """
+    from semantic_auth.analyzers import InstanceResolver
+    from semantic_auth.reporting import print_filtered_proposals
+    from semantic_auth.schemas import FilteredProposals
 
     print("\nStep 4/4: Resolving to instance proposals ...")
     t0 = time.time()
@@ -239,36 +241,139 @@ def main() -> None:
     print(f"  Resolution complete in {elapsed:.1f}s")
 
     if not resolution.proposals:
-        print("\n  No instance proposals generated. Pipeline complete.")
-        return
-
-    # -- Step 10: Confidence filtering (Gap 2) -----------------------------
+        return None
 
     filtered = FilteredProposals.from_proposals(resolution.proposals)
     print_filtered_proposals(filtered)
+    return filtered
 
-    # -- Step 11: Write-back to Neo4j (Gap 3) ------------------------------
 
-    if not filtered.auto_approve:
-        print("\n  No HIGH-confidence proposals to write. Pipeline complete.")
-        return
+def _ensure_results_dir(wc: Any) -> str | None:
+    """Create the volume results directory if configured, return path or None."""
+    volume_path = os.getenv("DATABRICKS_VOLUME_PATH", "")
+    if not volume_path:
+        return None
 
-    if not all([neo4j_uri, neo4j_username, neo4j_password]):
-        print("\n  No Neo4j connection configured — skipping write-back.")
-        print("  Set NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD to enable.")
-        return
+    results_dir = f"{volume_path}/results"
+    if not results_dir.startswith("/Volumes"):
+        results_dir = f"/Volumes{results_dir}"
 
+    try:
+        wc.files.create_directory(results_dir)
+    except Exception:
+        pass  # directory may already exist
+
+    return results_dir
+
+
+def _save_to_volume(wc: Any, results_dir: str, filename: str, content: str) -> None:
+    """Upload JSON content to a UC volume results directory."""
+    path = f"{results_dir}/{filename}"
+    wc.files.upload(
+        file_path=path,
+        contents=io.BytesIO(content.encode()),
+        overwrite=True,
+    )
+    print(f"  Saved: {path}")
+
+
+def _write_back(cfg: PipelineConfig, proposals: list, run_id: str) -> None:
+    """Write HIGH-confidence proposals back to Neo4j."""
     from semantic_auth.writeback import Neo4jWriter
 
-    dry_run = not execute
+    dry_run = not cfg.execute
 
-    with Neo4jWriter(neo4j_uri, neo4j_username, neo4j_password, neo4j_database) as writer:
-        writer.write_proposals(filtered.auto_approve, run_id=run_id, dry_run=dry_run)
+    with Neo4jWriter(
+        cfg.neo4j_uri, cfg.neo4j_username, cfg.neo4j_password, cfg.neo4j_database
+    ) as writer:
+        writer.write_proposals(proposals, run_id=run_id, dry_run=dry_run)
 
     if dry_run:
         print("\n  Pass --execute to write these proposals to Neo4j.")
 
-    print(f"\n  Pipeline complete (run {run_id})")
+
+# ---------------------------------------------------------------------------
+# Orchestrator
+# ---------------------------------------------------------------------------
+
+
+def main() -> None:
+    cfg = PipelineConfig.from_env()
+
+    if not all([cfg.neo4j_uri, cfg.neo4j_username, cfg.neo4j_password]):
+        print("ERROR: Neo4j connection required.")
+        print("  Set NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD in .env")
+        sys.exit(1)
+
+    run_id = uuid.uuid4().hex[:12]
+    print("=" * 60)
+    print(f"Semantic Auth Pipeline  (run {run_id})")
+    print("=" * 60)
+
+    wc, host, token = _authenticate()
+    _extract_graph(cfg)
+    _configure_dspy(host, token, cfg.llm_endpoint, cfg.enable_tracing)
+
+    # Structured data access
+    from semantic_auth.structured_data import StructuredDataAccess, make_spark_executor
+
+    data = StructuredDataAccess(
+        execute_sql=make_spark_executor(),
+        catalog=cfg.source_catalog,
+        schema=cfg.source_schema,
+    )
+    print("  Structured data: Spark executor")
+
+    # Document retrieval (Neo4j vector index)
+    import neo4j as neo4j_lib
+    from semantic_auth.retrieval import Neo4jRetrieval, make_sdk_embedder
+
+    neo4j_driver = neo4j_lib.GraphDatabase.driver(
+        cfg.neo4j_uri, auth=(cfg.neo4j_username, cfg.neo4j_password)
+    )
+
+    try:
+        retrieval = Neo4jRetrieval(
+            driver=neo4j_driver,
+            embedder=make_sdk_embedder(cfg.embedding_endpoint),
+            database=cfg.neo4j_database,
+        )
+        print("  Document retrieval: Neo4j vector index (graph-aware)")
+
+        gap_analysis = _run_synthesis(data, retrieval, cfg.llm_endpoint)
+        response = _run_analyzers(gap_analysis)
+
+        results_dir = _ensure_results_dir(wc)
+        if results_dir:
+            _save_to_volume(
+                wc,
+                results_dir,
+                f"enrichment_results_{run_id}.json",
+                response.model_dump_json(indent=2),
+            )
+
+        filtered = _resolve_proposals(response, gap_analysis)
+        if not filtered:
+            print("\n  No instance proposals generated. Pipeline complete.")
+            return
+
+        if results_dir:
+            _save_to_volume(
+                wc,
+                results_dir,
+                f"instance_proposals_{run_id}.json",
+                filtered.model_dump_json(indent=2),
+            )
+
+        if not filtered.auto_approve:
+            print("\n  No HIGH-confidence proposals to write. Pipeline complete.")
+            return
+
+        _write_back(cfg, filtered.auto_approve, run_id)
+        print(f"\n  Pipeline complete (run {run_id})")
+
+    finally:
+        neo4j_driver.close()
 
 
 if __name__ == "__main__":

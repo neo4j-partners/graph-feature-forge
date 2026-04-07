@@ -31,11 +31,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable
 
-from semantic_auth.retrieval import DocumentRetrieval
+from semantic_auth.retrieval import DocumentRetrieval, Neo4jRetrieval
 from semantic_auth.structured_data import StructuredDataAccess
 
 # Type alias: takes a list of message dicts, returns response text.
 LLMCaller = Callable[[list[dict[str, str]]], str]
+
+# Either retrieval backend — both expose query() and format_context().
+DocumentRetrievalLike = DocumentRetrieval | Neo4jRetrieval
 
 
 # ---------------------------------------------------------------------------
@@ -237,8 +240,9 @@ class GapAnalysisSynthesizer:
     Args:
         structured_data: A configured :class:`StructuredDataAccess`
             instance for querying the Delta tables.
-        retrieval: A configured :class:`DocumentRetrieval` instance
-            for similarity-searching the document chunks.
+        retrieval: A configured :class:`DocumentRetrieval` or
+            :class:`Neo4jRetrieval` instance for similarity-searching
+            the document chunks.
         llm_caller: Callable that takes a list of message dicts
             (``[{"role": ..., "content": ...}]``) and returns the
             model's response text.  Use :func:`make_sdk_caller` to
@@ -250,7 +254,7 @@ class GapAnalysisSynthesizer:
     def __init__(
         self,
         structured_data: StructuredDataAccess,
-        retrieval: DocumentRetrieval,
+        retrieval: DocumentRetrievalLike,
         llm_caller: LLMCaller,
         retrieval_top_k: int = 5,
     ) -> None:
@@ -420,7 +424,7 @@ def make_sdk_caller(
 
 def fetch_gap_analysis(
     structured_data: StructuredDataAccess,
-    retrieval: DocumentRetrieval,
+    retrieval: DocumentRetrievalLike,
     llm_caller: LLMCaller,
 ) -> str:
     """Run comprehensive gap analysis and return the response text.

@@ -1,12 +1,18 @@
-"""Document retrieval via in-memory cosine similarity.
+"""Document retrieval via embedding similarity.
 
-Loads pre-computed embeddings from the workshop's document chunks and
-performs similarity search at query time using databricks-gte-large-en.
+Two backends are available:
 
-The corpus is small (20 chunks, 14 documents) so in-memory search is
-appropriate. The interface is designed for backend swapability — replace
-the retrieval internals with Neo4j vector index or Mosaic AI Vector
-Search without changing callers.
+- **DocumentRetrieval** — in-memory cosine similarity over pre-computed
+  embeddings loaded from a JSON file.  Suitable for small corpora and
+  environments without Neo4j access.
+
+- **Neo4jRetrieval** — queries Neo4j's ``chunk_embedding_index`` vector
+  index and optionally traverses graph relationships
+  (``FROM_DOCUMENT → DESCRIBES → Customer``) to return entity context
+  alongside matched chunks.
+
+Both classes expose the same ``query()`` / ``format_context()`` interface
+so callers (e.g., ``GapAnalysisSynthesizer``) work with either backend.
 
 Embedding file format (``document_chunks_embedded.json``)::
 
@@ -123,6 +129,115 @@ class DocumentRetrieval:
             lines.append(
                 f"## [{i}] {title} ({doc_type}, relevance: {chunk.score:.3f})"
             )
+            lines.append("")
+            lines.append(chunk.text)
+            lines.append("")
+
+        return "\n".join(lines)
+
+
+class Neo4jRetrieval:
+    """Retrieve relevant document chunks via Neo4j vector index.
+
+    Queries the ``chunk_embedding_index`` vector index and traverses
+    graph relationships to return entity context alongside matched
+    chunks.  The traversal follows::
+
+        (Chunk)-[:FROM_DOCUMENT]->(Document)-[:DESCRIBES]->(Customer)
+
+    This gives the synthesis step a direct path from unstructured
+    evidence to the entity it concerns, eliminating misattribution
+    errors.
+
+    Args:
+        driver: An open ``neo4j.Driver`` instance.
+        embedder: Callable that takes a text string and returns its
+            embedding vector as a list of floats.
+        database: Neo4j database name (default ``"neo4j"``).
+    """
+
+    def __init__(
+        self,
+        driver: Any,
+        embedder: Embedder,
+        database: str = "neo4j",
+    ) -> None:
+        self._driver = driver
+        self._embedder = embedder
+        self._database = database
+
+    _GRAPH_AWARE_QUERY = """\
+CALL db.index.vector.queryNodes('chunk_embedding_index', $top_k, $embedding)
+YIELD node AS chunk, score
+OPTIONAL MATCH (chunk)-[:FROM_DOCUMENT]->(doc:Document)
+OPTIONAL MATCH (doc)-[:DESCRIBES]->(c:Customer)
+RETURN chunk.chunk_id AS chunk_id,
+       chunk.text AS text,
+       score,
+       doc.document_id AS document_id,
+       doc.title AS document_title,
+       doc.document_type AS document_type,
+       c.customer_id AS customer_id,
+       c.first_name + ' ' + c.last_name AS customer_name
+ORDER BY score DESC
+"""
+
+    def query(self, text: str, top_k: int = 5) -> list[RetrievedChunk]:
+        """Find the top-k most similar chunks using Neo4j vector search."""
+        query_embedding = self._embedder(text)
+
+        def _run(tx: Any) -> list[Any]:
+            result = tx.run(
+                self._GRAPH_AWARE_QUERY,
+                embedding=query_embedding,
+                top_k=top_k,
+            )
+            return list(result)
+
+        with self._driver.session(database=self._database) as session:
+            records = session.execute_read(_run)
+
+        return [
+            RetrievedChunk(
+                chunk_id=record["chunk_id"],
+                text=record["text"],
+                score=record["score"],
+                document_id=record["document_id"] or "",
+                metadata={
+                    "document_title": record["document_title"] or "Unknown",
+                    "document_type": record["document_type"] or "unknown",
+                    "customer_id": record["customer_id"],
+                    "customer_name": record["customer_name"],
+                },
+            )
+            for record in records
+        ]
+
+    def format_context(self, text: str, top_k: int = 5) -> str:
+        """Query and format results as an LLM context string.
+
+        Returns a markdown-formatted string with numbered document
+        excerpts, titles, types, relevance scores, and customer
+        attribution when available.
+        """
+        chunks = self.query(text, top_k)
+        lines = ["# Retrieved Document Excerpts", ""]
+
+        if not chunks:
+            lines.append("No relevant documents found.")
+            return "\n".join(lines)
+
+        for i, chunk in enumerate(chunks, 1):
+            title = chunk.metadata.get("document_title", "Unknown")
+            doc_type = chunk.metadata.get("document_type", "unknown")
+            header = f"## [{i}] {title} ({doc_type}, relevance: {chunk.score:.3f})"
+
+            customer_name = chunk.metadata.get("customer_name")
+            customer_id = chunk.metadata.get("customer_id")
+            if customer_name and customer_id:
+                header += f" — Customer: {customer_name} ({customer_id})"
+
+            lines.append(header)
             lines.append("")
             lines.append(chunk.text)
             lines.append("")
