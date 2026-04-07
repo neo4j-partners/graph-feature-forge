@@ -39,7 +39,7 @@ uv run python -m cli submit seed_neo4j.py
 if [ "$SEED_ONLY" = false ]; then
     echo ""
     echo "=== Run enrichment pipeline ==="
-    uv run python -m cli submit run_semantic_auth.py
+    uv run python -m cli submit run_semantic_auth.py --compute cluster
 
     echo ""
     echo "=== Logs ==="
