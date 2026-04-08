@@ -36,6 +36,8 @@ class GDSFastRPConfig:
     schema: str
     embedding_dim: int
     holdout_per_class: int
+    test_size: float | None
+    pca_components: int | None
 
     @property
     def feature_table(self) -> str:
@@ -73,6 +75,12 @@ class GDSFastRPConfig:
             print("  Set NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD in .env")
             sys.exit(1)
 
+        test_size_str = os.getenv("TEST_SIZE")
+        test_size = float(test_size_str) if test_size_str else None
+
+        pca_str = os.getenv("PCA_COMPONENTS")
+        pca_components = int(pca_str) if pca_str else None
+
         return cls(
             neo4j_uri=neo4j_uri,
             neo4j_username=neo4j_username,
@@ -82,6 +90,8 @@ class GDSFastRPConfig:
             schema=os.getenv("SCHEMA_NAME", "enrichment"),
             embedding_dim=flags.embedding_dim,
             holdout_per_class=flags.holdout_per_class,
+            test_size=test_size,
+            pca_components=pca_components,
         )
 
 
@@ -191,12 +201,14 @@ def _create_holdout(spark: Any, cfg: GDSFastRPConfig) -> None:
 
 
 def _train_and_register(cfg: GDSFastRPConfig) -> Any:
-    """Train AutoML classifier and register as Champion."""
-    from graph_feature_forge.ml.automl_training import register_model, train_automl_classifier
+    """Train sklearn classifier and register as Champion."""
+    from graph_feature_forge.ml.automl_training import register_model, train_sklearn_classifier
 
-    summary = train_automl_classifier(
+    summary = train_sklearn_classifier(
         feature_table=cfg.feature_table,
         experiment_name="/Shared/graph-feature-forge/fastrp_risk_classification",
+        test_size=cfg.test_size,
+        pca_components=cfg.pca_components,
     )
 
     register_model(
@@ -286,14 +298,20 @@ def main() -> None:
     print("\nStep 2/5: Exporting feature table ...")
     _export_features(spark, cfg)
 
-    print("\nStep 3/5: Creating holdout split ...")
-    _create_holdout(spark, cfg)
+    if cfg.test_size is not None:
+        print("\nStep 3/5: Skipping external holdout (using internal train/test split) ...")
+    else:
+        print("\nStep 3/5: Creating holdout split ...")
+        _create_holdout(spark, cfg)
 
-    print("\nStep 4/5: Training AutoML classifier ...")
+    print("\nStep 4/5: Training sklearn classifier ...")
     _train_and_register(cfg)
 
-    print("\nStep 5/5: Scoring and evaluating ...")
-    _score_and_evaluate(spark, cfg)
+    if cfg.test_size is None:
+        print("\nStep 5/5: Scoring and evaluating ...")
+        _score_and_evaluate(spark, cfg)
+    else:
+        print("\nStep 5/5: Skipping external scoring (test metrics logged internally) ...")
 
     print("\nPipeline complete.")
 

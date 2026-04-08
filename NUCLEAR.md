@@ -133,6 +133,56 @@ def train_sklearn_classifier(
 3. **Cross-validation on 30 rows** — high variance in F1 estimates. Use stratified k-fold
    with k=3 or k=5 to mitigate.
 
+## Research: What Databricks Actually Recommends (2026-04-08)
+
+Before committing to the sklearn approach, we searched Databricks official docs,
+the ai-dev-kit skills library, and the databricks-industry-solutions GitHub org
+for reference implementations and best practices.
+
+### Sources Reviewed
+
+| Source | What We Found |
+|--------|---------------|
+| [Databricks scikit-learn docs](https://docs.databricks.com/aws/en/machine-learning/train-model/scikit-learn) | Official sklearn classification notebook with MLflow tracking + Optuna tuning. Importable reference notebook for Unity Catalog workspaces. |
+| [Hyperopt model selection notebook](https://docs.databricks.com/aws/en/machine-learning/automl-hyperparam-tuning/hyperopt-model-selection) | Compares SVM, RandomForest, LogisticRegression via `cross_val_score` + MLflow. Almost identical to our NUCLEAR.md sketch. **But Hyperopt is deprecated after DBR 16.4 ML.** |
+| [Optuna + MLflow 3.0 docs](https://docs.databricks.com/aws/en/machine-learning/automl-hyperparam-tuning/optuna) | Databricks now recommends Optuna over Hyperopt. MLflow 3.0 (pre-installed on 17.0+) has `MlflowStorage` and `MlflowSparkStudy` for parallel tuning via PySpark. Reference notebook available. |
+| ai-dev-kit `databricks-model-serving/1-classical-ml.md` | Production patterns for sklearn + MLflow: `mlflow.sklearn.autolog()` auto-logs params/metrics/artifacts and registers to Unity Catalog. Manual logging with `RandomForestClassifier` + `infer_signature()`. Tested stack: `scikit-learn>=1.3.0`, `mlflow>=2.10.0`. |
+| ai-dev-kit `databricks-jobs/examples.md` | ML Training Pipeline example with scheduled retraining, task DAGs, and environment specs (`mlflow>=2.10.0, scikit-learn>=1.4.0, xgboost>=2.0.0`). |
+| [databricks-industry-solutions](https://github.com/orgs/databricks-industry-solutions/repositories) (196 repos) | No graph-feature-engineering accelerator. Closest: `segmentation` (customer segments), `value-at-risk` (financial risk). Neither is a direct match. |
+
+### Key Takeaways
+
+1. **The NUCLEAR.md sketch is the right pattern.** Databricks' own reference
+   notebooks do exactly this: train multiple sklearn classifiers, compare via
+   cross-validation, log everything to MLflow.
+
+2. **Use `mlflow.sklearn.autolog()` instead of manual logging.** The ai-dev-kit
+   patterns show this is the recommended approach — one line replaces all the
+   `log_param`, `log_metric`, `log_model` calls and adds input examples and
+   model signatures automatically.
+
+3. **Use `infer_signature()` for model serving compatibility.** Required if we
+   ever deploy the model to a serving endpoint.
+
+4. **Wrap classifiers in a `Pipeline` with `StandardScaler`.** Every Databricks
+   reference notebook normalizes features before training. Our FastRP embeddings
+   and numeric features (income, credit score) have very different scales.
+
+5. **Hyperopt is deprecated — use Optuna if we need tuning later.** For 30 rows
+   this is overkill, but if the labeled dataset grows, Optuna + MlflowStorage
+   is the sanctioned path on DBR 17.x.
+
+6. **No industry-solutions shortcut exists.** We're building this ourselves.
+
+### Two Options Considered
+
+| Option | Approach | Verdict |
+|--------|----------|---------|
+| **A: Simple sklearn + MLflow autolog** | Train 3 classifiers in a loop, pick best by stratified CV F1, autolog everything | **Chosen.** Right-sized for 30 rows, matches Databricks patterns exactly. |
+| **B: Optuna + sklearn + MLflow 3.0** | Full hyperparameter search with model selection via `trial.suggest_categorical` | Deferred. Future-proof but overkill for current dataset size. |
+
 ## Decision
 
-Pending user approval. If approved, implement and bump to v0.4.0.
+**Approved: Option A — Direct scikit-learn with MLflow autolog.**
+
+Implementation plan: [docs/sklearn.md](docs/sklearn.md)

@@ -33,6 +33,7 @@ class BaselineConfig:
     catalog: str
     schema: str
     embedding_dim: int
+    test_size: float | None
 
     @property
     def feature_table(self) -> str:
@@ -48,10 +49,14 @@ class BaselineConfig:
         parser.add_argument("--embedding-dim", type=int, default=128)
         flags, _ = parser.parse_known_args()
 
+        test_size_str = os.getenv("TEST_SIZE")
+        test_size = float(test_size_str) if test_size_str else None
+
         return cls(
             catalog=os.getenv("CATALOG_NAME", "graph_feature_forge"),
             schema=os.getenv("SCHEMA_NAME", "enrichment"),
             embedding_dim=flags.embedding_dim,
+            test_size=test_size,
         )
 
 
@@ -75,10 +80,10 @@ def _authenticate() -> Any:
 
 
 def _train_tabular_baseline(cfg: BaselineConfig) -> None:
-    """Train AutoML on tabular features only (exclude all graph columns)."""
+    """Train sklearn on tabular features only (exclude all graph columns)."""
     from pyspark.sql import SparkSession
 
-    from graph_feature_forge.ml.automl_training import train_automl_classifier
+    from graph_feature_forge.ml.automl_training import train_sklearn_classifier
 
     spark = SparkSession.builder.getOrCreate()
     actual_cols = set(spark.table(cfg.feature_table).columns)
@@ -86,10 +91,11 @@ def _train_tabular_baseline(cfg: BaselineConfig) -> None:
     graph_feature_cols = [f"fastrp_{i}" for i in range(cfg.embedding_dim)] + ["community_id"]
     exclude_cols = [c for c in ["customer_id"] + graph_feature_cols if c in actual_cols]
 
-    train_automl_classifier(
+    train_sklearn_classifier(
         feature_table=cfg.feature_table,
         exclude_cols=exclude_cols,
         experiment_name="/Shared/graph-feature-forge/tabular_only_baseline",
+        test_size=cfg.test_size,
     )
 
 

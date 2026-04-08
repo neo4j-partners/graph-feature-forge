@@ -11,16 +11,18 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 usage() {
-    echo "Usage: $0 [load|seed|enrich|gds]"
+    echo "Usage: $0 [load|seed|enrich|gds|html]"
     echo ""
     echo "Phases:"
     echo "  load     Upload raw data + create Delta tables from CSVs"
     echo "  seed     Seed Neo4j from Delta tables + embeddings"
     echo "  enrich   Run enrichment pipeline"
     echo "  gds      Run GDS feature engineering (FastRP → Community → Baseline)"
+    echo "  html     Generate HTML documents + embeddings via LLM endpoint"
     echo ""
     echo "With no argument, load + seed + enrich run in order."
     echo "The gds phase runs separately and requires a ML Runtime cluster."
+    echo "The html phase generates documents on-cluster using LLM/embedding endpoints."
     exit 1
 }
 
@@ -97,6 +99,20 @@ phase_gds() {
     echo "============================================================"
 }
 
+phase_html() {
+    echo "=== Build and upload wheel + entry point ==="
+    uv run python -m cli upload --wheel
+    uv run python -m cli upload generate_html.py
+
+    echo ""
+    echo "=== Generate HTML documents + embeddings ==="
+    uv run python -m cli submit generate_html.py
+
+    echo ""
+    echo "=== Logs ==="
+    uv run python -m cli logs
+}
+
 PHASE="${1:-all}"
 
 case "$PHASE" in
@@ -104,6 +120,7 @@ case "$PHASE" in
     seed)    phase_seed ;;
     enrich)  phase_enrich ;;
     gds)     phase_gds ;;
+    html)    phase_html ;;
     all)
         phase_load
         echo ""

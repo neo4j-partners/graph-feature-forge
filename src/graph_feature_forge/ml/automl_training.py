@@ -106,7 +106,232 @@ def reapply_holdout(
 
 
 # ---------------------------------------------------------------------------
-# AutoML training
+# scikit-learn training (replaces AutoML — see docs/sklearn.md)
+# ---------------------------------------------------------------------------
+
+
+class _SklearnTrial:
+    """Minimal result object matching the AutoML summary.best_trial interface."""
+
+    def __init__(self, model_path: str, evaluation_metric_score: float, model_description: str):
+        self.model_path = model_path
+        self.evaluation_metric_score = evaluation_metric_score
+        self.model_description = model_description
+
+
+class _SklearnSummary:
+    """Minimal result object matching the AutoML summary interface."""
+
+    def __init__(self, best_trial: _SklearnTrial, trials: list[_SklearnTrial]):
+        self.best_trial = best_trial
+        self.trials = trials
+
+
+def train_sklearn_classifier(
+    feature_table: str,
+    target_col: str = "risk_category",
+    exclude_cols: list[str] | None = None,
+    experiment_name: str | None = None,
+    test_size: float | None = None,
+    pca_components: int | None = None,
+) -> _SklearnSummary:
+    """Train scikit-learn classifiers and return the best model.
+
+    Drop-in replacement for ``train_automl_classifier()``.  Returns a
+    summary object with the same ``.best_trial.model_path`` and
+    ``.best_trial.evaluation_metric_score`` attributes so callers don't
+    need to change.
+
+    Parameters
+    ----------
+    test_size : float | None
+        If set (e.g. 0.2), perform an internal stratified train/test split
+        and log test metrics to MLflow.  If None, train on all labeled rows
+        (caller manages holdout externally).
+    pca_components : int | None
+        If set (e.g. 5), apply PCA to ``fastrp_*`` columns to reduce
+        dimensionality.  Tabular features pass through untouched.
+    """
+    import mlflow
+    import mlflow.sklearn
+    from pyspark.sql import SparkSession
+    from sklearn.compose import ColumnTransformer
+    from sklearn.decomposition import PCA
+    from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.metrics import classification_report, confusion_matrix
+    from sklearn.model_selection import StratifiedKFold, cross_val_score, train_test_split
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import StandardScaler
+
+    if exclude_cols is None:
+        exclude_cols = ["customer_id"]
+
+    # Read feature table into pandas, filter to labeled rows
+    spark = SparkSession.builder.getOrCreate()
+    pdf = spark.table(feature_table).toPandas()
+    pdf = pdf[pdf[target_col].notna() & (pdf[target_col] != "")]
+
+    feature_cols = [c for c in pdf.columns if c not in exclude_cols + [target_col]]
+    X = pdf[feature_cols].fillna(0).astype(float)
+    # Pass string labels directly — sklearn classifiers encode internally
+    # and predict() returns the original strings (e.g. "Aggressive", not 0).
+    # Using LabelEncoder would cause a mismatch at scoring time.
+    y = pdf[target_col].values
+    classes = sorted(set(y))
+
+    # Internal train/test split when test_size is set
+    X_train, X_test, y_train, y_test = X, None, y, None
+    if test_size is not None:
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=test_size, stratify=y, random_state=42,
+        )
+        print(f"  Train/test split: {len(y_train)} train, {len(y_test)} test (test_size={test_size})")
+
+    print(f"  Training data: {len(y_train)} rows, {len(feature_cols)} features, "
+          f"{len(classes)} classes ({classes})")
+
+    if experiment_name:
+        mlflow.set_experiment(experiment_name)
+
+    # Build preprocessing pipeline — PCA on fastrp_* columns if requested
+    fastrp_cols = [c for c in feature_cols if c.startswith("fastrp_")]
+    other_cols = [c for c in feature_cols if not c.startswith("fastrp_")]
+
+    if pca_components is not None and fastrp_cols:
+        n_components = min(pca_components, len(fastrp_cols))
+        preprocessor = ColumnTransformer([
+            ("fastrp_pca", Pipeline([
+                ("scaler", StandardScaler()),
+                ("pca", PCA(n_components=n_components)),
+            ]), fastrp_cols),
+            ("passthrough", StandardScaler(), other_cols),
+        ])
+        effective_features = n_components + len(other_cols)
+        print(f"  PCA: {len(fastrp_cols)} FastRP dims -> {n_components} components "
+              f"+ {len(other_cols)} tabular = {effective_features} features")
+    else:
+        preprocessor = StandardScaler()
+        effective_features = len(feature_cols)
+
+    # k=5 when enough samples, k=3 for small training sets
+    n_splits = 5 if len(y_train) >= 50 else min(3, len(y_train) // max(len(classes), 1))
+    cv = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
+    print(f"  Cross-validation: {n_splits}-fold stratified")
+
+    classifiers = {
+        "RandomForest": RandomForestClassifier(n_estimators=100, random_state=42),
+        "GradientBoosting": GradientBoostingClassifier(n_estimators=100, random_state=42),
+        "LogisticRegression": LogisticRegression(max_iter=1000, random_state=42),
+    }
+
+    trials: list[_SklearnTrial] = []
+    best_f1, best_name = -1.0, None
+
+    for name, clf in classifiers.items():
+        pipe = Pipeline([("preprocess", preprocessor), ("clf", clf)])
+
+        # Cross-validate for selection metric
+        scores = cross_val_score(pipe, X_train, y_train, cv=cv, scoring="f1_macro")
+        f1 = float(scores.mean())
+
+        # Fit on training set, log with autolog
+        mlflow.sklearn.autolog(log_input_examples=True, silent=True)
+        with mlflow.start_run(run_name=name) as run:
+            pipe.fit(X_train, y_train)
+            mlflow.log_metric("val_f1_score", f1)
+            mlflow.log_param("classifier", name)
+            mlflow.log_param("n_train_samples", len(y_train))
+            mlflow.log_param("n_features", len(feature_cols))
+            mlflow.log_param("n_effective_features", effective_features)
+            if pca_components is not None:
+                mlflow.log_param("pca_components", pca_components)
+            if test_size is not None:
+                mlflow.log_param("test_size", test_size)
+
+            # Per-class metrics on test set when available
+            report = None
+            if X_test is not None:
+                y_pred = pipe.predict(X_test)
+                report = classification_report(
+                    y_test, y_pred, target_names=classes, output_dict=True,
+                )
+                for cls_name in classes:
+                    mlflow.log_metric(f"test_f1_{cls_name}", report[cls_name]["f1-score"])
+                    mlflow.log_metric(f"test_precision_{cls_name}", report[cls_name]["precision"])
+                    mlflow.log_metric(f"test_recall_{cls_name}", report[cls_name]["recall"])
+                mlflow.log_metric("test_f1_macro", report["macro avg"]["f1-score"])
+                mlflow.log_metric("test_accuracy", report["accuracy"])
+
+                # Confusion matrix
+                try:
+                    import matplotlib
+                    matplotlib.use("Agg")
+                    import matplotlib.pyplot as plt
+                    from sklearn.metrics import ConfusionMatrixDisplay
+
+                    cm = confusion_matrix(y_test, y_pred, labels=classes)
+                    fig, ax = plt.subplots(figsize=(6, 5))
+                    ConfusionMatrixDisplay(cm, display_labels=classes).plot(ax=ax)
+                    ax.set_title(f"{name} — Confusion Matrix")
+                    mlflow.log_figure(fig, f"confusion_matrix_{name}.png")
+                    plt.close(fig)
+                except Exception as e:
+                    print(f"    (Could not log confusion matrix: {e})")
+
+            # Log PCA explained variance
+            if pca_components is not None and fastrp_cols:
+                try:
+                    pca_step = pipe.named_steps["preprocess"].transformers_[0][1].named_steps["pca"]
+                    ratios = pca_step.explained_variance_ratio_
+                    mlflow.log_param("pca_explained_variance_total", f"{sum(ratios):.4f}")
+                    for i, r in enumerate(ratios):
+                        mlflow.log_metric(f"pca_variance_pc{i}", r)
+                except Exception:
+                    pass
+
+            model_uri = f"runs:/{run.info.run_id}/model"
+            trial = _SklearnTrial(
+                model_path=model_uri,
+                evaluation_metric_score=f1,
+                model_description=name,
+            )
+            trials.append(trial)
+
+            if f1 > best_f1:
+                best_f1, best_name = f1, name
+
+        test_str = ""
+        if report is not None:
+            test_str = f", test_f1={report['macro avg']['f1-score']:.4f}"
+        print(f"    {name}: cv_F1={f1:.4f} (cv_std={scores.std():.4f}){test_str}")
+
+    # Refit best model on all available data when using internal test split
+    if test_size is not None:
+        print(f"  Refitting {best_name} on full dataset ({len(y)} rows) ...")
+        best_clf = classifiers[best_name]
+        best_pipe = Pipeline([("preprocess", preprocessor), ("clf", best_clf)])
+        mlflow.sklearn.autolog(log_input_examples=True, silent=True)
+        with mlflow.start_run(run_name=f"{best_name}_final") as run:
+            best_pipe.fit(X, y)
+            mlflow.log_metric("val_f1_score", best_f1)
+            mlflow.log_param("classifier", best_name)
+            mlflow.log_param("refit", "full_data")
+            mlflow.log_param("n_train_samples", len(y))
+            model_uri = f"runs:/{run.info.run_id}/model"
+            # Update the best trial to point to the refit model
+            best_trial_obj = next(t for t in trials if t.model_description == best_name)
+            best_trial_obj.model_path = model_uri
+
+    best_trial = next(t for t in trials if t.model_description == best_name)
+    print(f"  Best F1: {best_f1:.4f} ({best_name})")
+    print(f"  Trials: {len(trials)}")
+
+    return _SklearnSummary(best_trial=best_trial, trials=trials)
+
+
+# ---------------------------------------------------------------------------
+# AutoML training (deprecated — kept for reference, see NUCLEAR.md)
 # ---------------------------------------------------------------------------
 
 
@@ -230,8 +455,13 @@ def evaluate_predictions(
     spark: Any,
     predictions_df: Any,
     ground_truth_table: str,
+    run_id: str | None = None,
 ) -> float:
-    """Join predictions against ground truth and return accuracy."""
+    """Join predictions against ground truth and return accuracy.
+
+    If *run_id* is provided, logs the holdout accuracy as an MLflow metric
+    on that run for cross-experiment comparison.
+    """
     from pyspark.sql import functions as F
 
     ground_truth_df = spark.table(ground_truth_table)
@@ -250,6 +480,17 @@ def evaluate_predictions(
     accuracy = correct / total if total > 0 else 0
 
     print(f"  Accuracy on held-out: {correct}/{total} = {accuracy:.2%}")
+
+    if run_id is not None:
+        try:
+            import mlflow
+
+            client = mlflow.MlflowClient()
+            client.log_metric(run_id, "holdout_accuracy", accuracy)
+            print(f"  Logged holdout_accuracy={accuracy:.4f} to run {run_id}")
+        except Exception as e:
+            print(f"  (Could not log holdout_accuracy to MLflow: {e})")
+
     return accuracy
 
 
@@ -271,6 +512,7 @@ def run_knn_analysis(
         nodeProperties=["fastrp_embedding"],
         topK=5,
         randomSeed=42,
+        concurrency=1,
         sampleRate=1.0,
         deltaThreshold=0.001,
     )

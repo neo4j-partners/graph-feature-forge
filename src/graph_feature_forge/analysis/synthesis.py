@@ -50,7 +50,7 @@ Analyze customer investment interests vs their actual portfolio holdings.
 
 For each customer with profile documents:
 1. What investment interests have they expressed? (renewable energy, ESG,
-   technology, real estate, etc.)
+   technology, real estate, fintech, etc.)
 2. What stocks/sectors do they currently hold in their portfolios?
 3. Identify gaps where expressed interests don't match holdings.
 
@@ -61,10 +61,8 @@ Format your response as a detailed analysis for each customer including:
 - Identified gaps (interests not reflected in portfolio)
 - Specific quotes from their profile showing the interest
 
-Focus especially on:
-- James Anderson (C0001) and renewable energy interest
-- Maria Rodriguez (C0002) and ESG/sustainable investing interest
-- Robert Chen (C0003) and technology/aggressive growth interest"""
+Focus on customers whose profiles contain stated interests, financial goals,
+or sector preferences that diverge from their current portfolio composition."""
 
 RISK_ALIGNMENT_INSTRUCTIONS = """\
 Analyze risk profile alignment between customer profiles and portfolios.
@@ -132,7 +130,7 @@ This analysis will identify information in documents that should be captured
 as new nodes, relationships, or attributes in the Neo4j graph.
 
 PART 1: Customer Interest-Holding Gaps
-For each customer (James Anderson, Maria Rodriguez, Robert Chen):
+For each customer with a profile document:
 - What investment interests are expressed in their profiles?
 - What do they currently hold in their portfolios?
 - What's the gap between interests and holdings?
@@ -169,7 +167,7 @@ _RETRIEVAL_QUERIES: dict[str, str] = {
     "interest_holding_gaps": (
         "Customer investment interests and preferences. "
         "Renewable energy, ESG, sustainable investing, technology, "
-        "aggressive growth. James Anderson, Maria Rodriguez, Robert Chen."
+        "fintech, capital preservation, dividend income, growth."
     ),
     "risk_alignment": (
         "Customer risk tolerance and risk profile. "

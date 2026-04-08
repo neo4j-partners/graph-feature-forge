@@ -38,6 +38,8 @@ class GDSCommunityConfig:
     catalog: str
     schema: str
     embedding_dim: int
+    test_size: float | None
+    pca_components: int | None
 
     @property
     def feature_table(self) -> str:
@@ -70,6 +72,12 @@ class GDSCommunityConfig:
             print("  Set NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD in .env")
             sys.exit(1)
 
+        test_size_str = os.getenv("TEST_SIZE")
+        test_size = float(test_size_str) if test_size_str else None
+
+        pca_str = os.getenv("PCA_COMPONENTS")
+        pca_components = int(pca_str) if pca_str else None
+
         return cls(
             neo4j_uri=neo4j_uri,
             neo4j_username=neo4j_username,
@@ -78,6 +86,8 @@ class GDSCommunityConfig:
             catalog=os.getenv("CATALOG_NAME", "graph_feature_forge"),
             schema=os.getenv("SCHEMA_NAME", "enrichment"),
             embedding_dim=flags.embedding_dim,
+            test_size=test_size,
+            pca_components=pca_components,
         )
 
 
@@ -244,15 +254,20 @@ def main() -> None:
     print("\nStep 2/5: Exporting feature table (with community_id) ...")
     _export_features_with_community(spark, cfg)
 
-    print("\nStep 3/5: Re-applying holdout split ...")
-    _reapply_holdout(spark, cfg)
+    if cfg.test_size is not None:
+        print("\nStep 3/5: Skipping external holdout (using internal train/test split) ...")
+    else:
+        print("\nStep 3/5: Re-applying holdout split ...")
+        _reapply_holdout(spark, cfg)
 
-    print("\nStep 4/5: Retraining AutoML with combined features ...")
-    from graph_feature_forge.ml.automl_training import train_automl_classifier
+    print("\nStep 4/5: Retraining with combined features ...")
+    from graph_feature_forge.ml.automl_training import train_sklearn_classifier
 
-    summary = train_automl_classifier(
+    summary = train_sklearn_classifier(
         feature_table=cfg.feature_table,
         experiment_name="/Shared/graph-feature-forge/fastrp_louvain_risk_classification",
+        test_size=cfg.test_size,
+        pca_components=cfg.pca_components,
     )
     _train_and_promote(cfg, summary)
 

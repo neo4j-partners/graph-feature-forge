@@ -195,6 +195,7 @@ The `cli/` module wraps `databricks-job-runner` — it reads `.env` and forwards
 ./run_pipeline.sh seed     # Phase 2: Seed Neo4j from Delta tables
 ./run_pipeline.sh enrich   # Phase 3: Run enrichment pipeline
 ./run_pipeline.sh gds      # Phase 4: GDS feature engineering (ML Runtime cluster)
+./run_pipeline.sh html     # Generate HTML documents + embeddings via LLM endpoint
 ```
 
 Each phase builds the wheel, uploads the entry point, and submits a job. The enrichment entry points run on serverless compute. The GDS entry points require a Databricks Runtime 17.x LTS ML cluster with the Neo4j Spark Connector.
@@ -204,6 +205,7 @@ Each phase builds the wheel, uploads the entry point, and submits a job. The enr
 | `load_data.py` | 1 | Create 14 Delta tables from CSV files on the UC Volume |
 | `seed_neo4j.py` | 2 | Seed Neo4j nodes, relationships, document graph, and vector index |
 | `run_graph_feature_forge.py` | 3 | Full enrichment pipeline: extract → synthesize → analyze → dedup → write |
+| `generate_html.py` | html | Generate HTML docs + embeddings via LLM/embedding endpoints on-cluster |
 | `gds_fastrp_features.py` | 4a | FastRP → Delta export → holdout → AutoML → register Champion → score → Neo4j writeback |
 | `gds_community_features.py` | 4b | FastRP + Louvain → retrain AutoML → promote Champion if F1 improves → kNN analysis |
 | `gds_baseline_comparison.py` | 4c | Tabular-only AutoML → three-way MLflow comparison → feature importance |
@@ -231,8 +233,10 @@ Copy `.env.example` to `.env`. Key variables:
 graph-feature-forge/
 ├── data/
 │   ├── csv/                   # 7 CSV files (customers, banks, accounts, etc.)
-│   ├── html/                  # 14 HTML documents (profiles, analyses, guides)
-│   └── embeddings/            # Pre-computed 1024-dim document chunk embeddings
+│   ├── html/                  # HTML documents (profiles, analyses, guides)
+│   ├── embeddings/            # Pre-computed 1024-dim document chunk embeddings
+│   ├── csv_generator/         # Part 1: Synthetic CSV data generator (Faker + Pydantic)
+│   └── html_generator/        # Part 2: LLM-generated HTML + embedding generator
 ├── src/graph_feature_forge/
 │   ├── config.py              # Config dataclass from env vars
 │   ├── graph_schema.py        # Shared node/relationship metadata registry
@@ -262,6 +266,7 @@ graph-feature-forge/
 │   ├── load_data.py                 # Create Delta tables from raw CSVs
 │   ├── seed_neo4j.py                # Seed Neo4j from Delta tables
 │   ├── run_graph_feature_forge.py   # Full enrichment pipeline
+│   ├── generate_html.py             # Generate HTML docs + embeddings via LLM
 │   ├── gds_fastrp_features.py       # FastRP → AutoML → Neo4j writeback
 │   ├── gds_community_features.py    # + Louvain community detection
 │   └── gds_baseline_comparison.py   # Tabular-only baseline comparison
