@@ -2,11 +2,15 @@
 
 A graph feature engineering pipeline that combines LLM-driven graph enrichment with Neo4j GDS algorithms to produce ML-ready feature tables on Databricks. It uses direct LLM calls to Databricks Model Serving endpoints for graph enrichment via foundation models.
 
-The enrichment loop analyzes structured customer portfolio data (14 Delta tables) and unstructured HTML documents using foundation model endpoints and four concurrent DSPy analyzers to discover new nodes, relationships, attributes, and investment themes. Proposals are deduplicated against a Delta-based enrichment log and dual-written to Neo4j, compounding the graph's knowledge with each run.
+### Enrichment Pipeline
 
-The enrichment loop can only analyze customers that have profile documents, and in this dataset only 3 of 103 customers do. The feature engineering loop closes that gap by extracting structural signal from the full graph topology, which connects all customers regardless of document coverage. FastRP encodes each customer's pattern of holdings, accounts, and connected companies into a 128-dimensional vector, so customers with similar portfolios get similar embeddings. AutoML then learns which structural patterns correspond to which risk profiles and predicts them for the undocumented customers.
+The enrichment pipeline analyzes structured customer portfolio data (14 Delta tables) and unstructured HTML documents using foundation model endpoints and four concurrent DSPy analyzers to discover new nodes, relationships, attributes, and investment themes. Proposals are deduplicated against a Delta-based enrichment log and dual-written to Neo4j, compounding the graph's knowledge with each run.
 
-The feature engineering loop:
+### Feature Engineering Stage
+
+The enrichment pipeline can only analyze customers that have profile documents, and in this dataset only 3 of 103 customers do. The feature engineering stage closes that gap by extracting structural signal from the full graph topology, which connects all customers regardless of document coverage. FastRP encodes each customer's pattern of holdings, accounts, and connected companies into a 128-dimensional vector, so customers with similar portfolios get similar embeddings. AutoML then learns which structural patterns correspond to which risk profiles and predicts them for the undocumented customers.
+
+The feature engineering stage:
 
 - Projects the enriched graph in Neo4j GDS and computes FastRP embeddings and Louvain community detection
 - Exports graph features to Delta tables alongside tabular features
@@ -155,7 +159,7 @@ The enrichment pipeline runs as a sequence of Databricks jobs. Each phase builds
 
 ### GDS Feature Engineering Notebooks
 
-Three standalone Databricks notebooks demonstrate the full ML lifecycle. They run independently of the enrichment pipeline on Databricks Runtime 17.x LTS ML.
+These notebooks provide an interactive version of the automated feature engineering stage (phase 7) with additional model comparison and exploration. Three standalone Databricks notebooks demonstrate the full ML lifecycle. They run independently of the enrichment pipeline on Databricks Runtime 17.x LTS ML.
 
 | Notebook | What it does | Depends on |
 |----------|-------------|------------|
