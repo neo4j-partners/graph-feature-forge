@@ -2,7 +2,7 @@
 # MAGIC %md
 # MAGIC # GDS FastRP Feature Engineering
 # MAGIC
-# MAGIC Proves the full lifecycle: project the semantic-auth portfolio graph in GDS,
+# MAGIC Proves the full lifecycle: project the graph-feature-forge portfolio graph in GDS,
 # MAGIC compute FastRP embeddings, export to a Delta feature table, train a classifier
 # MAGIC with AutoML, score unlabeled customers, and write predictions back to Neo4j.
 # MAGIC
@@ -25,14 +25,14 @@ dbutils.library.restartPython()
 
 import os
 
-SECRET_SCOPE = os.environ.get("DATABRICKS_SECRET_SCOPE", "semantic-auth")
+SECRET_SCOPE = os.environ.get("DATABRICKS_SECRET_SCOPE", "graph-feature-forge")
 
 NEO4J_URI = dbutils.secrets.get(scope=SECRET_SCOPE, key="NEO4J_URI")
 NEO4J_USERNAME = dbutils.secrets.get(scope=SECRET_SCOPE, key="NEO4J_USERNAME")
 NEO4J_PASSWORD = dbutils.secrets.get(scope=SECRET_SCOPE, key="NEO4J_PASSWORD")
 NEO4J_DATABASE = os.environ.get("NEO4J_DATABASE", "neo4j")
 
-CATALOG = os.environ.get("CATALOG_NAME", "semantic_auth")
+CATALOG = os.environ.get("CATALOG_NAME", "graph_feature_forge")
 SCHEMA = os.environ.get("SCHEMA_NAME", "enrichment")
 FEATURE_TABLE = f"`{CATALOG}`.`{SCHEMA}`.customer_graph_features"
 ENRICHMENT_LOG_TABLE = f"`{CATALOG}`.`{SCHEMA}`.enrichment_log"
@@ -270,7 +270,7 @@ summary = automl.classify(
     primary_metric="f1",
     exclude_cols=["customer_id"],
     timeout_minutes=30,
-    experiment_name="/Shared/semantic-auth/fastrp_risk_classification",
+    experiment_name="/Shared/graph-feature-forge/fastrp_risk_classification",
 )
 
 # COMMAND ----------
@@ -302,7 +302,7 @@ import mlflow
 
 mlflow.set_registry_uri("databricks-uc")
 
-model_name = f"{CATALOG}.{SCHEMA}.semantic_auth_risk_classifier"
+model_name = f"{CATALOG}.{SCHEMA}.graph_feature_forge_risk_classifier"
 model_uri = summary.best_trial.model_path
 
 registered_model = mlflow.register_model(model_uri, model_name)
@@ -411,13 +411,13 @@ display(verify)
 # MAGIC %md
 # MAGIC ## Run the Enrichment Pipeline
 # MAGIC
-# MAGIC Run the existing semantic-auth enrichment pipeline against the graph that now
+# MAGIC Run the existing graph-feature-forge enrichment pipeline against the graph that now
 # MAGIC has predicted risk profiles on every customer. Compare enrichment results
 # MAGIC against a baseline run without the predictions.
 # MAGIC
-# MAGIC This step is run separately via the semantic-auth pipeline orchestrator:
+# MAGIC This step is run separately via the graph-feature-forge pipeline orchestrator:
 # MAGIC ```
-# MAGIC python agent_modules/run_semantic_auth.py --execute
+# MAGIC python agent_modules/run_graph_feature_forge.py --execute
 # MAGIC ```
 # MAGIC
 # MAGIC The comparison answers whether the LLM synthesis step produces more or

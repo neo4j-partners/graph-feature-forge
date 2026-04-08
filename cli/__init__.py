@@ -1,4 +1,4 @@
-"""CLI wrapper — wires Runner to the semantic-auth project layout."""
+"""CLI wrapper — wires Runner to the graph-feature-forge project layout."""
 
 from databricks_job_runner import Runner
 
@@ -7,7 +7,7 @@ from databricks_job_runner import Runner
 SECRET_KEYS = ["NEO4J_URI", "NEO4J_USERNAME", "NEO4J_PASSWORD"]
 
 runner = Runner(
-    run_name_prefix="semantic_auth",
-    wheel_package="semantic_auth",
+    run_name_prefix="graph_feature_forge",
+    wheel_package="graph_feature_forge",
     secret_keys=SECRET_KEYS,
 )

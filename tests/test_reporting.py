@@ -1,12 +1,12 @@
 """Tests for reporting output functions."""
 
-from semantic_auth.schemas import (
+from graph_feature_forge.schemas import (
     ConfidenceLevel,
     FilteredProposals,
     InstanceProposal,
     NodeReference,
 )
-from semantic_auth.reporting import print_filtered_proposals, print_instance_proposal
+from graph_feature_forge.reporting import print_filtered_proposals, print_instance_proposal
 
 
 def _make_proposal(confidence: ConfidenceLevel = ConfidenceLevel.HIGH) -> InstanceProposal:

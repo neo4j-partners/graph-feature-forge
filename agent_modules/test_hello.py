@@ -7,7 +7,7 @@ import sys
 
 
 def main() -> None:
-    print("=== semantic_auth / test_hello ===")
+    print("=== graph_feature_forge / test_hello ===")
     print(f"python:   {sys.version}")
     print(f"cwd:      {os.getcwd()}")
     print(f"argv:     {sys.argv!r}")

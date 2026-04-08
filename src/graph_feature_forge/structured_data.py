@@ -24,7 +24,7 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from semantic_auth.graph_schema import NODE_TABLE_NAMES, RELATIONSHIP_TABLE_NAMES
+from graph_feature_forge.graph_schema import NODE_TABLE_NAMES, RELATIONSHIP_TABLE_NAMES
 
 QueryResult = list[dict[str, Any]]
 SQLExecutor = Callable[[str], QueryResult]

@@ -15,8 +15,8 @@ import json
 from datetime import datetime, timezone
 from typing import Any
 
-from semantic_auth.schemas import InstanceProposal
-from semantic_auth.structured_data import SQLExecutor
+from graph_feature_forge.schemas import InstanceProposal
+from graph_feature_forge.structured_data import SQLExecutor
 
 
 class EnrichmentStore:

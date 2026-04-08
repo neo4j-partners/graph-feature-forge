@@ -1,6 +1,6 @@
 """Tests for config Neo4j fields."""
 
-from semantic_auth.config import Config
+from graph_feature_forge.config import Config
 
 
 class TestConfigNeo4j:

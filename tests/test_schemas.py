@@ -1,6 +1,6 @@
 """Tests for schemas: InstanceProposal, FilteredProposals, NodeReference."""
 
-from semantic_auth.schemas import (
+from graph_feature_forge.schemas import (
     ConfidenceLevel,
     FilteredProposals,
     InstanceProposal,

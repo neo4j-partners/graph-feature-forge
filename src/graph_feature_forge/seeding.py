@@ -20,8 +20,8 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from semantic_auth.graph_schema import NODE_TABLES, RELATIONSHIP_TABLES
-from semantic_auth.structured_data import SQLExecutor
+from graph_feature_forge.graph_schema import NODE_TABLES, RELATIONSHIP_TABLES
+from graph_feature_forge.structured_data import SQLExecutor
 
 #: Neo4j internal columns to drop when reading from Delta tables
 _INTERNAL_COLS = {"<id>", "<labels>", "<rel.id>", "<rel.type>",

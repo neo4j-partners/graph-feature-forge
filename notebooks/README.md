@@ -1,6 +1,6 @@
 # GDS Feature Engineering Notebooks
 
-Standalone Databricks notebooks that compute graph features from the semantic-auth portfolio graph and train classifiers with AutoML. These notebooks run independently of the enrichment pipeline and are designed to be executed in sequence on Databricks Runtime 17.x LTS ML.
+Standalone Databricks notebooks that compute graph features from the graph-feature-forge portfolio graph and train classifiers with AutoML. These notebooks run independently of the enrichment pipeline and are designed to be executed in sequence on Databricks Runtime 17.x LTS ML.
 
 
 ## Notebooks
@@ -24,6 +24,6 @@ Each notebook writes to a separate MLflow experiment for side-by-side comparison
 
 | Experiment | Features used |
 |------------|--------------|
-| `/Shared/semantic-auth/fastrp_risk_classification` | 128 FastRP dimensions + tabular |
-| `/Shared/semantic-auth/fastrp_louvain_risk_classification` | 128 FastRP dimensions + community_id + tabular |
-| `/Shared/semantic-auth/tabular_only_baseline` | Tabular only (annual_income, credit_score) |
+| `/Shared/graph-feature-forge/fastrp_risk_classification` | 128 FastRP dimensions + tabular |
+| `/Shared/graph-feature-forge/fastrp_louvain_risk_classification` | 128 FastRP dimensions + community_id + tabular |
+| `/Shared/graph-feature-forge/tabular_only_baseline` | Tabular only (annual_income, credit_score) |

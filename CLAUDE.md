@@ -24,7 +24,7 @@ ask the user for default profile. Then use `manage_workspace(action="switch", pr
 
 ## What This Project Does
 
-semantic-auth is a graph enrichment pipeline that replaces Databricks AI/BI services (Genie Space, Knowledge Agent, Multi-Agent Supervisor) with direct LLM calls to foundation model endpoints. It analyzes structured customer portfolio data (Delta tables) and unstructured HTML documents to suggest new nodes, relationships, attributes, and investment themes for a Neo4j knowledge graph.
+graph-feature-forge is a graph enrichment pipeline that replaces Databricks AI/BI services (Genie Space, Knowledge Agent, Multi-Agent Supervisor) with direct LLM calls to foundation model endpoints. It analyzes structured customer portfolio data (Delta tables) and unstructured HTML documents to suggest new nodes, relationships, attributes, and investment themes for a Neo4j knowledge graph.
 
 ## Build & Development Commands
 
@@ -37,13 +37,13 @@ uv run pytest                         # Run tests
 uv run ruff check .                   # Lint
 uv run ruff format .                  # Format
 uv run python -m cli upload --wheel   # Build wheel and upload to Databricks volume
-uv run python -m cli submit run_semantic_auth.py  # Submit pipeline to Databricks serverless
+uv run python -m cli submit run_graph_feature_forge.py  # Submit pipeline to Databricks serverless
 uv run python -m cli logs             # View logs from most recent run
 uv run python -m cli validate         # Verify uploaded files in remote workspace
 uv run python -m cli clean            # Delete remote workspace and job runs
 ```
 
-The `cli` module wraps `databricks-job-runner` — it reads `.env` and forwards values as CLI flags to the pipeline entry point (`agent_modules/run_semantic_auth.py`).
+The `cli` module wraps `databricks-job-runner` — it reads `.env` and forwards values as CLI flags to the pipeline entry point (`agent_modules/run_graph_feature_forge.py`).
 
 ## Architecture
 

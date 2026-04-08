@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import dspy
 
-from semantic_auth.schemas import (
+from graph_feature_forge.schemas import (
     ImpliedRelationshipsAnalysis,
     InstanceResolutionResult,
     InvestmentThemesAnalysis,

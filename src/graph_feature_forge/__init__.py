@@ -1,4 +1,4 @@
-"""semantic-auth: Graph enrichment without Genie, Knowledge Agents, or Supervisor Agent."""
+"""graph-feature-forge: Graph enrichment without Genie, Knowledge Agents, or Supervisor Agent."""
 
 from __future__ import annotations
 

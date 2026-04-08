@@ -1,7 +1,7 @@
 """Tests for loading module — verifies SQL generation."""
 
-from semantic_auth.graph_schema import NODE_CSV_FILES, RELATIONSHIP_TABLES
-from semantic_auth.loading import (
+from graph_feature_forge.graph_schema import NODE_CSV_FILES, RELATIONSHIP_TABLES
+from graph_feature_forge.loading import (
     RELATIONSHIP_DEFS,
     _NODE_SQL,
     _node_table_sql,

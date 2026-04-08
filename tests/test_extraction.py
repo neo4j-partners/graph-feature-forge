@@ -1,6 +1,6 @@
 """Tests for extraction helper functions."""
 
-from semantic_auth.extraction import _spark_neo4j_options
+from graph_feature_forge.extraction import _spark_neo4j_options
 
 
 class TestSparkNeo4jOptions:

@@ -1,4 +1,4 @@
-"""GDS feature engineering for the semantic-auth enrichment pipeline.
+"""GDS feature engineering for the graph-feature-forge enrichment pipeline.
 
 Connects to a Neo4j Aura instance with the GDS plugin enabled, projects
 the portfolio graph, computes FastRP embeddings and Louvain community IDs,
@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from semantic_auth.extraction import _spark_neo4j_options
+from graph_feature_forge.extraction import _spark_neo4j_options
 
 
 # ---------------------------------------------------------------------------

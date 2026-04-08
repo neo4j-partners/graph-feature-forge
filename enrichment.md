@@ -2,7 +2,7 @@
 
 A graph database knows exactly what a customer holds but not what a customer wants. The holdings live in structured relationships that Cypher queries traverse in milliseconds. The intent lives in profile documents stored in Unity Catalog Volumes that the graph cannot see. Bridging that gap requires an architecture that reads unstructured documents, extracts intent, and writes new relationships back into the graph, then uses those relationships to find deeper patterns on the next pass.
 
-The semantic-auth pipeline does this today, but it treats each run as a clean slate. Every cycle overwrites all fourteen Delta tables with a full extraction from Neo4j. The Neo4j Spark Connector infers column types differently from the original CSV casts, enrichment adds relationship properties the base schema never anticipated, and the pipeline fails with schema mismatches before the agents ever run. The architecture needs two things it currently lacks: a shared schema that both the lakehouse and graph agree on, and an incremental cycle that builds on prior enrichment rather than discarding it.
+The graph-feature-forge pipeline does this today, but it treats each run as a clean slate. Every cycle overwrites all fourteen Delta tables with a full extraction from Neo4j. The Neo4j Spark Connector infers column types differently from the original CSV casts, enrichment adds relationship properties the base schema never anticipated, and the pipeline fails with schema mismatches before the agents ever run. The architecture needs two things it currently lacks: a shared schema that both the lakehouse and graph agree on, and an incremental cycle that builds on prior enrichment rather than discarding it.
 
 ## The Enrichment Cycle
 
@@ -110,7 +110,7 @@ The `EnrichmentStore` class provides `ensure_table` (idempotent DDL), `write_pro
 
 ## Pipeline Flow
 
-The orchestrator (`run_semantic_auth.py`) changes from a linear extract-then-analyze pipeline to an incremental enrichment cycle.
+The orchestrator (`run_graph_feature_forge.py`) changes from a linear extract-then-analyze pipeline to an incremental enrichment cycle.
 
 ```
  1. Authenticate to Databricks
@@ -134,14 +134,14 @@ Steps 6, 7, and 10 are new. Step 3 replaces the unconditional full extraction. T
 
 | File | Action | Change |
 |------|--------|--------|
-| `src/semantic_auth/graph_schema.py` | New | Shared schema registry: NodeSchema, RelationshipSchema, base definitions, utility functions |
-| `src/semantic_auth/enrichment_store.py` | New | EnrichmentStore: Delta table for tracking proposals across runs |
-| `src/semantic_auth/loading.py` | Modify | Generate SQL from graph_schema instead of hardcoded strings |
-| `src/semantic_auth/seeding.py` | Modify | Import node/relationship mappings from graph_schema |
-| `src/semantic_auth/structured_data.py` | Modify | Import table lists from graph_schema; add enrichment context method |
-| `src/semantic_auth/extraction.py` | Modify | Schema-driven casting, overwriteSchema, incremental filtering, skip-if-exists |
-| `src/semantic_auth/writeback.py` | Modify | Dual-write to Neo4j and enrichment_log |
-| `agent_modules/run_semantic_auth.py` | Modify | Incremental pipeline flow with dedup and enrichment context |
+| `src/graph_feature_forge/graph_schema.py` | New | Shared schema registry: NodeSchema, RelationshipSchema, base definitions, utility functions |
+| `src/graph_feature_forge/enrichment_store.py` | New | EnrichmentStore: Delta table for tracking proposals across runs |
+| `src/graph_feature_forge/loading.py` | Modify | Generate SQL from graph_schema instead of hardcoded strings |
+| `src/graph_feature_forge/seeding.py` | Modify | Import node/relationship mappings from graph_schema |
+| `src/graph_feature_forge/structured_data.py` | Modify | Import table lists from graph_schema; add enrichment context method |
+| `src/graph_feature_forge/extraction.py` | Modify | Schema-driven casting, overwriteSchema, incremental filtering, skip-if-exists |
+| `src/graph_feature_forge/writeback.py` | Modify | Dual-write to Neo4j and enrichment_log |
+| `agent_modules/run_graph_feature_forge.py` | Modify | Incremental pipeline flow with dedup and enrichment context |
 
 ## Tradeoffs
 

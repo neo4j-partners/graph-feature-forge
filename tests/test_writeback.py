@@ -1,7 +1,7 @@
 """Tests for Cypher generation and write-back."""
 
-from semantic_auth.schemas import ConfidenceLevel, InstanceProposal, NodeReference
-from semantic_auth.writeback import (
+from graph_feature_forge.schemas import ConfidenceLevel, InstanceProposal, NodeReference
+from graph_feature_forge.writeback import (
     PROVENANCE_PROPERTIES,
     _cypher_literal,
     generate_merge_cypher,

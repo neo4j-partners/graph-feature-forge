@@ -20,7 +20,7 @@
 
 import os
 
-CATALOG = os.environ.get("CATALOG_NAME", "semantic_auth")
+CATALOG = os.environ.get("CATALOG_NAME", "graph_feature_forge")
 SCHEMA = os.environ.get("SCHEMA_NAME", "enrichment")
 FEATURE_TABLE = f"`{CATALOG}`.`{SCHEMA}`.customer_graph_features"
 
@@ -48,7 +48,7 @@ summary = automl.classify(
     primary_metric="f1",
     exclude_cols=exclude_cols,
     timeout_minutes=30,
-    experiment_name="/Shared/semantic-auth/tabular_only_baseline",
+    experiment_name="/Shared/graph-feature-forge/tabular_only_baseline",
 )
 
 # COMMAND ----------
@@ -67,9 +67,9 @@ print(f"Number of trials: {len(summary.trials)}")
 import mlflow
 
 experiments = {
-    "FastRP only": "/Shared/semantic-auth/fastrp_risk_classification",
-    "FastRP + Louvain": "/Shared/semantic-auth/fastrp_louvain_risk_classification",
-    "Tabular only": "/Shared/semantic-auth/tabular_only_baseline",
+    "FastRP only": "/Shared/graph-feature-forge/fastrp_risk_classification",
+    "FastRP + Louvain": "/Shared/graph-feature-forge/fastrp_louvain_risk_classification",
+    "Tabular only": "/Shared/graph-feature-forge/tabular_only_baseline",
 }
 
 print("=" * 70)
@@ -125,7 +125,7 @@ print("=" * 70)
 # Feature importance comparison: which features matter in each model?
 # Load the FastRP + Louvain best run to check feature importance
 graph_exp = mlflow.get_experiment_by_name(
-    "/Shared/semantic-auth/fastrp_louvain_risk_classification"
+    "/Shared/graph-feature-forge/fastrp_louvain_risk_classification"
 )
 
 if graph_exp:

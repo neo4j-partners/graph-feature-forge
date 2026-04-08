@@ -20,13 +20,13 @@ import time
 
 
 def main() -> None:
-    from semantic_auth import inject_params
+    from graph_feature_forge import inject_params
 
     inject_params()
 
     source_catalog = os.getenv("SOURCE_CATALOG", "neo4j_augmentation_demo")
     source_schema = os.getenv("SOURCE_SCHEMA", "raw_data")
-    catalog_name = os.getenv("CATALOG_NAME", "semantic-auth")
+    catalog_name = os.getenv("CATALOG_NAME", "graph-feature-forge")
     schema_name = os.getenv("SCHEMA_NAME", "enrichment")
     volume_name = os.getenv("VOLUME_NAME", "source-data")
     neo4j_uri = os.getenv("NEO4J_URI")
@@ -46,7 +46,7 @@ def main() -> None:
     print(f"  Neo4j: {neo4j_uri}")
     print(f"  Database: {neo4j_database}")
 
-    from semantic_auth.structured_data import make_spark_executor
+    from graph_feature_forge.structured_data import make_spark_executor
 
     executor = make_spark_executor()
     print("  Data source: Spark executor")
@@ -57,7 +57,7 @@ def main() -> None:
     )
     print(f"  Embeddings: {embeddings_path}")
 
-    from semantic_auth.seeding import seed_neo4j
+    from graph_feature_forge.seeding import seed_neo4j
 
     print(f"\n  Source: {source_catalog}.{source_schema}")
 

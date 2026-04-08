@@ -2,7 +2,7 @@
 [![Unity Catalog](https://img.shields.io/badge/Unity_Catalog-Enabled-00A1C9?style=for-the-badge)](https://docs.databricks.com/en/data-governance/unity-catalog/index.html)
 [![Neo4j](https://img.shields.io/badge/Neo4j-Partner-4581C3?style=for-the-badge&logo=neo4j)](https://neo4j.com/partners/databricks/)
 
-# Semantic Auth: Graph Enrichment Pipeline
+# Graph Feature Forge: Graph Enrichment Pipeline
 
 A graph enrichment pipeline that replaces Databricks AI/BI services (Genie Space, Knowledge Agent, Multi-Agent Supervisor) with direct LLM calls to foundation model endpoints. It analyzes structured customer portfolio data (Delta tables) and unstructured HTML documents to suggest new nodes, relationships, attributes, and investment themes for a Neo4j knowledge graph.
 
@@ -49,7 +49,7 @@ uv run python -m cli upload --data
 uv run python -m cli upload --wheel
 uv run python -m cli upload load_data.py
 uv run python -m cli upload seed_neo4j.py
-uv run python -m cli upload run_semantic_auth.py
+uv run python -m cli upload run_graph_feature_forge.py
 
 # Create Delta tables from CSVs
 uv run python -m cli submit load_data.py
@@ -58,7 +58,7 @@ uv run python -m cli submit load_data.py
 uv run python -m cli submit seed_neo4j.py
 
 # Run enrichment pipeline
-uv run python -m cli submit run_semantic_auth.py
+uv run python -m cli submit run_graph_feature_forge.py
 
 # View logs from the run
 uv run python -m cli logs
@@ -94,7 +94,7 @@ Delta Lake Tables (14 tables)          UC Volume (HTML docs + embeddings)
         ▼  seed_neo4j.py                         │
 Neo4j Knowledge Graph ◄─────────────────────────┘
         │
-        ▼  run_semantic_auth.py
+        ▼  run_graph_feature_forge.py
 StructuredDataAccess (SQL)             DocumentRetrieval (cosine similarity)
         │                                        │
         └──────────────┬─────────────────────────┘
@@ -135,12 +135,12 @@ Copy `.env.example` to `.env`. Key variables:
 ## Project Structure
 
 ```
-semantic-auth/
+graph-feature-forge/
 ├── data/
 │   ├── csv/                   # 7 CSV files (customers, banks, accounts, etc.)
 │   ├── html/                  # 14 HTML documents (profiles, analyses, guides)
 │   └── embeddings/            # Pre-computed 1024-dim document chunk embeddings
-├── src/semantic_auth/
+├── src/graph_feature_forge/
 │   ├── config.py              # Config dataclass from env vars
 │   ├── loading.py             # Create Delta tables from CSVs on UC volume
 │   ├── seeding.py             # Seed Neo4j from Delta tables + embeddings
@@ -156,7 +156,7 @@ semantic-auth/
 ├── agent_modules/
 │   ├── load_data.py           # Create Delta tables from raw CSVs
 │   ├── seed_neo4j.py          # Seed Neo4j from Delta tables
-│   └── run_semantic_auth.py   # Full enrichment pipeline
+│   └── run_graph_feature_forge.py   # Full enrichment pipeline
 ├── tests/                     # Unit tests
 ├── cli/                       # Job submission CLI (wraps databricks-job-runner)
 ├── pyproject.toml

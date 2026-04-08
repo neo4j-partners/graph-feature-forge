@@ -28,14 +28,14 @@ dbutils.library.restartPython()
 
 import os
 
-SECRET_SCOPE = os.environ.get("DATABRICKS_SECRET_SCOPE", "semantic-auth")
+SECRET_SCOPE = os.environ.get("DATABRICKS_SECRET_SCOPE", "graph-feature-forge")
 
 NEO4J_URI = dbutils.secrets.get(scope=SECRET_SCOPE, key="NEO4J_URI")
 NEO4J_USERNAME = dbutils.secrets.get(scope=SECRET_SCOPE, key="NEO4J_USERNAME")
 NEO4J_PASSWORD = dbutils.secrets.get(scope=SECRET_SCOPE, key="NEO4J_PASSWORD")
 NEO4J_DATABASE = os.environ.get("NEO4J_DATABASE", "neo4j")
 
-CATALOG = os.environ.get("CATALOG_NAME", "semantic_auth")
+CATALOG = os.environ.get("CATALOG_NAME", "graph_feature_forge")
 SCHEMA = os.environ.get("SCHEMA_NAME", "enrichment")
 FEATURE_TABLE = f"`{CATALOG}`.`{SCHEMA}`.customer_graph_features"
 ENRICHMENT_LOG_TABLE = f"`{CATALOG}`.`{SCHEMA}`.enrichment_log"
@@ -222,7 +222,7 @@ summary = automl.classify(
     primary_metric="f1",
     exclude_cols=["customer_id"],
     timeout_minutes=30,
-    experiment_name="/Shared/semantic-auth/fastrp_louvain_risk_classification",
+    experiment_name="/Shared/graph-feature-forge/fastrp_louvain_risk_classification",
 )
 
 # COMMAND ----------
@@ -235,8 +235,8 @@ print(f"Number of trials: {len(summary.trials)}")
 
 # Check if community_id contributes to the model
 print(f"\nCompare in MLflow:")
-print(f"  FastRP only:      /Shared/semantic-auth/fastrp_risk_classification")
-print(f"  FastRP + Louvain: /Shared/semantic-auth/fastrp_louvain_risk_classification")
+print(f"  FastRP only:      /Shared/graph-feature-forge/fastrp_risk_classification")
+print(f"  FastRP + Louvain: /Shared/graph-feature-forge/fastrp_louvain_risk_classification")
 print(f"\nOpen the MLflow UI to compare best runs side by side.")
 
 # COMMAND ----------
@@ -246,7 +246,7 @@ import mlflow
 
 mlflow.set_registry_uri("databricks-uc")
 
-model_name = f"{CATALOG}.{SCHEMA}.semantic_auth_risk_classifier"
+model_name = f"{CATALOG}.{SCHEMA}.graph_feature_forge_risk_classifier"
 model_uri = summary.best_trial.model_path
 
 registered_model = mlflow.register_model(model_uri, model_name)

@@ -15,8 +15,8 @@ Each cycle:
 
 Usage:
     python -m cli upload --wheel
-    python -m cli upload run_semantic_auth.py
-    python -m cli submit run_semantic_auth.py
+    python -m cli upload run_graph_feature_forge.py
+    python -m cli submit run_graph_feature_forge.py
 """
 
 from __future__ import annotations
@@ -54,7 +54,7 @@ class PipelineConfig:
     @classmethod
     def from_env(cls) -> PipelineConfig:
         """Load config from environment variables and CLI flags."""
-        from semantic_auth import inject_params
+        from graph_feature_forge import inject_params
 
         inject_params()
 
@@ -118,7 +118,7 @@ def _authenticate() -> tuple[Any, str, str]:
 
 def _base_tables_exist(execute_sql: Any, cfg: PipelineConfig) -> bool:
     """Check whether the 14 base Delta tables already exist."""
-    from semantic_auth.graph_schema import NODE_TABLE_NAMES, RELATIONSHIP_TABLE_NAMES
+    from graph_feature_forge.graph_schema import NODE_TABLE_NAMES, RELATIONSHIP_TABLE_NAMES
 
     expected = set(NODE_TABLE_NAMES + RELATIONSHIP_TABLE_NAMES)
     try:
@@ -137,7 +137,7 @@ def _ensure_base_tables(execute_sql: Any, cfg: PipelineConfig) -> None:
         print("  Base tables already exist — skipping CSV load")
         return
 
-    from semantic_auth.loading import load_all
+    from graph_feature_forge.loading import load_all
 
     volume_path = os.getenv("DATABRICKS_VOLUME_PATH", "")
     if not volume_path:
@@ -152,8 +152,8 @@ def _ensure_base_tables(execute_sql: Any, cfg: PipelineConfig) -> None:
 
 def _extract_enrichment_data(cfg: PipelineConfig) -> None:
     """Extract enrichment-only data from Neo4j (skip base labels/types)."""
-    from semantic_auth.extraction import extract_graph
-    from semantic_auth.graph_schema import BASE_NODE_LABELS, BASE_RELATIONSHIP_TYPES
+    from graph_feature_forge.extraction import extract_graph
+    from graph_feature_forge.graph_schema import BASE_NODE_LABELS, BASE_RELATIONSHIP_TYPES
 
     try:
         from pyspark.sql import SparkSession
@@ -197,7 +197,7 @@ def _configure_dspy(
             category=UserWarning,
         )
 
-        experiment_path = os.getenv("DATABRICKS_WORKSPACE_DIR", "/Shared/semantic-auth")
+        experiment_path = os.getenv("DATABRICKS_WORKSPACE_DIR", "/Shared/graph-feature-forge")
         mlflow.set_experiment(experiment_path)
         mlflow.dspy.autolog()
         print(f"  MLflow DSPy tracing enabled (experiment: {experiment_path})")
@@ -243,7 +243,7 @@ def _run_synthesis(
     enrichment_context: str | None = None,
 ) -> str:
     """Synthesize gap analysis from structured data and retrieved documents."""
-    from semantic_auth.synthesis import fetch_gap_analysis, make_sdk_caller
+    from graph_feature_forge.synthesis import fetch_gap_analysis, make_sdk_caller
 
     print("\nStep 3/5: Running gap analysis synthesis ...")
     t0 = time.time()
@@ -260,8 +260,8 @@ def _run_synthesis(
 
 def _run_analyzers(gap_analysis: str) -> Any:
     """Run four concurrent DSPy analyzers for schema-level suggestions."""
-    from semantic_auth.analyzers import GraphAugmentationAnalyzer
-    from semantic_auth.reporting import print_response_summary
+    from graph_feature_forge.analyzers import GraphAugmentationAnalyzer
+    from graph_feature_forge.reporting import print_response_summary
 
     print("\nStep 4/5: Running DSPy analyzers (4 concurrent) ...")
     t0 = time.time()
@@ -287,9 +287,9 @@ def _resolve_proposals(response: Any, gap_analysis: str) -> Any | None:
     Returns a :class:`FilteredProposals` instance, or ``None`` if no
     instance proposals were generated.
     """
-    from semantic_auth.analyzers import InstanceResolver
-    from semantic_auth.reporting import print_filtered_proposals
-    from semantic_auth.schemas import FilteredProposals
+    from graph_feature_forge.analyzers import InstanceResolver
+    from graph_feature_forge.reporting import print_filtered_proposals
+    from graph_feature_forge.schemas import FilteredProposals
 
     print("\nStep 5/5: Resolving to instance proposals ...")
     t0 = time.time()
@@ -342,7 +342,7 @@ def _write_back(
     enrichment_store: Any = None,
 ) -> None:
     """Dual-write HIGH-confidence proposals to Neo4j + enrichment log."""
-    from semantic_auth.writeback import Neo4jWriter
+    from graph_feature_forge.writeback import Neo4jWriter
 
     dry_run = not cfg.execute
 
@@ -371,14 +371,14 @@ def main() -> None:
 
     run_id = uuid.uuid4().hex[:12]
     print("=" * 60)
-    print(f"Semantic Auth Pipeline  (run {run_id})")
+    print(f"Graph Feature Forge Pipeline  (run {run_id})")
     print("=" * 60)
 
     wc, host, token = _authenticate()
 
     # --- Step 1: Ensure base tables + enrichment log exist ---------------
-    from semantic_auth.enrichment_store import EnrichmentStore
-    from semantic_auth.structured_data import StructuredDataAccess, make_spark_executor
+    from graph_feature_forge.enrichment_store import EnrichmentStore
+    from graph_feature_forge.structured_data import StructuredDataAccess, make_spark_executor
 
     execute_sql = make_spark_executor()
 
@@ -414,7 +414,7 @@ def main() -> None:
 
     # Document retrieval (Neo4j vector index)
     import neo4j as neo4j_lib
-    from semantic_auth.retrieval import Neo4jRetrieval, make_sdk_embedder
+    from graph_feature_forge.retrieval import Neo4jRetrieval, make_sdk_embedder
 
     neo4j_driver = neo4j_lib.GraphDatabase.driver(
         cfg.neo4j_uri, auth=(cfg.neo4j_username, cfg.neo4j_password)

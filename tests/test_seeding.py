@@ -1,6 +1,6 @@
 """Tests for seeding module helpers."""
 
-from semantic_auth.seeding import (
+from graph_feature_forge.seeding import (
     NODE_TABLES,
     RELATIONSHIP_TABLES,
     _INTERNAL_COLS,

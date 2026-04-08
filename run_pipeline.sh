@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Run the full semantic-auth pipeline on Databricks.
+# Run the full graph-feature-forge pipeline on Databricks.
 #
 # Usage:
 #   ./run_pipeline.sh          # Run all steps (upload + load + seed + enrich)
@@ -49,11 +49,11 @@ phase_seed() {
 phase_enrich() {
     echo "=== Build and upload wheel + entry point ==="
     uv run python -m cli upload --wheel
-    uv run python -m cli upload run_semantic_auth.py
+    uv run python -m cli upload run_graph_feature_forge.py
 
     echo ""
     echo "=== Run enrichment pipeline ==="
-    uv run python -m cli submit run_semantic_auth.py --compute cluster
+    uv run python -m cli submit run_graph_feature_forge.py --compute cluster
 
     echo ""
     echo "=== Logs ==="

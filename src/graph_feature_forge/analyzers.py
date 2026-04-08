@@ -20,7 +20,7 @@ from typing import Any
 
 import dspy
 
-from semantic_auth.schemas import (
+from graph_feature_forge.schemas import (
     AugmentationAnalysis,
     AugmentationResponse,
     ImpliedRelationshipsAnalysis,
@@ -32,7 +32,7 @@ from semantic_auth.schemas import (
     SuggestedNode,
     SuggestedRelationship,
 )
-from semantic_auth.signatures import (
+from graph_feature_forge.signatures import (
     ImpliedRelationshipsSignature,
     InstanceResolutionSignature,
     InvestmentThemesSignature,

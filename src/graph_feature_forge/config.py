@@ -1,4 +1,4 @@
-"""Configuration for the semantic-auth pipeline.
+"""Configuration for the graph-feature-forge pipeline.
 
 Loads settings from environment variables with sensible defaults.
 On Databricks clusters, WorkspaceClient auto-discovers credentials.
@@ -20,8 +20,8 @@ class Config:
     source_catalog: str = "neo4j_augmentation_demo"
     source_schema: str = "raw_data"
 
-    # semantic-auth catalog (enrichment artifacts)
-    catalog: str = "semantic-auth"
+    # graph-feature-forge catalog (enrichment artifacts)
+    catalog: str = "graph-feature-forge"
     schema: str = "enrichment"
     volume: str = "source-data"
 

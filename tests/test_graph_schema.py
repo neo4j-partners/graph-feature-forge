@@ -1,6 +1,6 @@
 """Tests for shared graph schema metadata."""
 
-from semantic_auth.graph_schema import (
+from graph_feature_forge.graph_schema import (
     BASE_NODE_LABELS,
     BASE_RELATIONSHIP_TYPES,
     NODE_CSV_FILES,

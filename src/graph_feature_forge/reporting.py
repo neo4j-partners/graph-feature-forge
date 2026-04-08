@@ -6,8 +6,8 @@ and this module stays focused on presentation.
 
 from __future__ import annotations
 
-from semantic_auth.analyzers import AnalysisResult
-from semantic_auth.schemas import (
+from graph_feature_forge.analyzers import AnalysisResult
+from graph_feature_forge.schemas import (
     AugmentationResponse,
     ConfidenceLevel,
     FilteredProposals,
