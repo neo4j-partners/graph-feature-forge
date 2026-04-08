@@ -12,11 +12,11 @@ This project has Databricks Claude Code skills installed in `.claude/skills/`. S
 - **AI & Agents**: `databricks-ai-functions` (SQL AI functions, RAG), `databricks-agent-bricks` (Knowledge Assistants, Genie, Supervisor), `databricks-vector-search` (vector indexes, similarity search), `databricks-model-serving` (deploy models/agents)
 - **General**: `databricks-docs` (authoritative docs lookup when other skills don't cover it)
 
-To install additional skills: `/Users/ryanknight/projects/databricks/ai-dev-kit/databricks-skills/install_skills.sh <skill-name>`
+To install additional skills ask the user.
 
 ### Workspace Profile
 
-Default profile is `azure-rk-knight`. Use `manage_workspace(action="switch", profile="azure-rk-knight")` at session start. Check status with `manage_workspace(action="status")`. If token expired, re-auth via `manage_workspace(action="login", host="https://adb-1098933906466604.4.azuredatabricks.net/")`.
+ask the user for default profile. Then use `manage_workspace(action="switch", profile="[DEFAULT_PROFILE]")` at session start. Check status with `manage_workspace(action="status")`. If token expired ask user to re-authenticate.
 
 ## What This Project Does
 
