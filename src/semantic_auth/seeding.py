@@ -20,33 +20,8 @@ from __future__ import annotations
 import json
 from typing import Any
 
+from semantic_auth.graph_schema import NODE_TABLES, RELATIONSHIP_TABLES
 from semantic_auth.structured_data import SQLExecutor
-
-# ---------------------------------------------------------------------------
-# Schema definitions — mirrors the Lab 1 import
-# ---------------------------------------------------------------------------
-
-#: Node label -> (key_property, Delta table name)
-NODE_TABLES: dict[str, tuple[str, str]] = {
-    "Customer": ("customer_id", "customer"),
-    "Bank": ("bank_id", "bank"),
-    "Account": ("account_id", "account"),
-    "Company": ("company_id", "company"),
-    "Stock": ("stock_id", "stock"),
-    "Position": ("position_id", "position"),
-    "Transaction": ("transaction_id", "transaction"),
-}
-
-#: Relationship type -> (source_label, source_key, target_label, target_key, Delta table)
-RELATIONSHIP_TABLES: dict[str, tuple[str, str, str, str, str]] = {
-    "HAS_ACCOUNT": ("Customer", "customer_id", "Account", "account_id", "has_account"),
-    "AT_BANK": ("Account", "account_id", "Bank", "bank_id", "at_bank"),
-    "OF_COMPANY": ("Stock", "stock_id", "Company", "company_id", "of_company"),
-    "PERFORMS": ("Account", "account_id", "Transaction", "transaction_id", "performs"),
-    "BENEFITS_TO": ("Transaction", "transaction_id", "Account", "account_id", "benefits_to"),
-    "HAS_POSITION": ("Account", "account_id", "Position", "position_id", "has_position"),
-    "OF_SECURITY": ("Position", "position_id", "Stock", "stock_id", "of_security"),
-}
 
 #: Neo4j internal columns to drop when reading from Delta tables
 _INTERNAL_COLS = {"<id>", "<labels>", "<rel.id>", "<rel.type>",

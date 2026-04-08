@@ -24,15 +24,10 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
+from semantic_auth.graph_schema import NODE_TABLE_NAMES, RELATIONSHIP_TABLE_NAMES
+
 QueryResult = list[dict[str, Any]]
 SQLExecutor = Callable[[str], QueryResult]
-
-# All 14 tables from the Lab 4 export
-NODE_TABLES = ["customer", "bank", "account", "company", "stock", "position", "transaction"]
-RELATIONSHIP_TABLES = [
-    "has_account", "at_bank", "of_company", "performs",
-    "benefits_to", "has_position", "of_security",
-]
 
 
 # ---------------------------------------------------------------------------
@@ -135,7 +130,7 @@ class StructuredDataAccess:
         the Neo4j Spark Connector version used during the Lab 4 export.
         """
         schema_map: dict[str, list[str]] = {}
-        for table in NODE_TABLES + RELATIONSHIP_TABLES:
+        for table in NODE_TABLE_NAMES + RELATIONSHIP_TABLE_NAMES:
             try:
                 rows = self._sql(f"DESCRIBE TABLE {self._t(table)}")
                 schema_map[table] = [r["col_name"] for r in rows]

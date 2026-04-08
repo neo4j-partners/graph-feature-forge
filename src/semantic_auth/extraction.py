@@ -14,6 +14,7 @@ The output format matches the Lab 4 workshop export:
 
 from __future__ import annotations
 
+from collections.abc import Set
 from typing import Any
 
 
@@ -81,6 +82,7 @@ def extract_nodes(
     database: str,
     catalog: str,
     schema: str,
+    overwrite_schema: bool = False,
 ) -> int:
     """Extract all nodes with the given label to a Delta table.
 
@@ -96,7 +98,10 @@ def extract_nodes(
     )
 
     table_name = f"`{catalog}`.`{schema}`.`{label.lower()}`"
-    df.write.format("delta").mode("overwrite").saveAsTable(table_name)
+    writer = df.write.format("delta").mode("overwrite")
+    if overwrite_schema:
+        writer = writer.option("overwriteSchema", "true")
+    writer.saveAsTable(table_name)
 
     count = df.count()
     print(f"    {label} -> {table_name}: {count} rows")
@@ -114,6 +119,7 @@ def extract_relationships(
     database: str,
     catalog: str,
     schema: str,
+    overwrite_schema: bool = False,
 ) -> int:
     """Extract all relationships of the given type to a Delta table.
 
@@ -140,11 +146,21 @@ def extract_relationships(
     )
 
     table_name = f"`{catalog}`.`{schema}`.`{rel_type.lower()}`"
-    df.write.format("delta").mode("overwrite").saveAsTable(table_name)
+    writer = df.write.format("delta").mode("overwrite")
+    if overwrite_schema:
+        writer = writer.option("overwriteSchema", "true")
+    writer.saveAsTable(table_name)
 
     count = df.count()
     print(f"    {rel_type} -> {table_name}: {count} rows")
     return count
+
+
+# NOTE: enrichment.md proposes timestamp-based incremental extraction
+# (filter by enrichment_timestamp after the Spark Connector reads).
+# This is deferred: volumes are small (hundreds of rows per type),
+# and incrementality is handled at the enrichment_log level via
+# deduplication and prior-enrichment context in synthesis prompts.
 
 
 def extract_graph(
@@ -155,12 +171,22 @@ def extract_graph(
     database: str,
     catalog: str,
     schema: str,
+    *,
+    base_node_labels: Set[str] = frozenset(),
+    base_rel_types: Set[str] = frozenset(),
 ) -> dict[str, int]:
-    """Extract the full graph from Neo4j to Delta tables.
+    """Extract graph data from Neo4j to Delta tables.
 
     Dynamically discovers all node labels and relationship types,
-    then extracts each one.  Tables are overwritten so the Delta
-    tables always reflect the current graph state.
+    then extracts each one.  When *base_node_labels* or
+    *base_rel_types* are provided, those labels/types are skipped —
+    their Delta tables were created by ``loading.py`` with explicit
+    type CASTs and should not be overwritten by Spark Connector–
+    inferred types.
+
+    Enrichment labels/types (those **not** in the base sets) are
+    extracted with ``overwriteSchema=true`` so their Delta tables
+    can evolve across runs as new properties appear.
 
     Returns a dict mapping table names to row counts.
     """
@@ -171,30 +197,48 @@ def extract_graph(
     print(f"    Node labels: {labels}")
     print(f"    Relationship types: {rel_types}")
 
+    enrichment_labels = [lbl for lbl in labels if lbl not in base_node_labels]
+    enrichment_rels = [r for r in rel_types if r not in base_rel_types]
+
+    if base_node_labels or base_rel_types:
+        skipped_nodes = len(labels) - len(enrichment_labels)
+        skipped_rels = len(rel_types) - len(enrichment_rels)
+        print(
+            f"    Selective mode: skipping {skipped_nodes} base node labels, "
+            f"{skipped_rels} base relationship types"
+        )
+
     counts: dict[str, int] = {}
 
-    print("\n  Extracting nodes ...")
-    for label in labels:
-        try:
-            n = extract_nodes(
-                spark, label, uri, username, password, database, catalog, schema,
-            )
-            counts[label.lower()] = n
-        except Exception as exc:
-            print(f"    {label}: FAILED — {exc}")
+    if enrichment_labels:
+        print("\n  Extracting enrichment nodes ...")
+        for label in enrichment_labels:
+            try:
+                n = extract_nodes(
+                    spark, label, uri, username, password, database,
+                    catalog, schema, overwrite_schema=True,
+                )
+                counts[label.lower()] = n
+            except Exception as exc:
+                print(f"    {label}: FAILED — {exc}")
 
-    print("\n  Extracting relationships ...")
-    for rel_type in rel_types:
-        src_label, tgt_label = rel_endpoints.get(rel_type, ("", ""))
-        try:
-            n = extract_relationships(
-                spark, rel_type, src_label, tgt_label,
-                uri, username, password, database, catalog, schema,
-            )
-            counts[rel_type.lower()] = n
-        except Exception as exc:
-            print(f"    {rel_type}: FAILED — {exc}")
+    if enrichment_rels:
+        print("\n  Extracting enrichment relationships ...")
+        for rel_type in enrichment_rels:
+            src_label, tgt_label = rel_endpoints.get(rel_type, ("", ""))
+            try:
+                n = extract_relationships(
+                    spark, rel_type, src_label, tgt_label,
+                    uri, username, password, database,
+                    catalog, schema, overwrite_schema=True,
+                )
+                counts[rel_type.lower()] = n
+            except Exception as exc:
+                print(f"    {rel_type}: FAILED — {exc}")
 
     total = sum(counts.values())
-    print(f"\n  Extraction complete: {len(counts)} tables, {total} total rows")
+    if counts:
+        print(f"\n  Extraction complete: {len(counts)} tables, {total} total rows")
+    else:
+        print("\n  No enrichment data to extract")
     return counts

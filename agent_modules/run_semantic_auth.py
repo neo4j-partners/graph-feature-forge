@@ -1,15 +1,17 @@
-"""Full pipeline: extract -> synthesis -> analyzers -> resolve -> filter -> write-back.
+"""Incremental enrichment pipeline: extract -> synthesis -> analyze -> dedup -> dual-write.
 
-Implements the enrichment loop described in graph_enrichment_v3.md:
+Each cycle:
 
-1. Extract graph state from Neo4j to Delta tables (Spark Connector)
-2. Load structured data from Delta tables
-3. Retrieve relevant documents via embeddings
-4. Synthesize gap analysis via LLM
-5. Run four DSPy analyzers for schema-level suggestions
-6. Resolve schema-level suggestions into instance proposals
-7. Filter instance proposals by confidence
-8. Write HIGH-confidence proposals back to Neo4j
+1. Ensure base Delta tables exist (CSV load, idempotent)
+2. Ensure enrichment_log table exists
+3. Extract enrichment-only data from Neo4j (skip base labels/types)
+4. Load structured data + prior enrichment context
+5. Synthesize gap analysis via LLM
+6. Run four DSPy analyzers for schema-level suggestions
+7. Resolve schema-level suggestions into instance proposals
+8. Deduplicate against enrichment_log
+9. Filter instance proposals by confidence
+10. Dual-write HIGH proposals to Neo4j + enrichment_log
 
 Usage:
     python -m cli upload --wheel
@@ -72,8 +74,8 @@ class PipelineConfig:
             neo4j_username=os.getenv("NEO4J_USERNAME"),
             neo4j_password=os.getenv("NEO4J_PASSWORD"),
             neo4j_database=os.getenv("NEO4J_DATABASE", "neo4j"),
-            enable_tracing=flags.enable_tracing,
-            execute=flags.execute,
+            enable_tracing=flags.enable_tracing or os.getenv("ENABLE_TRACING", "").lower() == "true",
+            execute=flags.execute or os.getenv("EXECUTE", "").lower() == "true",
         )
 
 
@@ -114,20 +116,53 @@ def _authenticate() -> tuple[Any, str, str]:
     return wc, host, token
 
 
-def _extract_graph(cfg: PipelineConfig) -> None:
-    """Extract graph state from Neo4j to Delta tables via Spark Connector."""
+def _base_tables_exist(execute_sql: Any, cfg: PipelineConfig) -> bool:
+    """Check whether the 14 base Delta tables already exist."""
+    from semantic_auth.graph_schema import NODE_TABLE_NAMES, RELATIONSHIP_TABLE_NAMES
+
+    expected = set(NODE_TABLE_NAMES + RELATIONSHIP_TABLE_NAMES)
+    try:
+        rows = execute_sql(
+            f"SHOW TABLES IN `{cfg.source_catalog}`.`{cfg.source_schema}`"
+        )
+        existing = {r.get("tableName", r.get("table_name", "")) for r in rows}
+        return expected.issubset(existing)
+    except Exception:
+        return False
+
+
+def _ensure_base_tables(execute_sql: Any, cfg: PipelineConfig) -> None:
+    """Create base Delta tables from CSV if they don't exist."""
+    if _base_tables_exist(execute_sql, cfg):
+        print("  Base tables already exist — skipping CSV load")
+        return
+
+    from semantic_auth.loading import load_all
+
+    volume_path = os.getenv("DATABRICKS_VOLUME_PATH", "")
+    if not volume_path:
+        catalog = os.getenv("CATALOG_NAME", cfg.source_catalog)
+        schema_name = os.getenv("SCHEMA_NAME", cfg.source_schema)
+        volume_name = os.getenv("VOLUME_NAME", "pipeline_data")
+        volume_path = f"/Volumes/{catalog}/{schema_name}/{volume_name}"
+
+    print("  Loading base tables from CSV ...")
+    load_all(execute_sql, cfg.source_catalog, cfg.source_schema, volume_path)
+
+
+def _extract_enrichment_data(cfg: PipelineConfig) -> None:
+    """Extract enrichment-only data from Neo4j (skip base labels/types)."""
     from semantic_auth.extraction import extract_graph
+    from semantic_auth.graph_schema import BASE_NODE_LABELS, BASE_RELATIONSHIP_TYPES
 
     try:
         from pyspark.sql import SparkSession
 
         spark = SparkSession.builder.getOrCreate()
     except Exception:
-        print("ERROR: Neo4j Spark Connector requires a Spark session.")
-        print("  Run on a Databricks cluster with the Neo4j Spark Connector JAR.")
-        sys.exit(1)
+        print("  WARNING: No Spark session — skipping Neo4j extraction")
+        return
 
-    print("\nStep 1/4: Extracting graph from Neo4j ...")
     t0 = time.time()
     extract_graph(
         spark=spark,
@@ -137,9 +172,11 @@ def _extract_graph(cfg: PipelineConfig) -> None:
         database=cfg.neo4j_database,
         catalog=cfg.source_catalog,
         schema=cfg.source_schema,
+        base_node_labels=BASE_NODE_LABELS,
+        base_rel_types=BASE_RELATIONSHIP_TYPES,
     )
     elapsed = time.time() - t0
-    print(f"  Extraction complete in {elapsed:.1f}s")
+    print(f"  Enrichment extraction complete in {elapsed:.1f}s")
 
 
 def _configure_dspy(
@@ -186,14 +223,22 @@ def _configure_dspy(
     dspy.configure(lm=lm)
 
 
-def _run_synthesis(data: Any, retrieval: Any, llm_endpoint: str) -> str:
+def _run_synthesis(
+    data: Any,
+    retrieval: Any,
+    llm_endpoint: str,
+    enrichment_context: str | None = None,
+) -> str:
     """Synthesize gap analysis from structured data and retrieved documents."""
     from semantic_auth.synthesis import fetch_gap_analysis, make_sdk_caller
 
-    print("\nStep 2/4: Running gap analysis synthesis ...")
+    print("\nStep 3/5: Running gap analysis synthesis ...")
     t0 = time.time()
     llm_caller = make_sdk_caller(endpoint=llm_endpoint, max_tokens=8192)
-    gap_analysis = fetch_gap_analysis(data, retrieval, llm_caller)
+    gap_analysis = fetch_gap_analysis(
+        data, retrieval, llm_caller,
+        enrichment_context=enrichment_context,
+    )
     elapsed = time.time() - t0
     print(f"  Synthesis complete: {len(gap_analysis):,} chars in {elapsed:.1f}s")
     print(f"  Preview: {gap_analysis[:200]}...")
@@ -205,7 +250,7 @@ def _run_analyzers(gap_analysis: str) -> Any:
     from semantic_auth.analyzers import GraphAugmentationAnalyzer
     from semantic_auth.reporting import print_response_summary
 
-    print("\nStep 3/4: Running DSPy analyzers (4 concurrent) ...")
+    print("\nStep 4/5: Running DSPy analyzers (4 concurrent) ...")
     t0 = time.time()
     analyzer = GraphAugmentationAnalyzer()
     response = analyzer(document_context=gap_analysis)
@@ -233,7 +278,7 @@ def _resolve_proposals(response: Any, gap_analysis: str) -> Any | None:
     from semantic_auth.reporting import print_filtered_proposals
     from semantic_auth.schemas import FilteredProposals
 
-    print("\nStep 4/4: Resolving to instance proposals ...")
+    print("\nStep 5/5: Resolving to instance proposals ...")
     t0 = time.time()
     resolver = InstanceResolver()
     resolution = resolver(response=response, document_context=gap_analysis)
@@ -277,14 +322,20 @@ def _save_to_volume(wc: Any, results_dir: str, filename: str, content: str) -> N
     print(f"  Saved: {path}")
 
 
-def _write_back(cfg: PipelineConfig, proposals: list, run_id: str) -> None:
-    """Write HIGH-confidence proposals back to Neo4j."""
+def _write_back(
+    cfg: PipelineConfig,
+    proposals: list,
+    run_id: str,
+    enrichment_store: Any = None,
+) -> None:
+    """Dual-write HIGH-confidence proposals to Neo4j + enrichment log."""
     from semantic_auth.writeback import Neo4jWriter
 
     dry_run = not cfg.execute
 
     with Neo4jWriter(
-        cfg.neo4j_uri, cfg.neo4j_username, cfg.neo4j_password, cfg.neo4j_database
+        cfg.neo4j_uri, cfg.neo4j_username, cfg.neo4j_password, cfg.neo4j_database,
+        enrichment_store=enrichment_store if not dry_run else None,
     ) as writer:
         writer.write_proposals(proposals, run_id=run_id, dry_run=dry_run)
 
@@ -311,14 +362,38 @@ def main() -> None:
     print("=" * 60)
 
     wc, host, token = _authenticate()
-    _extract_graph(cfg)
+
+    # --- Step 1: Ensure base tables + enrichment log exist ---------------
+    from semantic_auth.enrichment_store import EnrichmentStore
+    from semantic_auth.structured_data import StructuredDataAccess, make_spark_executor
+
+    execute_sql = make_spark_executor()
+
+    print("\nStep 1/5: Ensuring base tables and enrichment log ...")
+    enrichment_store = EnrichmentStore(
+        execute_sql, cfg.source_catalog, cfg.source_schema,
+    )
+    enrichment_store.ensure_table()
+    print("  Enrichment log table: ready")
+
+    _ensure_base_tables(execute_sql, cfg)
+
+    # --- Step 2: Extract enrichment data from Neo4j ----------------------
+    print("\nStep 2/5: Extracting enrichment data from Neo4j ...")
+    _extract_enrichment_data(cfg)
+
+    # --- Load enrichment context for synthesis ---------------------------
+    enrichment_context = enrichment_store.format_context()
+    prior_count = enrichment_store.count()
+    if prior_count:
+        print(f"  Prior enrichments: {prior_count} proposals from previous runs")
+
+    # --- Configure DSPy --------------------------------------------------
     _configure_dspy(host, token, cfg.llm_endpoint, cfg.enable_tracing)
 
     # Structured data access
-    from semantic_auth.structured_data import StructuredDataAccess, make_spark_executor
-
     data = StructuredDataAccess(
-        execute_sql=make_spark_executor(),
+        execute_sql=execute_sql,
         catalog=cfg.source_catalog,
         schema=cfg.source_schema,
     )
@@ -340,7 +415,10 @@ def main() -> None:
         )
         print("  Document retrieval: Neo4j vector index (graph-aware)")
 
-        gap_analysis = _run_synthesis(data, retrieval, cfg.llm_endpoint)
+        gap_analysis = _run_synthesis(
+            data, retrieval, cfg.llm_endpoint,
+            enrichment_context=enrichment_context or None,
+        )
         response = _run_analyzers(gap_analysis)
 
         results_dir = _ensure_results_dir(wc)
@@ -369,7 +447,20 @@ def main() -> None:
             print("\n  No HIGH-confidence proposals to write. Pipeline complete.")
             return
 
-        _write_back(cfg, filtered.auto_approve, run_id)
+        # --- Deduplicate against enrichment log --------------------------
+        before_dedup = len(filtered.auto_approve)
+        deduped = enrichment_store.deduplicate(filtered.auto_approve)
+        if before_dedup != len(deduped):
+            print(
+                f"\n  Dedup: {before_dedup - len(deduped)} duplicate proposals "
+                f"removed ({len(deduped)} remaining)"
+            )
+
+        if not deduped:
+            print("\n  All proposals already exist. Pipeline complete.")
+            return
+
+        _write_back(cfg, deduped, run_id, enrichment_store=enrichment_store)
         print(f"\n  Pipeline complete (run {run_id})")
 
     finally:

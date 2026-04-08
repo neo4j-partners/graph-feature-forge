@@ -9,12 +9,28 @@ confidence level, enrichment timestamp, and run identifier.
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from semantic_auth.schemas import InstanceProposal
 
+if TYPE_CHECKING:
+    from semantic_auth.enrichment_store import EnrichmentStore
 
-def generate_merge_cypher(proposal: InstanceProposal, run_id: str) -> str:
+#: Provenance properties written to every enrichment relationship.
+#: Referenced by both the per-proposal Cypher generator (dry-run display)
+#: and the UNWIND batch path (actual execution) to stay in sync.
+PROVENANCE_PROPERTIES: tuple[str, ...] = (
+    "confidence",
+    "source_document",
+    "extracted_phrase",
+    "enrichment_timestamp",
+    "run_id",
+)
+
+
+def generate_merge_cypher(
+    proposal: InstanceProposal, run_id: str, enrichment_timestamp: str,
+) -> str:
     """Generate a MERGE Cypher statement for an instance proposal.
 
     The pattern:
@@ -33,7 +49,7 @@ def generate_merge_cypher(proposal: InstanceProposal, run_id: str) -> str:
         "confidence": proposal.confidence.value,
         "source_document": proposal.source_document,
         "extracted_phrase": proposal.extracted_phrase,
-        "enrichment_timestamp": datetime.now(timezone.utc).isoformat(),
+        "enrichment_timestamp": enrichment_timestamp,
         "run_id": run_id,
     }
     props.update(proposal.properties)
@@ -74,11 +90,13 @@ class Neo4jWriter:
         username: str,
         password: str,
         database: str = "neo4j",
+        enrichment_store: EnrichmentStore | None = None,
     ) -> None:
         import neo4j
 
         self._driver = neo4j.GraphDatabase.driver(uri, auth=(username, password))
         self._database = database
+        self._enrichment_store = enrichment_store
 
     def close(self) -> None:
         self._driver.close()
@@ -99,7 +117,10 @@ class Neo4jWriter:
         Returns:
             List of generated Cypher statements.
         """
-        statements = [generate_merge_cypher(p, run_id) for p in proposals]
+        timestamp = datetime.now(timezone.utc).isoformat()
+        statements = [
+            generate_merge_cypher(p, run_id, timestamp) for p in proposals
+        ]
 
         if dry_run:
             print(f"\n  [DRY RUN] Generated {len(statements)} Cypher statements:")
@@ -110,7 +131,6 @@ class Neo4jWriter:
             return statements
 
         print(f"\n  Writing {len(proposals)} proposals to Neo4j ...")
-        timestamp = datetime.now(timezone.utc).isoformat()
 
         # Group proposals by structural pattern for UNWIND batching
         groups: dict[tuple[str, ...], list[InstanceProposal]] = {}
@@ -124,7 +144,7 @@ class Neo4jWriter:
             )
             groups.setdefault(key, []).append(p)
 
-        written = 0
+        succeeded: list[InstanceProposal] = []
         with self._driver.session(database=self._database) as session:
             for (src_label, src_key, tgt_label, tgt_key, rel_type), group in groups.items():
                 custom_keys = sorted({k for p in group for k in p.properties})
@@ -144,13 +164,7 @@ class Neo4jWriter:
                         row[k] = p.properties.get(k)
                     rows.append(row)
 
-                set_parts = [
-                    "r.confidence = row.confidence",
-                    "r.source_document = row.source_document",
-                    "r.extracted_phrase = row.extracted_phrase",
-                    "r.enrichment_timestamp = row.enrichment_timestamp",
-                    "r.run_id = row.run_id",
-                ]
+                set_parts = [f"r.{prop} = row.{prop}" for prop in PROVENANCE_PROPERTIES]
                 for k in custom_keys:
                     set_parts.append(f"r.{k} = row.{k}")
 
@@ -164,11 +178,20 @@ class Neo4jWriter:
 
                 try:
                     session.run(query, {"rows": rows})
-                    written += len(group)
+                    succeeded.extend(group)
                 except Exception as exc:
                     print(f"    {rel_type} ({len(group)} proposals) FAILED: {exc}")
 
-        print(f"  Write complete: {written}/{len(proposals)} succeeded")
+        print(f"  Write complete: {len(succeeded)}/{len(proposals)} succeeded")
+
+        # Dual-write: record successful proposals in the Delta enrichment log
+        if self._enrichment_store is not None and succeeded:
+            try:
+                n = self._enrichment_store.write_proposals(succeeded, run_id)
+                print(f"  Enrichment log: {n} proposals recorded in Delta")
+            except Exception as exc:
+                print(f"  Enrichment log write FAILED: {exc}")
+
         return statements
 
     def __enter__(self) -> Neo4jWriter:

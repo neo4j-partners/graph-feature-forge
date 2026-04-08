@@ -1,7 +1,11 @@
 """Tests for Cypher generation and write-back."""
 
 from semantic_auth.schemas import ConfidenceLevel, InstanceProposal, NodeReference
-from semantic_auth.writeback import _cypher_literal, generate_merge_cypher
+from semantic_auth.writeback import (
+    PROVENANCE_PROPERTIES,
+    _cypher_literal,
+    generate_merge_cypher,
+)
 
 
 def _make_proposal(**overrides) -> InstanceProposal:
@@ -50,14 +54,14 @@ class TestCypherLiteral:
 
 class TestGenerateMergeCypher:
     def test_basic_structure(self):
-        cypher = generate_merge_cypher(_make_proposal(), run_id="abc123")
+        cypher = generate_merge_cypher(_make_proposal(), run_id="abc123", enrichment_timestamp="2026-04-07T00:00:00+00:00")
 
         assert "MATCH (src:Customer {customerId: 'C0001'})" in cypher
         assert "MERGE (tgt:Sector {sectorId: 'RenewableEnergy'})" in cypher
         assert "MERGE (src)-[r:INTERESTED_IN]->(tgt)" in cypher
 
     def test_provenance_properties(self):
-        cypher = generate_merge_cypher(_make_proposal(), run_id="abc123")
+        cypher = generate_merge_cypher(_make_proposal(), run_id="abc123", enrichment_timestamp="2026-04-07T00:00:00+00:00")
 
         assert "r.confidence = 'high'" in cypher
         assert "r.source_document = 'customer_profile_001.txt'" in cypher
@@ -65,17 +69,17 @@ class TestGenerateMergeCypher:
         assert "r.enrichment_timestamp" in cypher
 
     def test_extracted_phrase_in_set(self):
-        cypher = generate_merge_cypher(_make_proposal(), run_id="x")
+        cypher = generate_merge_cypher(_make_proposal(), run_id="x", enrichment_timestamp="2026-04-07T00:00:00+00:00")
         assert "r.extracted_phrase = 'expressed interest in renewable energy'" in cypher
 
     def test_custom_properties(self):
         p = _make_proposal(properties={"weight": 0.92})
-        cypher = generate_merge_cypher(p, run_id="x")
+        cypher = generate_merge_cypher(p, run_id="x", enrichment_timestamp="2026-04-07T00:00:00+00:00")
         assert "r.weight = 0.92" in cypher
 
     def test_different_relationship_type(self):
         p = _make_proposal(relationship_type="CONCERNED_ABOUT")
-        cypher = generate_merge_cypher(p, run_id="x")
+        cypher = generate_merge_cypher(p, run_id="x", enrichment_timestamp="2026-04-07T00:00:00+00:00")
         assert "MERGE (src)-[r:CONCERNED_ABOUT]->(tgt)" in cypher
 
     def test_different_labels(self):
@@ -83,12 +87,24 @@ class TestGenerateMergeCypher:
             source_node=NodeReference(label="Account", key_property="accountId", key_value="A001"),
             target_node=NodeReference(label="Goal", key_property="goalId", key_value="retirement"),
         )
-        cypher = generate_merge_cypher(p, run_id="x")
+        cypher = generate_merge_cypher(p, run_id="x", enrichment_timestamp="2026-04-07T00:00:00+00:00")
         assert "MATCH (src:Account {accountId: 'A001'})" in cypher
         assert "MERGE (tgt:Goal {goalId: 'retirement'})" in cypher
 
     def test_special_characters_in_phrase(self):
         p = _make_proposal(extracted_phrase="he said 'renewable energy' is \"the future\"")
-        cypher = generate_merge_cypher(p, run_id="x")
+        cypher = generate_merge_cypher(p, run_id="x", enrichment_timestamp="2026-04-07T00:00:00+00:00")
         # Should escape single quotes for Cypher
         assert "he said \\'renewable energy\\'" in cypher
+
+    def test_uses_provided_timestamp(self):
+        ts = "2026-01-15T12:00:00+00:00"
+        cypher = generate_merge_cypher(_make_proposal(), run_id="x", enrichment_timestamp=ts)
+        assert f"r.enrichment_timestamp = '{ts}'" in cypher
+
+    def test_provenance_properties_all_present(self):
+        cypher = generate_merge_cypher(
+            _make_proposal(), run_id="abc", enrichment_timestamp="2026-01-01T00:00:00+00:00",
+        )
+        for prop in PROVENANCE_PROPERTIES:
+            assert f"r.{prop} = " in cypher, f"Missing provenance property: {prop}"

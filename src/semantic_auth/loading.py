@@ -12,22 +12,8 @@ convention.
 
 from __future__ import annotations
 
+from semantic_auth.graph_schema import NODE_CSV_FILES
 from semantic_auth.structured_data import SQLExecutor
-
-# ---------------------------------------------------------------------------
-# Node table definitions
-# ---------------------------------------------------------------------------
-
-#: CSV filename -> Delta table name
-NODE_CSV_TABLES: dict[str, str] = {
-    "customers.csv": "customer",
-    "banks.csv": "bank",
-    "accounts.csv": "account",
-    "companies.csv": "company",
-    "stocks.csv": "stock",
-    "portfolio_holdings.csv": "position",
-    "transactions.csv": "transaction",
-}
 
 #: Per-table SQL SELECT with type casts.  Keyed by Delta table name.
 #: The ``{volume_path}`` placeholder is filled at runtime.
@@ -231,7 +217,7 @@ def create_node_tables(
     Returns ``{table_name: row_count}``.
     """
     counts: dict[str, int] = {}
-    for csv_file, table_name in NODE_CSV_TABLES.items():
+    for csv_file, table_name in NODE_CSV_FILES.items():
         sql = _node_table_sql(table_name, catalog, schema, volume_path)
         execute_sql(sql)
 

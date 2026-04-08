@@ -257,11 +257,13 @@ class GapAnalysisSynthesizer:
         retrieval: DocumentRetrievalLike,
         llm_caller: LLMCaller,
         retrieval_top_k: int = 5,
+        enrichment_context: str | None = None,
     ) -> None:
         self._data = structured_data
         self._retrieval = retrieval
         self._llm = llm_caller
         self._top_k = retrieval_top_k
+        self._enrichment_context = enrichment_context
 
     def _synthesize(
         self,
@@ -292,6 +294,9 @@ class GapAnalysisSynthesizer:
             "## Document Excerpts (Customer Profiles, Market Research)\n\n"
             + doc_context
         )
+
+        if self._enrichment_context:
+            sections.append(self._enrichment_context)
 
         sections.append("## Analysis Instructions\n\n" + instructions)
 
@@ -426,6 +431,7 @@ def fetch_gap_analysis(
     structured_data: StructuredDataAccess,
     retrieval: DocumentRetrievalLike,
     llm_caller: LLMCaller,
+    enrichment_context: str | None = None,
 ) -> str:
     """Run comprehensive gap analysis and return the response text.
 
@@ -433,10 +439,18 @@ def fetch_gap_analysis(
     The pipeline entry point in Phase 4 calls this and feeds the
     result into ``GraphAugmentationAnalyzer``.
 
+    Args:
+        enrichment_context: Optional prior-enrichment summary to include
+            in the prompt so the LLM avoids re-proposing existing
+            relationships.
+
     Raises:
         RuntimeError: If the synthesis call fails.
     """
-    synth = GapAnalysisSynthesizer(structured_data, retrieval, llm_caller)
+    synth = GapAnalysisSynthesizer(
+        structured_data, retrieval, llm_caller,
+        enrichment_context=enrichment_context,
+    )
     result = synth.run_comprehensive_analysis()
 
     if not result.success:

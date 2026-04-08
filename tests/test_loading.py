@@ -1,7 +1,7 @@
 """Tests for loading module — verifies SQL generation."""
 
+from semantic_auth.graph_schema import NODE_CSV_FILES, RELATIONSHIP_TABLES
 from semantic_auth.loading import (
-    NODE_CSV_TABLES,
     RELATIONSHIP_DEFS,
     _NODE_SQL,
     _node_table_sql,
@@ -11,13 +11,13 @@ from semantic_auth.loading import (
 
 class TestNodeCsvTables:
     def test_all_seven_csvs_mapped(self):
-        assert len(NODE_CSV_TABLES) == 7
+        assert len(NODE_CSV_FILES) == 7
 
     def test_position_maps_from_portfolio_holdings(self):
-        assert NODE_CSV_TABLES["portfolio_holdings.csv"] == "position"
+        assert NODE_CSV_FILES["portfolio_holdings.csv"] == "position"
 
     def test_all_sql_templates_exist(self):
-        for table_name in NODE_CSV_TABLES.values():
+        for table_name in NODE_CSV_FILES.values():
             assert table_name in _NODE_SQL, f"Missing SQL for {table_name}"
 
 
@@ -112,3 +112,24 @@ class TestRelationshipTableSql:
     def test_creates_table(self):
         sql = _relationship_table_sql("has_account", "mycat", "mysch")
         assert sql.startswith("CREATE OR REPLACE TABLE `mycat`.`mysch`.`has_account`")
+
+
+class TestSchemaConsistency:
+    """Guard against drift between loading.RELATIONSHIP_DEFS and graph_schema.RELATIONSHIP_TABLES."""
+
+    def test_relationship_defs_match_graph_schema_tables(self):
+        loading_tables = set(RELATIONSHIP_DEFS.keys())
+        schema_tables = {meta.delta_table for meta in RELATIONSHIP_TABLES.values()}
+        assert loading_tables == schema_tables
+
+    def test_relationship_alias_keys_match_graph_schema(self):
+        # Build delta_table -> RelationshipMeta lookup
+        by_table = {meta.delta_table: meta for meta in RELATIONSHIP_TABLES.values()}
+        for rel_name, (_, _, src_alias, _, tgt_alias) in RELATIONSHIP_DEFS.items():
+            meta = by_table[rel_name]
+            assert src_alias == meta.source_key, (
+                f"{rel_name}: source alias {src_alias!r} != schema key {meta.source_key!r}"
+            )
+            assert tgt_alias == meta.target_key, (
+                f"{rel_name}: target alias {tgt_alias!r} != schema key {meta.target_key!r}"
+            )

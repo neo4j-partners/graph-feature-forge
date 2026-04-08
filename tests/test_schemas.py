@@ -62,6 +62,18 @@ class TestInstanceProposal:
         assert p2.source_node.key_value == p.source_node.key_value
         assert p2.confidence == p.confidence
 
+    def test_dedup_key(self):
+        p = _make_proposal()
+        assert p.dedup_key == (
+            "INTERESTED_IN", "Customer", "C0001", "Sector", "RenewableEnergy",
+        )
+
+    def test_dedup_key_differs_by_target(self):
+        p1 = _make_proposal()
+        p2 = _make_proposal()
+        p2.target_node.key_value = "Technology"
+        assert p1.dedup_key != p2.dedup_key
+
 
 class TestInstanceResolutionResult:
     def test_empty(self):

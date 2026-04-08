@@ -172,6 +172,17 @@ class InstanceProposal(BaseModel):
     extracted_phrase: str = Field(..., description="Quoted phrase from the document supporting this proposal")
     rationale: str = Field(..., description="Why this specific relationship should be added")
 
+    @property
+    def dedup_key(self) -> tuple[str, str, str, str, str]:
+        """Key for deduplication: (rel_type, src_label, src_key_value, tgt_label, tgt_key_value)."""
+        return (
+            self.relationship_type,
+            self.source_node.label,
+            self.source_node.key_value,
+            self.target_node.label,
+            self.target_node.key_value,
+        )
+
 
 class InstanceResolutionResult(BaseModel):
     """Result of resolving schema-level suggestions into instance proposals."""
