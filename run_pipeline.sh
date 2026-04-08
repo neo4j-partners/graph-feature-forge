@@ -73,14 +73,14 @@ phase_gds() {
     uv run python -m cli upload gds_baseline_comparison.py
 
     echo ""
-    echo "=== Submit GDS jobs (--no-wait) ==="
+    echo "=== Submit GDS jobs (sequential) ==="
     echo ""
     echo "--- Step 1/3: GDS FastRP features ---"
-    uv run python -m cli submit gds_fastrp_features.py --compute cluster --no-wait
+    uv run python -m cli submit gds_fastrp_features.py --compute cluster
 
     echo ""
     echo "--- Step 2/3: GDS Community features ---"
-    uv run python -m cli submit gds_community_features.py --compute cluster --no-wait
+    uv run python -m cli submit gds_community_features.py --compute cluster
 
     echo ""
     echo "--- Step 3/3: GDS Baseline comparison ---"
@@ -88,18 +88,12 @@ phase_gds() {
 
     echo ""
     echo "============================================================"
-    echo "  All GDS jobs submitted. They will run sequentially on the"
-    echo "  cluster (each waits for its predecessor)."
+    echo "  FastRP and Community jobs ran sequentially."
+    echo "  Baseline comparison submitted (--no-wait)."
     echo ""
-    echo "  To check progress:"
+    echo "  To check baseline progress:"
     echo "    uv run python -m cli logs            # latest run"
     echo "    uv run python -m cli logs <run_id>   # specific run"
-    echo ""
-    echo "  What to look for:"
-    echo "    - 'Step 5/5' in gds_fastrp_features = FastRP pipeline done"
-    echo "    - 'Step 6/6' in gds_community_features = Community pipeline done"
-    echo "    - 'Step 3/3' in gds_baseline_comparison = Baseline done"
-    echo "    - 'Result: SUCCESS' = job completed successfully"
     echo "============================================================"
 }
 

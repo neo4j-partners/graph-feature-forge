@@ -39,15 +39,15 @@ class GDSFastRPConfig:
 
     @property
     def feature_table(self) -> str:
-        return f"`{self.catalog}`.`{self.schema}`.customer_graph_features"
+        return f"{self.catalog}.{self.schema}.customer_graph_features"
 
     @property
     def enrichment_log_table(self) -> str:
-        return f"`{self.catalog}`.`{self.schema}`.enrichment_log"
+        return f"{self.catalog}.{self.schema}.enrichment_log"
 
     @property
     def ground_truth_table(self) -> str:
-        return f"`{self.catalog}`.`{self.schema}`.holdout_ground_truth"
+        return f"{self.catalog}.{self.schema}.holdout_ground_truth"
 
     @property
     def model_name(self) -> str:
@@ -168,7 +168,7 @@ def _export_features(spark: Any, cfg: GDSFastRPConfig) -> None:
         feature_df, embedding_dim=cfg.embedding_dim,
     )
 
-    feature_df.write.mode("overwrite").saveAsTable(cfg.feature_table)
+    feature_df.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable(cfg.feature_table)
     count = spark.table(cfg.feature_table).count()
     print(f"  Feature table: {cfg.feature_table} ({count} rows, {len(feature_df.columns)} cols)")
 

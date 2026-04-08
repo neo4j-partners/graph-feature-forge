@@ -195,7 +195,7 @@ def export_feature_table(
 
     table_name = f"`{catalog}`.`{schema}`.`{FEATURE_TABLE_NAME}`"
     num_cols = len(feature_df.columns)
-    feature_df.write.mode("overwrite").saveAsTable(table_name)
+    feature_df.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable(table_name)
 
     # Count from the written table to avoid re-evaluating the Spark plan
     count = spark.table(table_name).count()

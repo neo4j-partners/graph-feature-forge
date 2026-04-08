@@ -36,7 +36,7 @@ class BaselineConfig:
 
     @property
     def feature_table(self) -> str:
-        return f"`{self.catalog}`.`{self.schema}`.customer_graph_features"
+        return f"{self.catalog}.{self.schema}.customer_graph_features"
 
     @classmethod
     def from_env(cls) -> BaselineConfig:
@@ -76,10 +76,15 @@ def _authenticate() -> Any:
 
 def _train_tabular_baseline(cfg: BaselineConfig) -> None:
     """Train AutoML on tabular features only (exclude all graph columns)."""
+    from pyspark.sql import SparkSession
+
     from graph_feature_forge.ml.automl_training import train_automl_classifier
 
+    spark = SparkSession.builder.getOrCreate()
+    actual_cols = set(spark.table(cfg.feature_table).columns)
+
     graph_feature_cols = [f"fastrp_{i}" for i in range(cfg.embedding_dim)] + ["community_id"]
-    exclude_cols = ["customer_id"] + graph_feature_cols
+    exclude_cols = [c for c in ["customer_id"] + graph_feature_cols if c in actual_cols]
 
     train_automl_classifier(
         feature_table=cfg.feature_table,

@@ -41,11 +41,11 @@ class GDSCommunityConfig:
 
     @property
     def feature_table(self) -> str:
-        return f"`{self.catalog}`.`{self.schema}`.customer_graph_features"
+        return f"{self.catalog}.{self.schema}.customer_graph_features"
 
     @property
     def enrichment_log_table(self) -> str:
-        return f"`{self.catalog}`.`{self.schema}`.enrichment_log"
+        return f"{self.catalog}.{self.schema}.enrichment_log"
 
     @property
     def model_name(self) -> str:
