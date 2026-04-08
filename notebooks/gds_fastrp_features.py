@@ -179,14 +179,17 @@ for i in range(EMBEDDING_DIM):
 
 feature_df = feature_df.drop("fastrp_embedding")
 
-print(f"Feature table: {feature_df.count()} rows, {len(feature_df.columns)} columns")
+print(f"Feature columns: {len(feature_df.columns)}")
 display(feature_df.limit(5))
 
 # COMMAND ----------
 
 # Write to Unity Catalog as a managed Delta table
 feature_df.write.mode("overwrite").saveAsTable(FEATURE_TABLE)
-print(f"Feature table written to {FEATURE_TABLE}")
+
+# Count from the written table to avoid re-evaluating the Spark plan
+row_count = spark.table(FEATURE_TABLE).count()
+print(f"Feature table written to {FEATURE_TABLE} ({row_count} rows)")
 
 # COMMAND ----------
 
@@ -318,7 +321,8 @@ print(f"Set 'Champion' alias to version {registered_model.version}")
 # Load the feature table and filter to held-out customers (null risk_category)
 features_df = spark.table(FEATURE_TABLE)
 unlabeled_df = features_df.filter(F.col("risk_category").isNull())
-print(f"Customers to score: {unlabeled_df.count()}")
+unlabeled_count = unlabeled_df.count()
+print(f"Customers to score: {unlabeled_count}")
 
 # COMMAND ----------
 
@@ -386,7 +390,7 @@ writeback_df = predictions_df.select(
     .save()
 )
 
-print(f"Wrote predictions for {writeback_df.count()} customers back to Neo4j")
+print(f"Wrote predictions for {unlabeled_count} customers back to Neo4j")
 
 # COMMAND ----------
 

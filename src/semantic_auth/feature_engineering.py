@@ -98,15 +98,16 @@ def compute_gds_features(
     )
     print("    Properties written to Neo4j Customer nodes")
 
-    # Clean up
-    G.drop()
-
-    return {
+    # Capture stats before dropping the projection
+    stats = {
         "node_count": G.node_count(),
         "relationship_count": G.relationship_count(),
         "community_count": louvain_result["communityCount"],
         "modularity": louvain_result["modularity"],
     }
+
+    G.drop()
+    return stats
 
 
 # ---------------------------------------------------------------------------
@@ -157,10 +158,12 @@ def export_feature_table(
     feature_df = feature_df.drop("fastrp_embedding")
 
     table_name = f"`{catalog}`.`{schema}`.`{FEATURE_TABLE_NAME}`"
+    num_cols = len(feature_df.columns)
     feature_df.write.mode("overwrite").saveAsTable(table_name)
 
-    count = feature_df.count()
-    print(f"    Feature table: {table_name} ({count} rows, {len(feature_df.columns)} columns)")
+    # Count from the written table to avoid re-evaluating the Spark plan
+    count = spark.table(table_name).count()
+    print(f"    Feature table: {table_name} ({count} rows, {num_cols} columns)")
     return count
 
 
@@ -242,6 +245,5 @@ def score_unlabeled_customers(
         .save()
     )
 
-    scored = writeback_df.count()
-    print(f"    Scored {scored} customers, predictions written to Neo4j")
-    return scored
+    print(f"    Scored {unlabeled_count} customers, predictions written to Neo4j")
+    return unlabeled_count
