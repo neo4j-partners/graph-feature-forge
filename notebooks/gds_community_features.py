@@ -28,9 +28,11 @@ dbutils.library.restartPython()
 
 import os
 
-NEO4J_URI = os.environ["NEO4J_URI"]
-NEO4J_USERNAME = os.environ.get("NEO4J_USERNAME", "neo4j")
-NEO4J_PASSWORD = os.environ["NEO4J_PASSWORD"]
+SECRET_SCOPE = os.environ.get("DATABRICKS_SECRET_SCOPE", "semantic-auth")
+
+NEO4J_URI = dbutils.secrets.get(scope=SECRET_SCOPE, key="NEO4J_URI")
+NEO4J_USERNAME = dbutils.secrets.get(scope=SECRET_SCOPE, key="NEO4J_USERNAME")
+NEO4J_PASSWORD = dbutils.secrets.get(scope=SECRET_SCOPE, key="NEO4J_PASSWORD")
 NEO4J_DATABASE = os.environ.get("NEO4J_DATABASE", "neo4j")
 
 CATALOG = os.environ.get("CATALOG_NAME", "semantic_auth")
