@@ -120,7 +120,7 @@ def _discover_enrichment_rels(spark: Any, enrichment_log_table: str) -> list[str
 
 def _compute_fastrp(cfg: GDSFastRPConfig, enrichment_rel_types: list[str]) -> None:
     """Project the graph in GDS, compute FastRP, and write to Neo4j."""
-    from graph_feature_forge.feature_engineering import compute_gds_features
+    from graph_feature_forge.ml.feature_engineering import compute_gds_features
 
     # compute_gds_features runs FastRP + Louvain; we use both here
     # even though this is the "FastRP-only" notebook — Louvain is written
@@ -140,9 +140,9 @@ def _export_features(spark: Any, cfg: GDSFastRPConfig) -> None:
     """Export FastRP embeddings (without community_id) to a Delta feature table."""
     from pyspark.sql import functions as F
 
-    from graph_feature_forge.extraction import _spark_neo4j_options
+    from graph_feature_forge.graph.extraction import spark_neo4j_options
 
-    options = _spark_neo4j_options(
+    options = spark_neo4j_options(
         cfg.neo4j_uri, cfg.neo4j_username, cfg.neo4j_password, cfg.neo4j_database,
     )
     options["labels"] = ":Customer"
@@ -154,6 +154,8 @@ def _export_features(spark: Any, cfg: GDSFastRPConfig) -> None:
     )
 
     # FastRP-only feature table (no community_id — that's the community notebook)
+    from graph_feature_forge.ml.feature_engineering import parse_and_explode_embedding
+
     feature_df = customers_df.select(
         F.col("customer_id"),
         F.col("annual_income").cast("double"),
@@ -162,11 +164,9 @@ def _export_features(spark: Any, cfg: GDSFastRPConfig) -> None:
         F.col("fastrp_embedding"),
     )
 
-    for i in range(cfg.embedding_dim):
-        feature_df = feature_df.withColumn(
-            f"fastrp_{i}", F.col("fastrp_embedding").getItem(i).cast("double"),
-        )
-    feature_df = feature_df.drop("fastrp_embedding")
+    feature_df = parse_and_explode_embedding(
+        feature_df, embedding_dim=cfg.embedding_dim,
+    )
 
     feature_df.write.mode("overwrite").saveAsTable(cfg.feature_table)
     count = spark.table(cfg.feature_table).count()
@@ -175,7 +175,7 @@ def _export_features(spark: Any, cfg: GDSFastRPConfig) -> None:
 
 def _create_holdout(spark: Any, cfg: GDSFastRPConfig) -> None:
     """Stratified holdout simulation — null most labels, save ground truth."""
-    from graph_feature_forge.automl_training import create_holdout
+    from graph_feature_forge.ml.automl_training import create_holdout
 
     features_pdf = spark.table(cfg.feature_table).toPandas()
     holdout_pdf, ground_truth_pdf = create_holdout(
@@ -192,7 +192,7 @@ def _create_holdout(spark: Any, cfg: GDSFastRPConfig) -> None:
 
 def _train_and_register(cfg: GDSFastRPConfig) -> Any:
     """Train AutoML classifier and register as Champion."""
-    from graph_feature_forge.automl_training import register_model, train_automl_classifier
+    from graph_feature_forge.ml.automl_training import register_model, train_automl_classifier
 
     summary = train_automl_classifier(
         feature_table=cfg.feature_table,
@@ -213,8 +213,8 @@ def _score_and_evaluate(spark: Any, cfg: GDSFastRPConfig) -> None:
     import mlflow
     from pyspark.sql import functions as F
 
-    from graph_feature_forge.automl_training import evaluate_predictions
-    from graph_feature_forge.extraction import _spark_neo4j_options
+    from graph_feature_forge.ml.automl_training import evaluate_predictions
+    from graph_feature_forge.graph.extraction import spark_neo4j_options
 
     mlflow.set_registry_uri("databricks-uc")
 
@@ -245,7 +245,7 @@ def _score_and_evaluate(spark: Any, cfg: GDSFastRPConfig) -> None:
         F.current_timestamp().alias("prediction_timestamp"),
     )
 
-    options = _spark_neo4j_options(
+    options = spark_neo4j_options(
         cfg.neo4j_uri, cfg.neo4j_username, cfg.neo4j_password, cfg.neo4j_database,
     )
     options["labels"] = ":Customer"

@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from graph_feature_forge.extraction import _spark_neo4j_options
+from graph_feature_forge.graph.extraction import spark_neo4j_options
 
 
 # ---------------------------------------------------------------------------
@@ -24,14 +24,14 @@ EMBEDDING_DIM = 128
 PROJECTION_NAME = "portfolio-graph"
 FEATURE_TABLE_NAME = "customer_graph_features"
 
-_BASE_RELATIONSHIP_SPEC = {
+BASE_RELATIONSHIP_SPEC = {
     "HAS_ACCOUNT": {"orientation": "UNDIRECTED"},
     "HAS_POSITION": {"orientation": "UNDIRECTED"},
     "OF_SECURITY": {"orientation": "UNDIRECTED"},
     "OF_COMPANY": {"orientation": "UNDIRECTED"},
 }
 
-_NODE_LABELS = ["Customer", "Account", "Position", "Stock", "Company"]
+NODE_LABELS = ["Customer", "Account", "Position", "Stock", "Company"]
 
 
 # ---------------------------------------------------------------------------
@@ -56,15 +56,17 @@ def compute_gds_features(
     gds = GraphDataScience(uri, auth=(username, password), database=database)
 
     # Build relationship spec: base + enrichment
-    relationship_spec = dict(_BASE_RELATIONSHIP_SPEC)
+    relationship_spec = dict(BASE_RELATIONSHIP_SPEC)
     for rel_type in enrichment_rel_types or []:
         relationship_spec[rel_type] = {"orientation": "UNDIRECTED"}
 
     # Drop existing projection if present
-    if gds.graph.exists(PROJECTION_NAME).iloc[0]["exists"]:
+    try:
         gds.graph.drop(gds.graph.get(PROJECTION_NAME))
+    except Exception:
+        pass
 
-    G, _ = gds.graph.project(PROJECTION_NAME, _NODE_LABELS, relationship_spec)
+    G, _ = gds.graph.project(PROJECTION_NAME, NODE_LABELS, relationship_spec)
     print(f"    Projected graph — Nodes: {G.node_count()}, Relationships: {G.relationship_count()}")
 
     # FastRP embeddings
@@ -111,6 +113,44 @@ def compute_gds_features(
 
 
 # ---------------------------------------------------------------------------
+# Embedding helpers
+# ---------------------------------------------------------------------------
+
+
+def parse_and_explode_embedding(
+    df: Any,
+    embedding_col: str = "fastrp_embedding",
+    embedding_dim: int = EMBEDDING_DIM,
+    prefix: str = "fastrp_",
+) -> Any:
+    """Parse an embedding column and explode it into individual numeric columns.
+
+    The Neo4j Spark Connector may return array properties as either
+    ``ArrayType(DoubleType())`` or as a JSON string.  This function detects
+    the schema at runtime and applies ``from_json`` when necessary, then
+    expands the array into ``{prefix}0 .. {prefix}{embedding_dim-1}`` columns.
+
+    The original *embedding_col* is dropped from the returned DataFrame.
+    """
+    from pyspark.sql import functions as F
+    from pyspark.sql.types import ArrayType, DoubleType
+
+    col_type = df.select(embedding_col).schema[0].dataType
+    if isinstance(col_type, ArrayType):
+        parsed = F.col(embedding_col)
+    else:
+        parsed = F.from_json(F.col(embedding_col), ArrayType(DoubleType()))
+
+    result_df = df.withColumn(embedding_col, parsed)
+    for i in range(embedding_dim):
+        result_df = result_df.withColumn(
+            f"{prefix}{i}",
+            F.col(embedding_col).getItem(i).cast("double"),
+        )
+    return result_df.drop(embedding_col)
+
+
+# ---------------------------------------------------------------------------
 # Feature table export
 # ---------------------------------------------------------------------------
 
@@ -132,7 +172,7 @@ def export_feature_table(
     """
     from pyspark.sql import functions as F
 
-    options = _spark_neo4j_options(uri, username, password, database)
+    options = spark_neo4j_options(uri, username, password, database)
     options["labels"] = ":Customer"
 
     customers_df = (
@@ -151,11 +191,7 @@ def export_feature_table(
         F.col("fastrp_embedding"),
     )
 
-    for i in range(EMBEDDING_DIM):
-        feature_df = feature_df.withColumn(
-            f"fastrp_{i}", F.col("fastrp_embedding").getItem(i).cast("double"),
-        )
-    feature_df = feature_df.drop("fastrp_embedding")
+    feature_df = parse_and_explode_embedding(feature_df)
 
     table_name = f"`{catalog}`.`{schema}`.`{FEATURE_TABLE_NAME}`"
     num_cols = len(feature_df.columns)
@@ -234,7 +270,7 @@ def score_unlabeled_customers(
         F.current_timestamp().alias("prediction_timestamp"),
     )
 
-    options = _spark_neo4j_options(uri, username, password, database)
+    options = spark_neo4j_options(uri, username, password, database)
     options["labels"] = ":Customer"
     options["node.keys"] = "customer_id"
 

@@ -1,6 +1,6 @@
 """Tests for schemas: InstanceProposal, FilteredProposals, NodeReference."""
 
-from graph_feature_forge.schemas import (
+from graph_feature_forge.analysis.schemas import (
     ConfidenceLevel,
     FilteredProposals,
     InstanceProposal,

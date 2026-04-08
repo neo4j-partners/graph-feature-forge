@@ -1,6 +1,6 @@
 """Tests for seeding module helpers."""
 
-from graph_feature_forge.seeding import (
+from graph_feature_forge.graph.seeding import (
     NODE_TABLES,
     RELATIONSHIP_TABLES,
     _INTERNAL_COLS,

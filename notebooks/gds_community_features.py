@@ -81,8 +81,10 @@ for rel_type in enrichment_rel_types:
     relationship_spec[rel_type] = {"orientation": "UNDIRECTED"}
 
 # Drop existing projection if present
-if gds.graph.exists("portfolio-graph").iloc[0]["exists"]:
+try:
     gds.graph.drop(gds.graph.get("portfolio-graph"))
+except Exception:
+    pass
 
 G, result = gds.graph.project(
     "portfolio-graph",
@@ -161,6 +163,8 @@ customers_df = (
 # COMMAND ----------
 
 # Build feature table: tabular + community_id (categorical) + exploded FastRP
+from graph_feature_forge.ml.feature_engineering import parse_and_explode_embedding
+
 feature_df = customers_df.select(
     F.col("customer_id"),
     F.col("annual_income").cast("double"),
@@ -170,12 +174,8 @@ feature_df = customers_df.select(
     F.col("fastrp_embedding"),
 )
 
-for i in range(EMBEDDING_DIM):
-    feature_df = feature_df.withColumn(
-        f"fastrp_{i}", F.col("fastrp_embedding").getItem(i).cast("double")
-    )
-
-feature_df = feature_df.drop("fastrp_embedding")
+# Handles both native array and JSON string formats from the Neo4j Spark Connector
+feature_df = parse_and_explode_embedding(feature_df, embedding_dim=EMBEDDING_DIM)
 
 print(f"Feature table: {feature_df.count()} rows, {len(feature_df.columns)} columns")
 print(f"New column: community_id (categorical)")

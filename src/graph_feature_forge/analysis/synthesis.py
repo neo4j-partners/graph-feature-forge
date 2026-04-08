@@ -31,8 +31,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable
 
-from graph_feature_forge.retrieval import DocumentRetrieval, Neo4jRetrieval
-from graph_feature_forge.structured_data import StructuredDataAccess
+from graph_feature_forge.data.retrieval import DocumentRetrieval, Neo4jRetrieval
+from graph_feature_forge.data.structured_data import StructuredDataAccess
 
 # Type alias: takes a list of message dicts, returns response text.
 LLMCaller = Callable[[list[dict[str, str]]], str]

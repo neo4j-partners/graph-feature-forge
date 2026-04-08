@@ -11,10 +11,10 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
 
-from graph_feature_forge.schemas import InstanceProposal
+from graph_feature_forge.analysis.schemas import InstanceProposal
 
 if TYPE_CHECKING:
-    from graph_feature_forge.enrichment_store import EnrichmentStore
+    from graph_feature_forge.data.enrichment_store import EnrichmentStore
 
 #: Provenance properties written to every enrichment relationship.
 #: Referenced by both the per-proposal Cypher generator (dry-run display)

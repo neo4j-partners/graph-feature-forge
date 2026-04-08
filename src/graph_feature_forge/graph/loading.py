@@ -13,7 +13,7 @@ convention.
 from __future__ import annotations
 
 from graph_feature_forge.graph_schema import NODE_CSV_FILES
-from graph_feature_forge.structured_data import SQLExecutor
+from graph_feature_forge.data.structured_data import SQLExecutor
 
 #: Per-table SQL SELECT with type casts.  Keyed by Delta table name.
 #: The ``{volume_path}`` placeholder is filled at runtime.

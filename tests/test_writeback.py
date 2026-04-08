@@ -1,7 +1,7 @@
 """Tests for Cypher generation and write-back."""
 
-from graph_feature_forge.schemas import ConfidenceLevel, InstanceProposal, NodeReference
-from graph_feature_forge.writeback import (
+from graph_feature_forge.analysis.schemas import ConfidenceLevel, InstanceProposal, NodeReference
+from graph_feature_forge.graph.writeback import (
     PROVENANCE_PROPERTIES,
     _cypher_literal,
     generate_merge_cypher,

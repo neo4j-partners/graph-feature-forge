@@ -6,8 +6,8 @@ and this module stays focused on presentation.
 
 from __future__ import annotations
 
-from graph_feature_forge.analyzers import AnalysisResult
-from graph_feature_forge.schemas import (
+from graph_feature_forge.analysis.analyzers import AnalysisResult
+from graph_feature_forge.analysis.schemas import (
     AugmentationResponse,
     ConfidenceLevel,
     FilteredProposals,

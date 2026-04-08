@@ -30,12 +30,10 @@ def create_holdout(
 
     Returns ``(holdout_features, ground_truth)`` where *holdout_features*
     has most labels set to ``None`` and *ground_truth* preserves the
-    original mapping.
+    original mapping plus an ``is_held_out`` column so downstream phases
+    can reproduce the exact same split.
     """
     np.random.seed(seed)
-
-    ground_truth = features_pdf[["customer_id", label_col]].copy()
-    ground_truth.columns = ["customer_id", f"true_{label_col}"]
 
     labeled_mask = features_pdf[label_col].notna() & (features_pdf[label_col] != "")
     labeled_df = features_pdf[labeled_mask]
@@ -51,6 +49,11 @@ def create_holdout(
         keep_indices.extend(keep)
 
     holdout_mask = labeled_mask & ~features_pdf.index.isin(keep_indices)
+
+    ground_truth = features_pdf[["customer_id", label_col]].copy()
+    ground_truth.columns = ["customer_id", f"true_{label_col}"]
+    ground_truth["is_held_out"] = holdout_mask.values
+
     features_pdf = features_pdf.copy()
     features_pdf.loc[holdout_mask, label_col] = None
 
@@ -63,16 +66,41 @@ def create_holdout(
 
 def reapply_holdout(
     features_pdf: pd.DataFrame,
-    existing_nulled_ids: set[str],
+    ground_truth_pdf: pd.DataFrame,
     label_col: str = "risk_category",
 ) -> pd.DataFrame:
-    """Re-apply a previous holdout split by nulling the same customer IDs."""
+    """Re-apply a previous holdout split using the ``is_held_out`` column
+    from the ground truth table saved by :func:`create_holdout`."""
+    if "is_held_out" not in ground_truth_pdf.columns:
+        raise ValueError(
+            "Column 'is_held_out' not found in ground truth table. "
+            f"Available columns: {ground_truth_pdf.columns.tolist()}. "
+            "Run gds_fastrp_features.py first to create the holdout split."
+        )
+
+    if not pd.api.types.is_bool_dtype(ground_truth_pdf["is_held_out"]):
+        raise TypeError(
+            f"Column 'is_held_out' has unexpected dtype "
+            f"'{ground_truth_pdf['is_held_out'].dtype}'; expected bool. "
+            "The ground truth table may be corrupted."
+        )
+
+    num_held_out = ground_truth_pdf["is_held_out"].sum()
+    if num_held_out == 0:
+        raise ValueError(
+            "No records marked as held out in the ground truth table. "
+            "Re-run gds_fastrp_features.py to regenerate the holdout split."
+        )
+
+    held_out_ids = set(
+        ground_truth_pdf[ground_truth_pdf["is_held_out"]]["customer_id"]
+    )
     features_pdf = features_pdf.copy()
     features_pdf.loc[
-        features_pdf["customer_id"].isin(existing_nulled_ids), label_col
+        features_pdf["customer_id"].isin(held_out_ids), label_col
     ] = None
     kept = features_pdf[label_col].notna().sum()
-    held_out = features_pdf[label_col].isna().sum()
+    held_out = len(held_out_ids)
     print(f"  Re-applied holdout: {kept} labels kept, {held_out} held out")
     return features_pdf
 

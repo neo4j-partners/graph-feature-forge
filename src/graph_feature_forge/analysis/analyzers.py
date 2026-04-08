@@ -20,7 +20,7 @@ from typing import Any
 
 import dspy
 
-from graph_feature_forge.schemas import (
+from graph_feature_forge.analysis.schemas import (
     AugmentationAnalysis,
     AugmentationResponse,
     ImpliedRelationshipsAnalysis,
@@ -32,7 +32,7 @@ from graph_feature_forge.schemas import (
     SuggestedNode,
     SuggestedRelationship,
 )
-from graph_feature_forge.signatures import (
+from graph_feature_forge.analysis.signatures import (
     ImpliedRelationshipsSignature,
     InstanceResolutionSignature,
     InvestmentThemesSignature,

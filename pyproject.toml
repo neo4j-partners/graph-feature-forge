@@ -1,11 +1,12 @@
 [project]
 name = "graph-feature-forge"
-version = "0.1.0"
+version = "0.2.3"
 description = "Graph feature engineering pipeline using LLMs to enrich Neo4j knowledge graphs with Databricks"
 requires-python = ">=3.12"
 dependencies = [
     "databricks-sdk>=0.74.0",
     "dspy>=3.0.4",
+    "graphdatascience>=1.7",
     "neo4j>=5.0.0",
     "pydantic>=2.10.0,<2.12",
     "python-dotenv>=1.0.0",
@@ -13,7 +14,7 @@ dependencies = [
 
 [project.optional-dependencies]
 cli = [
-    "databricks-job-runner>=0.3.0",
+    "databricks-job-runner>=0.3.1",
 ]
 dev = [
     "pytest>=8.0",
@@ -21,6 +22,11 @@ dev = [
 ]
 # MLflow tracing (optional, for --enable-tracing flag)
 enrichment = [
+    "mlflow[databricks]>=3.7",
+]
+# GDS feature engineering notebooks (AutoML + Neo4j GDS)
+gds = [
+    "graphdatascience>=1.7",
     "mlflow[databricks]>=3.7",
 ]
 

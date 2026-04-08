@@ -1,7 +1,7 @@
 """Tests for the enrichment store."""
 
-from graph_feature_forge.enrichment_store import EnrichmentStore, _sql_str
-from graph_feature_forge.schemas import ConfidenceLevel, InstanceProposal, NodeReference
+from graph_feature_forge.data.enrichment_store import EnrichmentStore, _sql_str
+from graph_feature_forge.analysis.schemas import ConfidenceLevel, InstanceProposal, NodeReference
 
 
 def _make_proposal(

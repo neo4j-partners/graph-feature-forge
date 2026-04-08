@@ -47,21 +47,30 @@ The `cli` module wraps `databricks-job-runner` — it reads `.env` and forwards 
 
 ## Architecture
 
-Four layers, each depending only on the layer below:
+The package is organized into subpackages by concern:
 
-**Config** (`config.py`) — `Config` dataclass loaded from environment variables. Source catalog/schema (workshop data), target catalog/schema (enrichment artifacts), LLM/embedding endpoint names.
+**Top-level** — `config.py` (Config dataclass from env vars), `graph_schema.py` (node/relationship metadata), `reporting.py` (pretty-print and validation).
 
-**Data Access** — Two independent data sources:
-- `structured_data.py` — `StructuredDataAccess` runs SQL against 14 Neo4j-exported Delta tables. Uses either a Spark session (on-cluster) or SDK statement execution (local, requires `WAREHOUSE_ID`). Factory functions: `make_spark_executor()`, `make_sdk_executor()`.
-- `retrieval.py` — `DocumentRetrieval` loads pre-computed embeddings from a JSON file in a UC volume and performs in-memory cosine similarity search (~20 chunks). Factory: `make_sdk_embedder()`.
+**`data/`** — Data access and retrieval:
+- `structured_data.py` — `StructuredDataAccess` runs SQL against 14 Neo4j-exported Delta tables. Factory functions: `make_spark_executor()`, `make_sdk_executor()`.
+- `retrieval.py` — `DocumentRetrieval` (in-memory cosine similarity) and `Neo4jRetrieval` (vector index). Factory: `make_sdk_embedder()`.
+- `enrichment_store.py` — Delta-based enrichment log for deduplication and audit trail.
 
-**Synthesis** (`synthesis.py`) — `GapAnalysisSynthesizer` combines structured context + retrieved documents into LLM prompts. Five query types: `interest_holding_gaps`, `risk_alignment`, `data_quality_gaps`, `investment_themes`, `comprehensive`. Uses `WorkspaceClient.serving_endpoints.query()` via `make_sdk_caller()`. The `fetch_gap_analysis()` function is a drop-in replacement for the workshop's `mas_client.fetch_gap_analysis()`.
-
-**Analysis & Output**:
+**`analysis/`** — LLM-driven gap analysis and DSPy modules:
 - `schemas.py` — Pure Pydantic models (no DSPy dependency): `SuggestedNode`, `SuggestedRelationship`, `SuggestedAttribute`, `AugmentationResponse`.
 - `signatures.py` — DSPy declarative signatures referencing schema classes.
-- `analyzers.py` — Four `dspy.ChainOfThought` analyzers (`InvestmentThemes`, `NewEntities`, `MissingAttributes`, `ImpliedRelationships`) orchestrated concurrently via `dspy.Parallel` in `GraphAugmentationAnalyzer`.
-- `reporting.py` — Pretty-print helpers and `ValidationHarness` for PASS/FAIL tracking.
+- `analyzers.py` — Four `dspy.ChainOfThought` analyzers orchestrated concurrently via `dspy.Parallel` in `GraphAugmentationAnalyzer`.
+- `synthesis.py` — `GapAnalysisSynthesizer` combines structured context + retrieved documents into LLM prompts. Drop-in `fetch_gap_analysis()` function.
+
+**`graph/`** — Neo4j graph operations:
+- `loading.py` — Create Delta tables from CSVs on UC volume.
+- `seeding.py` — Seed Neo4j from Delta tables + embeddings.
+- `extraction.py` — Extract Neo4j graph to Delta tables via Spark Connector.
+- `writeback.py` — Write enrichment proposals back to Neo4j with provenance.
+
+**`ml/`** — Feature engineering and AutoML (opt-in):
+- `feature_engineering.py` — GDS FastRP + Louvain, feature table export, scoring.
+- `automl_training.py` — AutoML training, holdout simulation, model registration.
 
 ## Key Design Decisions
 

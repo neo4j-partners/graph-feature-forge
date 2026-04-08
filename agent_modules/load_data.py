@@ -38,7 +38,7 @@ def main() -> None:
 
     # -- SQL executor ----------------------------------------------------------
 
-    from graph_feature_forge.structured_data import make_spark_executor
+    from graph_feature_forge.data.structured_data import make_spark_executor
 
     try:
         executor = make_spark_executor()
@@ -50,7 +50,7 @@ def main() -> None:
 
     # -- Load ------------------------------------------------------------------
 
-    from graph_feature_forge.loading import load_all
+    from graph_feature_forge.graph.loading import load_all
 
     t0 = time.time()
     counts = load_all(

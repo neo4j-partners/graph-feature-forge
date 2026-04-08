@@ -57,7 +57,7 @@ def discover_schema(
     return sorted(labels), sorted(rel_types), rel_endpoints
 
 
-def _spark_neo4j_options(
+def spark_neo4j_options(
     uri: str,
     username: str,
     password: str,
@@ -88,7 +88,7 @@ def extract_nodes(
 
     Returns the number of rows written.
     """
-    options = _spark_neo4j_options(uri, username, password, database)
+    options = spark_neo4j_options(uri, username, password, database)
     options["labels"] = f":{label}"
 
     df = (
@@ -133,7 +133,7 @@ def extract_relationships(
 
     Returns the number of rows written.
     """
-    options = _spark_neo4j_options(uri, username, password, database)
+    options = spark_neo4j_options(uri, username, password, database)
     options["relationship"] = rel_type
     options["relationship.nodes.map"] = "false"
     options["relationship.source.labels"] = f":{source_label}"

@@ -4,7 +4,7 @@ A graph feature engineering pipeline that combines LLM-driven graph enrichment w
 
 ### Enrichment Pipeline
 
-The enrichment pipeline analyzes structured customer portfolio data (14 Delta tables) and unstructured HTML documents using foundation model endpoints and four concurrent DSPy analyzers to discover new nodes, relationships, attributes, and investment themes. Proposals are deduplicated against a Delta-based enrichment log and dual-written to Neo4j, compounding the graph's knowledge with each run.
+The enrichment pipeline analyzes structured customer portfolio data from Delta tables and unstructured HTML documents using foundation model endpoints and four concurrent DSPy analyzers to discover new nodes, relationships, attributes, and investment themes. Proposals are deduplicated against a Delta-based enrichment log and dual-written to Neo4j, compounding the graph's knowledge with each run.
 
 ### Feature Engineering Stage
 
@@ -84,6 +84,9 @@ uv run pytest
 
 # Install CLI
 uv sync --extra cli
+
+# Install GDS feature engineering dependencies
+uv sync --extra gds
 ```
 
 ### Option A: One-command script
@@ -92,8 +95,13 @@ uv sync --extra cli
 # Run all steps (upload → load → seed → enrich)
 ./run_pipeline.sh
 
-# Stop after seeding Neo4j (skip enrichment)
-./run_pipeline.sh --seed
+# Run a single phase
+./run_pipeline.sh load     # Phase 1: Upload data + create Delta tables
+./run_pipeline.sh seed     # Phase 2: Seed Neo4j from Delta tables
+./run_pipeline.sh enrich   # Phase 3: Run enrichment pipeline
+
+# Run GDS feature engineering (requires ML Runtime cluster)
+./run_pipeline.sh gds
 ```
 
 ### Option B: Manual steps
@@ -143,29 +151,31 @@ uv run python -m cli clean
 
 The enrichment pipeline runs as a sequence of Databricks jobs. Each phase builds on the previous one, and the enrichment loop is designed to run repeatedly — each cycle discovers new proposals from an increasingly rich graph.
 
-1. **Data Ingestion** (`loading.py`, `agent_modules/load_data.py`) — Upload raw CSV, HTML, and embedding files to a UC Volume. Create 14 Delta tables (7 node tables, 7 relationship tables) from the CSVs. Idempotent — skips if tables already exist.
+1. **Data Ingestion** (`graph/loading.py`, `agent_modules/load_data.py`) — Upload raw CSV, HTML, and embedding files to a UC Volume. Create 14 Delta tables (7 node tables, 7 relationship tables) from the CSVs. Idempotent — skips if tables already exist.
 
-2. **Neo4j Seeding** (`seeding.py`, `agent_modules/seed_neo4j.py`) — Seed the Neo4j knowledge graph from Delta tables using batched MERGE statements. Load pre-computed document chunk embeddings and create a vector index for retrieval.
+2. **Neo4j Seeding** (`graph/seeding.py`, `agent_modules/seed_neo4j.py`) — Seed the Neo4j knowledge graph from Delta tables using batched MERGE statements. Load pre-computed document chunk embeddings and create a vector index for retrieval.
 
-3. **Enrichment Extraction** (`extraction.py`) — Dynamically discover all node labels and relationship types in Neo4j, extract enrichment-only data back to Delta tables (skips base types to avoid duplication). Uses the Neo4j Spark Connector.
+3. **Enrichment Extraction** (`graph/extraction.py`) — Dynamically discover all node labels and relationship types in Neo4j, extract enrichment-only data back to Delta tables (skips base types to avoid duplication). Uses the Neo4j Spark Connector.
 
-4. **Gap Analysis Synthesis** (`structured_data.py`, `retrieval.py`, `synthesis.py`) — SQL queries against Delta tables for structured context. Neo4j vector index for document retrieval. The LLM synthesizes both into a gap analysis via foundation model endpoints. Prior enrichments from the enrichment log are injected as additional context.
+4. **Gap Analysis Synthesis** (`data/structured_data.py`, `data/retrieval.py`, `analysis/synthesis.py`) — SQL queries against Delta tables for structured context. Neo4j vector index for document retrieval. The LLM synthesizes both into a gap analysis via foundation model endpoints. Prior enrichments from the enrichment log are injected as additional context.
 
-5. **DSPy Analysis** (`schemas.py`, `signatures.py`, `analyzers.py`) — Four concurrent `ChainOfThought` analyzers via `dspy.Parallel`: InvestmentThemes, NewEntities, MissingAttributes, ImpliedRelationships. Schema-level suggestions are resolved to concrete instance proposals by the `InstanceResolver`.
+5. **DSPy Analysis** (`analysis/schemas.py`, `analysis/signatures.py`, `analysis/analyzers.py`) — Four concurrent `ChainOfThought` analyzers via `dspy.Parallel`: InvestmentThemes, NewEntities, MissingAttributes, ImpliedRelationships. Schema-level suggestions are resolved to concrete instance proposals by the `InstanceResolver`.
 
-6. **Deduplication and Writeback** (`enrichment_store.py`, `writeback.py`) — Instance proposals are deduplicated against the `enrichment_log` Delta table. HIGH-confidence proposals are dual-written: idempotent MERGE to Neo4j with provenance properties, and INSERT to the enrichment log for future deduplication and context injection.
+6. **Deduplication and Writeback** (`data/enrichment_store.py`, `graph/writeback.py`) — Instance proposals are deduplicated against the `enrichment_log` Delta table. HIGH-confidence proposals are dual-written: idempotent MERGE to Neo4j with provenance properties, and INSERT to the enrichment log for future deduplication and context injection.
 
-7. **GDS Feature Engineering** (`feature_engineering.py`) — Project the enriched graph in GDS. Compute FastRP embeddings (128 dimensions) and Louvain community detection. Export to a Delta feature table. Score unlabeled customers using a registered MLflow Champion model and write predictions back to Neo4j. This step is opt-in via `ENABLE_GDS_FEATURES=true`.
+7. **GDS Feature Engineering** (`ml/feature_engineering.py`) — Project the enriched graph in GDS. Compute FastRP embeddings (128 dimensions) and Louvain community detection. Export to a Delta feature table. Score unlabeled customers using a registered MLflow Champion model and write predictions back to Neo4j. This step is opt-in via `ENABLE_GDS_FEATURES=true`.
 
-### GDS Feature Engineering Notebooks
+### GDS Feature Engineering
 
-These notebooks provide an interactive version of the automated feature engineering stage (phase 7) with additional model comparison and exploration. Three standalone Databricks notebooks demonstrate the full ML lifecycle. They run independently of the enrichment pipeline on Databricks Runtime 17.x LTS ML.
+The GDS feature engineering stage runs as three sequential Databricks jobs via `./run_pipeline.sh gds`. Each job has a corresponding entry point in `agent_modules/` and an interactive notebook in `notebooks/` for exploration.
 
-| Notebook | What it does | Depends on |
-|----------|-------------|------------|
-| `gds_fastrp_features.py` | Projects portfolio graph in GDS, computes 128-dim FastRP embeddings, exports to Delta, trains AutoML classifier, scores held-out customers, writes predictions to Neo4j. Registers model with Champion alias. | Neo4j Aura with GDS |
-| `gds_community_features.py` | Adds Louvain community detection as a categorical feature. Retrains AutoML with combined features, promotes Champion if F1 improves. Runs kNN for nearest-neighbor visualization. | `gds_fastrp_features` |
-| `gds_baseline_comparison.py` | Trains tabular-only model (annual_income, credit_score). Produces three-way MLflow comparison and feature importance analysis. | `gds_fastrp_features` |
+| Entry point | Notebook | What it does | Depends on |
+|-------------|----------|-------------|------------|
+| `gds_fastrp_features.py` | `notebooks/gds_fastrp_features.py` | Projects portfolio graph in GDS, computes 128-dim FastRP embeddings, exports to Delta, trains AutoML classifier, scores held-out customers, writes predictions to Neo4j. Registers model with Champion alias. | Neo4j Aura with GDS |
+| `gds_community_features.py` | `notebooks/gds_community_features.py` | Adds Louvain community detection as a categorical feature. Retrains AutoML with combined features, promotes Champion if F1 improves. Runs kNN for nearest-neighbor visualization. | `gds_fastrp_features` |
+| `gds_baseline_comparison.py` | `notebooks/gds_baseline_comparison.py` | Trains tabular-only model (annual_income, credit_score). Produces three-way MLflow comparison and feature importance analysis. | `gds_fastrp_features` |
+
+The entry points run on Databricks Runtime 17.x LTS ML clusters (AutoML removed as built-in in 18.0+). The notebooks remain for interactive exploration in the Databricks notebook UI.
 
 Each notebook writes to a separate MLflow experiment for side-by-side comparison:
 
@@ -177,22 +187,26 @@ Each notebook writes to a separate MLflow experiment for side-by-side comparison
 
 ### Automated Job Deployment
 
-The `cli/` module wraps `databricks-job-runner` — it reads `.env` and forwards values as CLI flags to the pipeline entry points. The `run_pipeline.sh` script orchestrates the full pipeline in three phases:
+The `cli/` module wraps `databricks-job-runner` — it reads `.env` and forwards values as CLI flags to the pipeline entry points. The `run_pipeline.sh` script orchestrates the pipeline:
 
 ```bash
 ./run_pipeline.sh          # All phases: load → seed → enrich
 ./run_pipeline.sh load     # Phase 1: Upload data + create Delta tables
 ./run_pipeline.sh seed     # Phase 2: Seed Neo4j from Delta tables
 ./run_pipeline.sh enrich   # Phase 3: Run enrichment pipeline
+./run_pipeline.sh gds      # Phase 4: GDS feature engineering (ML Runtime cluster)
 ```
 
-Each phase builds the wheel, uploads the entry point, and submits a serverless job. The three entry points in `agent_modules/` are:
+Each phase builds the wheel, uploads the entry point, and submits a job. The enrichment entry points run on serverless compute. The GDS entry points require a Databricks Runtime 17.x LTS ML cluster with the Neo4j Spark Connector.
 
 | Entry point | Phase | What it does |
 |-------------|-------|-------------|
 | `load_data.py` | 1 | Create 14 Delta tables from CSV files on the UC Volume |
 | `seed_neo4j.py` | 2 | Seed Neo4j nodes, relationships, document graph, and vector index |
 | `run_graph_feature_forge.py` | 3 | Full enrichment pipeline: extract → synthesize → analyze → dedup → write |
+| `gds_fastrp_features.py` | 4a | FastRP → Delta export → holdout → AutoML → register Champion → score → Neo4j writeback |
+| `gds_community_features.py` | 4b | FastRP + Louvain → retrain AutoML → promote Champion if F1 improves → kNN analysis |
+| `gds_baseline_comparison.py` | 4c | Tabular-only AutoML → three-way MLflow comparison → feature importance |
 
 Neo4j credentials are protected via a Databricks secret scope. Run `./create_secrets.sh` to provision the scope from `.env` values.
 
@@ -222,27 +236,35 @@ graph-feature-forge/
 ├── src/graph_feature_forge/
 │   ├── config.py              # Config dataclass from env vars
 │   ├── graph_schema.py        # Shared node/relationship metadata registry
-│   ├── loading.py             # Create Delta tables from CSVs on UC volume
-│   ├── seeding.py             # Seed Neo4j from Delta tables + embeddings
-│   ├── extraction.py          # Extract Neo4j graph to Delta tables
-│   ├── structured_data.py     # SQL against Delta tables
-│   ├── retrieval.py           # Document retrieval (in-memory or Neo4j vector index)
-│   ├── synthesis.py           # LLM gap analysis via foundation models
-│   ├── schemas.py             # Pydantic models (no DSPy dependency)
-│   ├── signatures.py          # DSPy declarative signatures
-│   ├── analyzers.py           # Four concurrent ChainOfThought analyzers
-│   ├── enrichment_store.py    # Delta-based enrichment log with deduplication
-│   ├── writeback.py           # Write enrichment proposals back to Neo4j
-│   ├── feature_engineering.py # GDS FastRP + Louvain + feature table export
-│   └── reporting.py           # Pretty-print and validation harness
+│   ├── reporting.py           # Pretty-print and validation harness
+│   ├── data/                  # Data access & retrieval
+│   │   ├── structured_data.py # SQL against Delta tables
+│   │   ├── retrieval.py       # Document retrieval (in-memory or Neo4j vector index)
+│   │   └── enrichment_store.py# Delta-based enrichment log with deduplication
+│   ├── analysis/              # LLM-driven gap analysis & DSPy modules
+│   │   ├── schemas.py         # Pydantic models (no DSPy dependency)
+│   │   ├── signatures.py      # DSPy declarative signatures
+│   │   ├── analyzers.py       # Four concurrent ChainOfThought analyzers
+│   │   └── synthesis.py       # LLM gap analysis via foundation models
+│   ├── graph/                 # Neo4j graph operations
+│   │   ├── loading.py         # Create Delta tables from CSVs on UC volume
+│   │   ├── seeding.py         # Seed Neo4j from Delta tables + embeddings
+│   │   ├── extraction.py      # Extract Neo4j graph to Delta tables
+│   │   └── writeback.py       # Write enrichment proposals back to Neo4j
+│   └── ml/                    # Feature engineering & AutoML (opt-in)
+│       ├── feature_engineering.py # GDS FastRP + Louvain + feature table export
+│       └── automl_training.py # AutoML training, holdout, model registration
 ├── notebooks/
 │   ├── gds_fastrp_features.py       # FastRP → AutoML → Neo4j writeback
 │   ├── gds_community_features.py    # + Louvain community detection
 │   └── gds_baseline_comparison.py   # Tabular-only baseline comparison
 ├── agent_modules/
-│   ├── load_data.py           # Create Delta tables from raw CSVs
-│   ├── seed_neo4j.py          # Seed Neo4j from Delta tables
-│   └── run_graph_feature_forge.py   # Full enrichment pipeline
+│   ├── load_data.py                 # Create Delta tables from raw CSVs
+│   ├── seed_neo4j.py                # Seed Neo4j from Delta tables
+│   ├── run_graph_feature_forge.py   # Full enrichment pipeline
+│   ├── gds_fastrp_features.py       # FastRP → AutoML → Neo4j writeback
+│   ├── gds_community_features.py    # + Louvain community detection
+│   └── gds_baseline_comparison.py   # Tabular-only baseline comparison
 ├── cli/                       # Job submission CLI (wraps databricks-job-runner)
 ├── tests/                     # Unit tests
 ├── run_pipeline.sh            # One-command pipeline orchestrator

@@ -137,7 +137,7 @@ def _ensure_base_tables(execute_sql: Any, cfg: PipelineConfig) -> None:
         print("  Base tables already exist — skipping CSV load")
         return
 
-    from graph_feature_forge.loading import load_all
+    from graph_feature_forge.graph.loading import load_all
 
     volume_path = os.getenv("DATABRICKS_VOLUME_PATH", "")
     if not volume_path:
@@ -152,7 +152,7 @@ def _ensure_base_tables(execute_sql: Any, cfg: PipelineConfig) -> None:
 
 def _extract_enrichment_data(cfg: PipelineConfig) -> None:
     """Extract enrichment-only data from Neo4j (skip base labels/types)."""
-    from graph_feature_forge.extraction import extract_graph
+    from graph_feature_forge.graph.extraction import extract_graph
     from graph_feature_forge.graph_schema import BASE_NODE_LABELS, BASE_RELATIONSHIP_TYPES
 
     try:
@@ -243,7 +243,7 @@ def _run_synthesis(
     enrichment_context: str | None = None,
 ) -> str:
     """Synthesize gap analysis from structured data and retrieved documents."""
-    from graph_feature_forge.synthesis import fetch_gap_analysis, make_sdk_caller
+    from graph_feature_forge.analysis.synthesis import fetch_gap_analysis, make_sdk_caller
 
     print("\nStep 3/5: Running gap analysis synthesis ...")
     t0 = time.time()
@@ -260,7 +260,7 @@ def _run_synthesis(
 
 def _run_analyzers(gap_analysis: str) -> Any:
     """Run four concurrent DSPy analyzers for schema-level suggestions."""
-    from graph_feature_forge.analyzers import GraphAugmentationAnalyzer
+    from graph_feature_forge.analysis.analyzers import GraphAugmentationAnalyzer
     from graph_feature_forge.reporting import print_response_summary
 
     print("\nStep 4/5: Running DSPy analyzers (4 concurrent) ...")
@@ -287,9 +287,9 @@ def _resolve_proposals(response: Any, gap_analysis: str) -> Any | None:
     Returns a :class:`FilteredProposals` instance, or ``None`` if no
     instance proposals were generated.
     """
-    from graph_feature_forge.analyzers import InstanceResolver
+    from graph_feature_forge.analysis.analyzers import InstanceResolver
     from graph_feature_forge.reporting import print_filtered_proposals
-    from graph_feature_forge.schemas import FilteredProposals
+    from graph_feature_forge.analysis.schemas import FilteredProposals
 
     print("\nStep 5/5: Resolving to instance proposals ...")
     t0 = time.time()
@@ -342,7 +342,7 @@ def _write_back(
     enrichment_store: Any = None,
 ) -> None:
     """Dual-write HIGH-confidence proposals to Neo4j + enrichment log."""
-    from graph_feature_forge.writeback import Neo4jWriter
+    from graph_feature_forge.graph.writeback import Neo4jWriter
 
     dry_run = not cfg.execute
 
@@ -377,8 +377,8 @@ def main() -> None:
     wc, host, token = _authenticate()
 
     # --- Step 1: Ensure base tables + enrichment log exist ---------------
-    from graph_feature_forge.enrichment_store import EnrichmentStore
-    from graph_feature_forge.structured_data import StructuredDataAccess, make_spark_executor
+    from graph_feature_forge.data.enrichment_store import EnrichmentStore
+    from graph_feature_forge.data.structured_data import StructuredDataAccess, make_spark_executor
 
     execute_sql = make_spark_executor()
 
@@ -414,7 +414,7 @@ def main() -> None:
 
     # Document retrieval (Neo4j vector index)
     import neo4j as neo4j_lib
-    from graph_feature_forge.retrieval import Neo4jRetrieval, make_sdk_embedder
+    from graph_feature_forge.data.retrieval import Neo4jRetrieval, make_sdk_embedder
 
     neo4j_driver = neo4j_lib.GraphDatabase.driver(
         cfg.neo4j_uri, auth=(cfg.neo4j_username, cfg.neo4j_password)

@@ -46,7 +46,7 @@ def main() -> None:
     print(f"  Neo4j: {neo4j_uri}")
     print(f"  Database: {neo4j_database}")
 
-    from graph_feature_forge.structured_data import make_spark_executor
+    from graph_feature_forge.data.structured_data import make_spark_executor
 
     executor = make_spark_executor()
     print("  Data source: Spark executor")
@@ -57,7 +57,7 @@ def main() -> None:
     )
     print(f"  Embeddings: {embeddings_path}")
 
-    from graph_feature_forge.seeding import seed_neo4j
+    from graph_feature_forge.graph.seeding import seed_neo4j
 
     print(f"\n  Source: {source_catalog}.{source_schema}")
 
