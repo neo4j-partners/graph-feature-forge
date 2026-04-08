@@ -184,10 +184,23 @@ def _configure_dspy(
 ) -> None:
     """Configure DSPy LM with validation and provider fallback."""
     if enable_tracing:
+        import warnings
+
         import mlflow
 
+        # Suppress Pydantic serialization warnings from MLflow autolog
+        # when it serializes LiteLLM response objects (Message/Choices
+        # field count mismatches).
+        warnings.filterwarnings(
+            "ignore",
+            message=".*PydanticSerializationUnexpectedValue.*",
+            category=UserWarning,
+        )
+
+        experiment_path = os.getenv("DATABRICKS_WORKSPACE_DIR", "/Shared/semantic-auth")
+        mlflow.set_experiment(experiment_path)
         mlflow.dspy.autolog()
-        print("  MLflow DSPy tracing enabled")
+        print(f"  MLflow DSPy tracing enabled (experiment: {experiment_path})")
 
     import dspy
 

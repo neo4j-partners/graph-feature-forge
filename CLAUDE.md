@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Web Fetching
+
+When fetching web content (documentation pages, llms.txt indexes, etc.), use the Firecrawl MCP tools (`firecrawl_scrape`, `firecrawl_search`) instead of WebFetch. If Firecrawl MCP tools are not available, ask the user to install the Firecrawl MCP server before proceeding.
+
 ## Databricks Skills
 
 This project has Databricks Claude Code skills installed in `.claude/skills/`. Skills teach patterns and pair with the Databricks MCP server for execution. Use the matching skill when working in these areas:
