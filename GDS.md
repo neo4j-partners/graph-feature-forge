@@ -404,4 +404,4 @@ These feed directly into the downstream ML feature table. The export pipeline re
 | `src/graph_feature_forge/graph_schema.py` | Node and relationship type definitions |
 | `agent_modules/gds_fastrp_features.py` | End-to-end FastRP pipeline with holdout and AutoML |
 | `agent_modules/gds_community_features.py` | Adds Louvain on top of FastRP, retrains and promotes |
-| `agent_modules/gds_baseline_comparison.py` | Three-way comparison: tabular vs. FastRP vs. FastRP+Louvain |
+| `agent_modules/ml_baseline_comparison.py` | Three-way comparison: tabular vs. FastRP vs. FastRP+Louvain |

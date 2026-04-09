@@ -1,4 +1,4 @@
-"""GDS Demo: PageRank, Louvain, and Node Similarity on Account nodes.
+"""GDS Demo: PageRank, Louvain, Node Similarity + Fraud Detection Report.
 
 Demonstrates the core GDS workflow — project the portfolio graph, run three
 algorithms, and write computed properties back to Account nodes in Neo4j.
@@ -21,8 +21,10 @@ Usage:
 
 from __future__ import annotations
 
+import json
 import os
 import sys
+from datetime import datetime, timezone
 
 # ---------------------------------------------------------------------------
 # Constants — define the projection and algorithm targets
@@ -30,7 +32,7 @@ import sys
 
 PROJECTION_NAME = "gds-demo"
 
-NODE_LABELS = ["Customer", "Account", "Bank", "Position", "Stock", "Company"]
+NODE_LABELS = ["Customer", "Account", "Bank", "Position", "Stock", "Company", "Transaction"]
 
 RELATIONSHIP_SPEC = {
     "HAS_ACCOUNT": {"orientation": "UNDIRECTED"},
@@ -38,7 +40,11 @@ RELATIONSHIP_SPEC = {
     "HAS_POSITION": {"orientation": "UNDIRECTED"},
     "OF_SECURITY": {"orientation": "UNDIRECTED"},
     "OF_COMPANY": {"orientation": "UNDIRECTED"},
+    "PERFORMS": {"orientation": "UNDIRECTED"},
+    "BENEFITS_TO": {"orientation": "UNDIRECTED"},
 }
+
+REPORT_PATH = os.getenv("FRAUD_REPORT_PATH", "fraud_report.json")
 
 
 # ---------------------------------------------------------------------------
@@ -58,9 +64,10 @@ def connect(uri: str, username: str, password: str, database: str):
 def create_projection(gds):
     """Project the portfolio graph into GDS memory.
 
-    Includes Customer, Account, Bank, Position, Stock, and Company nodes
-    with five undirected relationship types.  Transaction nodes are excluded
-    because they outnumber other entities and would dominate the algorithms.
+    Includes Customer, Account, Bank, Position, Stock, Company, and
+    Transaction nodes with seven undirected relationship types.
+    Transaction connectivity enables GDS algorithms to detect money
+    flow patterns such as circular transfers and structuring.
 
     Returns the projected graph object G.
     """

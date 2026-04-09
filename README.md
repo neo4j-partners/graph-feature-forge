@@ -188,7 +188,7 @@ The GDS feature engineering stage runs as three sequential Databricks jobs via `
 |-------------|----------|-------------|------------|
 | `gds_fastrp_features.py` | `notebooks/gds_fastrp_features.py` | Projects portfolio graph in GDS, computes 128-dim FastRP embeddings, exports to Delta, trains AutoML classifier, scores held-out customers, writes predictions to Neo4j. Registers model with Champion alias. | Neo4j Aura with GDS |
 | `gds_community_features.py` | `notebooks/gds_community_features.py` | Adds Louvain community detection as a categorical feature. Retrains AutoML with combined features, promotes Champion if F1 improves. Runs kNN for nearest-neighbor visualization. | `gds_fastrp_features` |
-| `gds_baseline_comparison.py` | `notebooks/gds_baseline_comparison.py` | Trains tabular-only model (annual_income, credit_score). Produces three-way MLflow comparison and feature importance analysis. | `gds_fastrp_features` |
+| `ml_baseline_comparison.py` | `notebooks/ml_baseline_comparison.py` | Trains tabular-only model (annual_income, credit_score). Produces three-way MLflow comparison and feature importance analysis. | `gds_fastrp_features` |
 
 The entry points run on Databricks Runtime 17.x LTS ML clusters (AutoML removed as built-in in 18.0+). The notebooks remain for interactive exploration in the Databricks notebook UI.
 
@@ -224,7 +224,7 @@ Each phase builds the wheel, uploads the entry point, and submits a job. The enr
 | `generate_html.py` | html | Generate HTML docs + embeddings via LLM/embedding endpoints on-cluster |
 | `gds_fastrp_features.py` | 4a | FastRP → Delta export → holdout → AutoML → register Champion → score → Neo4j writeback |
 | `gds_community_features.py` | 4b | FastRP + Louvain → retrain AutoML → promote Champion if F1 improves → kNN analysis |
-| `gds_baseline_comparison.py` | 4c | Tabular-only AutoML → three-way MLflow comparison → feature importance |
+| `ml_baseline_comparison.py` | 4c | Tabular-only AutoML → three-way MLflow comparison → feature importance |
 
 Neo4j credentials are protected via a Databricks secret scope. Run `./create_secrets.sh` to provision the scope from `.env` values.
 
@@ -277,7 +277,7 @@ graph_feature_forge/
 ├── notebooks/
 │   ├── gds_fastrp_features.py       # FastRP → AutoML → Neo4j writeback
 │   ├── gds_community_features.py    # + Louvain community detection
-│   └── gds_baseline_comparison.py   # Tabular-only baseline comparison
+│   └── ml_baseline_comparison.py   # Tabular-only baseline comparison
 ├── agent_modules/
 │   ├── load_data.py                 # Create Delta tables from raw CSVs
 │   ├── seed_neo4j.py                # Seed Neo4j from Delta tables
@@ -285,7 +285,7 @@ graph_feature_forge/
 │   ├── generate_html.py             # Generate HTML docs + embeddings via LLM
 │   ├── gds_fastrp_features.py       # FastRP → AutoML → Neo4j writeback
 │   ├── gds_community_features.py    # + Louvain community detection
-│   └── gds_baseline_comparison.py   # Tabular-only baseline comparison
+│   └── ml_baseline_comparison.py   # Tabular-only baseline comparison
 ├── cli/                       # Job submission CLI (wraps databricks-job-runner)
 ├── tests/                     # Unit tests
 ├── run_pipeline.sh            # One-command pipeline orchestrator

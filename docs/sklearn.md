@@ -74,7 +74,7 @@ model. This is the minimum viable replacement.
 - `gds_fastrp_features.py` — swap `train_automl_classifier()` call to
   `train_sklearn_classifier()`
 - `gds_community_features.py` — same swap
-- `gds_baseline_comparison.py` — same swap if it uses AutoML
+- `ml_baseline_comparison.py` — same swap if it uses AutoML
 
 **What to verify:**
 
@@ -139,7 +139,7 @@ Based on what we learn in Phase 2, make targeted improvements.
 | `agent_modules/gds_fastrp_features.py` | 1 | Call `train_sklearn_classifier()` instead of `train_automl_classifier()` |
 | `agent_modules/gds_fastrp_features.py` | 2.5 | Add `TEST_SIZE`/`PCA_COMPONENTS` config; conditionally skip `create_holdout()` |
 | `agent_modules/gds_community_features.py` | 1, 2.5 | Same as fastrp |
-| `agent_modules/gds_baseline_comparison.py` | 1, 2.5 | Same as fastrp |
+| `agent_modules/ml_baseline_comparison.py` | 1, 2.5 | Same as fastrp |
 | `pyproject.toml` | 1→2.5 | Version bump 0.4.0 → 0.5.0 |
 | `.env.example` | 2.5 | Add `TEST_SIZE=0.2` and `PCA_COMPONENTS=5` |
 | `run_pipeline.sh` | — | No change expected (orchestration is the same) |
@@ -170,7 +170,7 @@ Based on what we learn in Phase 2, make targeted improvements.
   - [x] Return summary object with best_trial.model_path and best_trial.evaluation_metric_score (compatible with existing callers)
 - [x] Update `gds_fastrp_features.py` to call new function
 - [x] Update `gds_community_features.py` to call new function
-- [x] Update `gds_baseline_comparison.py` to call new function
+- [x] Update `ml_baseline_comparison.py` to call new function
 - [x] Bump version to 0.4.0 in `pyproject.toml` (then 0.4.1 to bust wheel cache)
 - [x] Build wheel and upload to Databricks volume
 - [x] Run pipeline end-to-end on cluster
@@ -331,7 +331,7 @@ standard sklearn `train_test_split` inside `train_sklearn_classifier()`.
   `test_size: float | None` field, read from `TEST_SIZE` env var.
 - **`.env.example`** — add `TEST_SIZE=0.2` with comment.
 - **Callers** (`gds_fastrp_features.py`, `gds_community_features.py`,
-  `gds_baseline_comparison.py`) — pass `test_size=cfg.test_size` through
+  `ml_baseline_comparison.py`) — pass `test_size=cfg.test_size` through
   to `train_sklearn_classifier()`.
 
 **When `test_size` is set:**
@@ -438,7 +438,7 @@ If not, the tabular model is the right Champion.
 | `src/graph_feature_forge/ml/automl_training.py` | Add `test_size`, `pca_components` params; ColumnTransformer for PCA; per-class metrics; confusion matrix logging |
 | `agent_modules/gds_fastrp_features.py` | Read `TEST_SIZE`/`PCA_COMPONENTS` from env, pass through; conditionally skip `create_holdout()` when `test_size` is set |
 | `agent_modules/gds_community_features.py` | Same |
-| `agent_modules/gds_baseline_comparison.py` | Same |
+| `agent_modules/ml_baseline_comparison.py` | Same |
 | `.env.example` | Add `TEST_SIZE=0.2` and `PCA_COMPONENTS=5` |
 | `pyproject.toml` | Version bump to 0.5.0 |
 

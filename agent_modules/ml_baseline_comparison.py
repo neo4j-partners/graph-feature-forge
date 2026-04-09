@@ -9,8 +9,8 @@ holdout split and feature table.
 
 Usage:
     python -m cli upload --wheel
-    python -m cli upload gds_baseline_comparison.py
-    python -m cli submit gds_baseline_comparison.py --compute cluster
+    python -m cli upload ml_baseline_comparison.py
+    python -m cli submit ml_baseline_comparison.py --compute cluster
 """
 
 from __future__ import annotations

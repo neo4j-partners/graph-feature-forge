@@ -28,7 +28,7 @@ Tests whether Louvain community detection improves over embeddings alone. Adds `
 * **Training with conditional promotion**: Trains the same three classifiers under the `/Shared/graph_feature_forge/fastrp_louvain_risk_classification` experiment; compares the new best F1 against the current Champion's F1 and promotes the new version only if it exceeds it
 * **kNN nearest-neighbor analysis**: Runs kNN on FastRP embeddings with top-K of 5 to create `SIMILAR_TO` relationships; analyzes spotlight customers (James Anderson, Maria Rodriguez, Robert Chen) to show how community membership correlates with embedding similarity
 
-### gds_baseline_comparison.py
+### ml_baseline_comparison.py
 
 Trains a tabular-only model that excludes all graph features and produces a three-way comparison across all experiments. This entry point validates that graph structure contributes predictive value beyond what `annual_income` and `credit_score` provide on their own.
 

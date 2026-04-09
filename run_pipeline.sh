@@ -79,7 +79,7 @@ phase_gds() {
     echo "=== Upload GDS entry points ==="
     uv run python -m cli upload gds_fastrp_features.py
     uv run python -m cli upload gds_community_features.py
-    uv run python -m cli upload gds_baseline_comparison.py
+    uv run python -m cli upload ml_baseline_comparison.py
 
     echo ""
     echo "=== Submit GDS jobs (sequential) ==="
@@ -93,7 +93,7 @@ phase_gds() {
 
     echo ""
     echo "--- Step 3/3: GDS Baseline comparison ---"
-    uv run python -m cli submit gds_baseline_comparison.py --compute cluster --no-wait
+    uv run python -m cli submit ml_baseline_comparison.py --compute cluster --no-wait
 
     echo ""
     echo "============================================================"
