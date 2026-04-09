@@ -56,9 +56,9 @@ class GeneratorConfig(BaseSettings):
     embedding_dimensions: int = 1024
 
     # --- Paths ---
-    csv_dir: Path = Path("data/csv")
-    html_output_dir: Path = Path("data/html")
-    embedding_output_dir: Path = Path("data/embeddings")
+    csv_dir: Path = Path("csv")
+    html_output_dir: Path = Path("html")
+    embedding_output_dir: Path = Path("embeddings")
     volume_base_path: str = "/Volumes/graph_feature_forge/enrichment/source-data"
 
     # --- Mode ---

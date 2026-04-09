@@ -1,104 +1,201 @@
 company_id,name,ticker_symbol,industry,sector,market_cap_billions,headquarters,founded_year,ceo,employee_count,annual_revenue_billions
-CO001,TechCore Solutions,TCOR,Software,Technology,145.6,San Francisco CA,2005,Sarah Mitchell,12500,18.3
-CO002,Global Finance Corp,GFIN,Banking,Financial Services,287.4,New York NY,1952,Michael Chen,45000,42.7
-CO003,BioMed Innovations,BIOM,Biotechnology,Healthcare,92.3,Boston MA,2010,Jennifer Park,8200,11.4
-CO004,Energy Dynamics Inc,ENDY,Oil & Gas,Energy,176.5,Houston TX,1978,Robert Williams,32000,89.6
-CO005,RetailWorld Markets,RTWM,Retail,Consumer Discretionary,68.9,Seattle WA,1995,Amanda Foster,28000,35.2
-CO006,AutoTech Systems,AUTS,Automotive,Consumer Discretionary,124.7,Detroit MI,1985,David Johnson,19500,56.3
-CO007,CloudFirst Technologies,CLFT,Cloud Services,Technology,213.8,Austin TX,2008,Lisa Anderson,15000,28.9
-CO008,PharmaLife Global,PHLG,Pharmaceuticals,Healthcare,198.2,Philadelphia PA,1965,Thomas Garcia,38000,73.5
-CO009,Industrial Metals Corp,IMCO,Mining,Materials,45.7,Phoenix AZ,1982,Emily Roberts,6700,12.8
-CO010,ConsumerGoods Plus,CGPL,Consumer Products,Consumer Staples,87.4,Chicago IL,1972,Christopher Lee,21000,29.6
-CO011,AeroSpace Dynamics,ASDY,Aerospace,Industrials,156.3,Los Angeles CA,1968,Jessica Martinez,27000,64.2
-CO012,TeleConnect Networks,TCON,Telecommunications,Communication Services,234.9,Dallas TX,1990,Matthew Brown,52000,98.4
-CO013,RealEstate Capital,RECA,Real Estate,Real Estate,63.2,Miami FL,2000,Amanda White,4200,15.7
-CO014,Investment Holdings Ltd,IHLD,Asset Management,Financial Services,112.8,Boston MA,1988,Daniel Harris,9800,22.4
-CO015,Media Entertainment Group,MENG,Media,Communication Services,178.4,New York NY,1955,Sarah Thompson,35000,47.3
-CO016,FoodService Global,FSGB,Restaurants,Consumer Discretionary,42.8,Atlanta GA,1998,Michael Davis,67000,18.9
-CO017,Logistics Express,LGEX,Transportation,Industrials,95.6,Memphis TN,1987,Jennifer Wilson,23000,32.1
-CO018,Semiconductor Tech,SMTC,Semiconductors,Technology,267.3,San Jose CA,2001,Robert Anderson,18000,41.6
-CO019,Insurance Solutions,ISOL,Insurance,Financial Services,143.7,Hartford CT,1945,Lisa Martinez,28000,56.8
-CO020,Construction Materials,CNMT,Construction,Industrials,56.4,Denver CO,1979,David Taylor,12000,19.3
-CO021,AgriTech Innovations,AGTI,Agriculture,Consumer Staples,38.9,Des Moines IA,2005,Emily Garcia,5400,8.7
-CO022,Renewable Power Inc,RPOW,Renewable Energy,Energy,89.2,Portland OR,2012,Thomas Johnson,7800,14.2
-CO023,Financial Analytics,FIAN,Retail Investment,Financial Services,73.5,Charlotte NC,2015,Amanda Chen,3600,9.8
-CO024,Hospitality Resorts,HOSR,Hotels,Consumer Discretionary,51.3,Las Vegas NV,1988,Christopher White,34000,21.4
-CO025,Defense Systems Corp,DSYS,Defense,Industrials,189.6,Washington DC,1963,Jessica Lee,41000,72.9
-CO026,Chemical Industries,CHIN,Chemicals,Materials,102.4,Houston TX,1971,Matthew Rodriguez,16000,38.5
-CO027,Gaming Entertainment,GENT,Gaming,Consumer Discretionary,67.8,Las Vegas NV,2003,Daniel Brown,12000,16.7
-CO028,Medical Devices Inc,MDEV,Medical Equipment,Healthcare,134.6,Minneapolis MN,1980,Sarah Harris,22000,42.3
-CO029,Beverage Corporation,BEVC,Beverages,Consumer Staples,156.7,Atlanta GA,1962,Michael Thompson,58000,67.4
-CO030,Textile Manufacturing,TXTM,Textiles,Consumer Discretionary,28.4,Charlotte NC,1985,Jennifer Davis,14000,7.6
-CO031,Security Systems,SECY,Cybersecurity,Technology,118.9,San Francisco CA,2009,Robert Wilson,9200,17.5
-CO032,Marine Shipping,MRSH,Shipping,Industrials,45.2,Seattle WA,1992,Lisa Anderson,8700,13.9
-CO033,Furniture Designs,FURN,Home Furnishings,Consumer Discretionary,32.6,Grand Rapids MI,1978,David Martinez,11000,9.4
-CO034,Education Tech,EDTC,EdTech,Technology,56.8,Boston MA,2011,Emily Taylor,4800,7.2
-CO035,Water Utilities,WTUT,Utilities,Utilities,78.3,San Diego CA,1956,Thomas Garcia,12000,18.6
-CO036,Paper Products,PAPR,Paper & Packaging,Materials,41.7,Portland OR,1974,Amanda Johnson,9500,11.8
-CO037,Healthcare Services,HCSR,Healthcare Providers,Healthcare,167.9,Nashville TN,1985,Christopher Chen,45000,54.3
-CO038,Electronics Retail,ELRT,Consumer Electronics,Consumer Discretionary,89.4,Minneapolis MN,1989,Jessica White,42000,38.7
-CO039,Data Centers Corp,DTCR,Data Infrastructure,Technology,142.3,Dallas TX,2006,Matthew Lee,6700,21.9
-CO040,Coffee Roasters,COFR,Coffee,Consumer Staples,34.2,Seattle WA,1999,Daniel Rodriguez,8900,12.5
-CO041,Luxury Brands,LUXB,Luxury Goods,Consumer Discretionary,123.5,New York NY,1987,Sarah Brown,15000,28.4
-CO042,Steel Production,STLP,Steel,Materials,67.9,Pittsburgh PA,1969,Michael Harris,18000,23.7
-CO043,Banking Solutions Tech,BSOL,Banking Software,Technology,94.6,Austin TX,2007,Jennifer Thompson,7200,13.4
-CO044,Airline Services,AIRS,Airlines,Industrials,108.7,Atlanta GA,1973,Robert Davis,35000,47.6
-CO045,Solar Energy Systems,SOEN,Solar,Energy,76.4,Phoenix AZ,2010,Lisa Wilson,6100,11.9
-CO046,Entertainment Studios,ENST,Film & TV,Communication Services,145.8,Los Angeles CA,1965,David Anderson,12000,32.8
-CO047,Fitness Centers,FITC,Fitness,Consumer Discretionary,23.7,Irving TX,2002,Emily Martinez,18000,6.4
-CO048,Grocery Chains,GROC,Supermarkets,Consumer Staples,112.3,Cincinnati OH,1958,Thomas Taylor,89000,56.2
-CO049,Internet Services,INSR,Internet,Communication Services,298.4,Mountain View CA,1998,Amanda Garcia,67000,89.3
-CO050,Mobile Devices,MOBD,Consumer Electronics,Technology,342.6,Cupertino CA,1976,Christopher Johnson,147000,156.8
-CO051,Payment Processing,PAYP,Financial Technology,Financial Services,187.3,San Jose CA,2009,Jessica Chen,8900,24.7
-CO052,Artificial Intelligence,ARTI,AI Services,Technology,256.7,San Francisco CA,2015,Matthew White,12000,18.9
-CO053,Genetic Testing,GENT,Biotechnology,Healthcare,42.8,San Diego CA,2013,Daniel Lee,3400,4.6
-CO054,Space Technology,SPTC,Aerospace,Industrials,168.9,Hawthorne CA,2002,Sarah Rodriguez,9500,23.4
-CO055,Streaming Media,STRM,Entertainment,Communication Services,234.5,Los Gatos CA,1997,Michael Brown,11000,31.6
-CO056,E-Commerce Global,ECOM,Online Retail,Consumer Discretionary,1245.7,Seattle WA,1994,Jennifer Harris,1298000,386.4
-CO057,Social Networks Inc,SNET,Social Media,Communication Services,678.9,Menlo Park CA,2004,Robert Thompson,58604,113.6
-CO058,Quantum Computing,QCOM,Computing,Technology,89.4,Cambridge MA,2016,Lisa Davis,2800,3.7
-CO059,Drone Technology,DRON,Unmanned Systems,Industrials,34.6,San Francisco CA,2014,David Wilson,4200,5.8
-CO060,3D Printing Systems,TDPR,Manufacturing Tech,Industrials,28.9,Minneapolis MN,2011,Emily Anderson,3100,4.2
-CO061,Augmented Reality,AUGR,AR/VR,Technology,67.3,Redmond WA,2017,Thomas Martinez,5600,8.9
-CO062,Blockchain Solutions,BLCH,Cryptocurrency,Financial Services,45.2,San Francisco CA,2012,Amanda Taylor,2700,6.4
-CO063,Autonomous Vehicles,AUVO,Transportation Tech,Technology,156.8,Palo Alto CA,2009,Christopher Garcia,7800,14.2
-CO064,Robotics Industries,ROBO,Robotics,Industrials,92.7,Boston MA,2008,Jessica Johnson,6400,12.8
-CO065,Nanotechnology Corp,NANO,Advanced Materials,Materials,23.4,Santa Barbara CA,2015,Matthew Chen,1900,2.9
-CO066,Green Buildings,GRNB,Sustainable Construction,Real Estate,38.7,Portland OR,2010,Daniel White,4300,7.1
-CO067,Electric Vehicles,ELEV,Automotive,Consumer Discretionary,687.3,Fremont CA,2003,Sarah Lee,70757,31.5
-CO068,Battery Technology,BATT,Energy Storage,Technology,124.6,Reno NV,2011,Michael Rodriguez,8900,15.7
-CO069,Satellite Communications,SATC,Communications,Communication Services,78.4,Arlington VA,2002,Jennifer Brown,5200,11.3
-CO070,Genomics Research,GENR,Biotechnology,Healthcare,56.8,South San Francisco CA,2012,Robert Harris,4100,7.8
-CO071,Immunotherapy Inc,IMMU,Biopharmaceuticals,Healthcare,89.3,Cambridge MA,2013,Lisa Thompson,6700,9.4
-CO072,Digital Payments,DIGP,FinTech,Financial Services,167.4,San Francisco CA,2010,David Davis,12000,21.8
-CO073,Cybersecurity Defense,CYBD,Security Software,Technology,143.8,Sunnyvale CA,2007,Emily Wilson,9800,18.3
-CO074,Agricultural Biotech,AGBT,AgTech,Consumer Staples,34.2,St Louis MO,2006,Thomas Anderson,5200,6.9
-CO075,Smart Home Tech,SMHT,IoT Devices,Technology,72.6,San Jose CA,2014,Amanda Martinez,6300,10.4
-CO076,Clean Water Solutions,CLWS,Environmental,Utilities,28.9,Boulder CO,2012,Christopher Taylor,3400,5.2
-CO077,Carbon Capture Tech,CARC,Environmental Tech,Industrials,42.1,Houston TX,2015,Jessica Garcia,2800,4.1
-CO078,Vertical Farming,VTFM,Agriculture Tech,Consumer Staples,18.7,Newark NJ,2016,Matthew Johnson,1600,2.3
-CO079,Ocean Energy Systems,OCES,Renewable Energy,Energy,31.4,San Diego CA,2013,Daniel Chen,2200,3.8
-CO080,Biofuel Production,BIOF,Alternative Energy,Energy,23.6,Des Moines IA,2009,Sarah White,3100,4.7
-CO081,Medical Imaging,MEDI,Healthcare Technology,Healthcare,98.7,Cleveland OH,1985,Michael Lee,11000,16.9
-CO082,Telemedicine Services,TMED,Digital Health,Healthcare,67.4,New York NY,2015,Jennifer Rodriguez,4800,8.3
-CO083,Mental Health Apps,MHAP,Health Tech,Healthcare,12.8,San Francisco CA,2017,Robert Brown,1200,1.4
-CO084,Precision Agriculture,PRAG,AgTech,Consumer Staples,21.3,Lincoln NE,2014,Lisa Harris,2400,3.6
-CO085,Smart Grid Solutions,SMGR,Energy Tech,Utilities,54.7,Austin TX,2011,David Thompson,4700,7.8
-CO086,Nuclear Innovation,NUCL,Nuclear Energy,Energy,87.3,Charlotte NC,2008,Emily Davis,6200,12.4
-CO087,Hydrogen Fuel Cells,HYDR,Alternative Energy,Energy,45.8,Los Angeles CA,2013,Thomas Wilson,3800,6.2
-CO088,Wind Power Systems,WIND,Renewable Energy,Energy,92.4,Des Moines IA,2005,Amanda Anderson,8300,14.7
-CO089,Geothermal Energy,GEOT,Renewable Energy,Energy,19.4,San Francisco CA,2014,Christopher Martinez,1800,2.9
-CO090,Tidal Power Tech,TIDL,Marine Energy,Energy,14.6,Portland ME,2016,Jessica Taylor,1100,1.6
-CO091,Advanced Composites,ADVC,Materials Science,Materials,38.2,Seattle WA,2010,Matthew Garcia,3600,6.4
-CO092,Smart Textiles,SMTX,Wearable Tech,Consumer Discretionary,15.7,New York NY,2015,Daniel Johnson,1900,2.7
-CO093,Food Tech Innovation,FTEC,Food Science,Consumer Staples,34.9,San Francisco CA,2013,Sarah Chen,3200,5.8
-CO094,Plant-Based Foods,PLBT,Alternative Proteins,Consumer Staples,28.4,Los Angeles CA,2011,Michael White,4100,7.3
-CO095,Microbiome Research,MICR,Biotechnology,Healthcare,21.7,Cambridge MA,2016,Jennifer Lee,1600,2.4
-CO096,Personalized Medicine,PMED,Healthcare Tech,Healthcare,56.3,Boston MA,2014,Robert Rodriguez,4300,8.1
-CO097,Neural Interfaces,NEUR,Neurotechnology,Healthcare,42.8,San Francisco CA,2017,Lisa Brown,2100,3.2
-CO098,Longevity Research,LONG,Biotechnology,Healthcare,67.9,Mountain View CA,2013,David Harris,3900,6.7
-CO099,Space Mining Corp,SPCM,Space Resources,Industrials,23.1,Seattle WA,2018,Emily Thompson,900,0.8
-CO100,Asteroid Mining,ASTM,Space Industry,Industrials,18.6,Los Angeles CA,2019,Thomas Davis,650,0.4
-CO101,Lunar Industries,LUNR,Space Commerce,Industrials,34.2,Houston TX,2017,Amanda Wilson,1800,2.1
-CO102,Mars Development,MARS,Space Exploration,Industrials,89.7,Hawthorne CA,2016,Christopher Anderson,3400,4.9
-
+CO001,Mitchell and Sons,PVYC,Film & TV,Communication Services,244.9,Woodville IA,2005,Shawn Jimenez,39317,36.9
+CO002,Palmer PLC,QDBA,Internet,Communication Services,28.6,Claudiaside NY,1959,Olivia Sampson,32938,8.4
+CO003,Thompson-Rosales,XRV,Paper & Packaging,Materials,205.0,South Ericburgh SC,1997,William Crawford,105663,61.7
+CO004,Harper-Hunter,CROZ,Media,Communication Services,65.9,South Bryan MN,1952,Beth Lopez,34022,7.8
+CO005,Combs LLC,QPA,Telecommunications,Communication Services,50.9,Pamelahaven DC,1987,Cindy Mcneil,14473,13.3
+CO006,"Valdez, Santos and Brown",VGU,Chemicals,Materials,134.3,Buchananmouth DC,1945,Mark Beck,64972,48.0
+CO007,Jackson-Charles,PAG,Alternative Proteins,Consumer Staples,93.7,Brendanshire FL,1998,Joseph Chandler,88675,21.8
+CO008,"Munoz, Costa and Arnold",LFP,Advanced Materials,Materials,33.9,West Troystad WA,2011,Jennifer Williams,14982,3.0
+CO009,Guzman-Miller,MXB,Robotics,Industrials,95.7,Lake Christopher CO,1986,Elizabeth Moore,55689,16.1
+CO010,Rodriguez-Nichols,JPHN,Materials Science,Materials,133.4,Matthewsberg NV,1957,Aaron Berger,173174,38.6
+CO011,Martinez Inc,LXK,Materials Science,Materials,69.3,Davidside NJ,1996,Tyler Pineda,53902,15.0
+CO012,"Bryant, Morgan and Clements",BVCC,Beverages,Consumer Staples,236.8,Lake Arthurborough WV,1992,Melanie Chambers,200259,63.4
+CO013,Cohen PLC,KWY,Food Science,Consumer Staples,46.5,Greenshire NV,1951,Riley Mcbride,24552,6.9
+CO014,Reed-Lopez,JOC,Marine Energy,Energy,38.1,Port Maria LA,2018,Jasmin Hanna,39830,9.9
+CO015,"Hall, Evans and Reed",AHTX,Real Estate,Real Estate,45.1,South Mackenzie MN,1945,Paul Brown,14309,13.1
+CO016,"Brown, Johnson and Gardner",TFK,Utilities,Utilities,38.9,New Michaelbury MI,1965,David Duran,40754,12.8
+CO017,Wright Inc,EQR,Biotechnology,Healthcare,130.1,North Ashlee LA,2001,Robert Bennett,56082,28.8
+CO018,Smith Group,LHRM,Mining,Materials,25.1,West Larryside TX,1984,Dennis Johnston,5660,6.8
+CO019,"Sanchez, Young and Davis",THD,Restaurants,Consumer Discretionary,35.7,Lyonsview NY,2000,Mary Bauer,31622,10.9
+CO020,Warner-Thomas,KTL,Energy Tech,Utilities,298.8,North Jessica NJ,1954,Thomas Bowman,297478,78.7
+CO021,Hudson-Wallace,KZE,Shipping,Industrials,30.5,Rowlandport SC,2003,Rhonda Goodwin,18713,7.6
+CO022,"Tucker, Dunn and Patterson",IEN,Luxury Goods,Consumer Discretionary,94.2,Holmesshire DE,2012,Chad Austin,69775,18.1
+CO023,"Fowler, Weiss and Obrien",CGE,Utilities,Utilities,77.1,Lake Danielland GA,1954,Rebecca Barry,66867,24.9
+CO024,Lopez and Sons,DBLH,Sustainable Construction,Real Estate,19.9,West Geoffreymouth LA,2020,Robert Brown,9713,3.6
+CO025,Ramos-Adams,BWWP,Data Infrastructure,Technology,70.3,North Linda NC,1994,Michael Diaz,106767,23.4
+CO026,Wolfe-West,IMD,Communications,Communication Services,34.3,Maryborough AR,2002,Joel Ford,12655,8.3
+CO027,Turner-Hamilton,ZNPJ,Energy Storage,Energy,64.7,Alisonton ME,1994,Stacy Turner,72420,17.6
+CO028,Kramer and Sons,IOK,Energy Tech,Utilities,43.2,East Grace KY,1964,Dawn Romero,12254,5.4
+CO029,"Meadows, Green and Porter",DSCO,Environmental,Utilities,346.5,West Marissa TN,1987,Daniel Francis,466781,119.6
+CO030,Anderson-Whitaker,QLJ,Environmental,Utilities,42.7,Walterview MS,1984,Cody Duncan,46614,16.4
+CO031,"Long, Bennett and Gonzales",CVC,Renewable Energy,Energy,27.3,Hoffmanside WY,2014,Deborah Rodriguez,12019,8.9
+CO032,"Robbins, Olson and Jones",ESQ,Construction,Industrials,26.4,Lake Jennifermouth HI,2001,Holly Becker,39953,8.2
+CO033,"Simmons, Hernandez and Lopez",GGZU,Sustainable Construction,Real Estate,151.8,North Josephton IL,1992,Christopher Hawkins,135060,33.5
+CO034,Lopez-Fuller,ZVUD,Environmental Tech,Industrials,452.0,West Melissa KY,1951,Robert Brown,143274,116.4
+CO035,"Terry, Robinson and Garcia",CELN,Mining,Materials,194.0,New Jason NV,1956,Brad Sanders,98669,43.5
+CO036,Garcia Inc,KJK,IoT Devices,Technology,42.9,New Morganbury CO,1992,Jonathon Sanders,18248,4.8
+CO037,Moody Ltd,DHV,Alternative Proteins,Consumer Staples,169.8,Travisshire VT,1962,Robert Burton,216416,47.0
+CO038,Alvarado-Stevens,VOS,AI Services,Technology,34.4,South Samuel ND,1999,Marissa Washington,6103,6.1
+CO039,Boyd and Sons,BVMN,Space Industry,Industrials,120.7,Johnsonshire SD,2010,Gregory Dillon,16857,20.9
+CO040,Wallace Group,ERNJ,Beverages,Consumer Staples,211.0,North Andrewview ND,2014,Tammy Rios,132487,54.3
+CO041,"Foster, Crawford and Cantrell",ZGAU,Telecommunications,Communication Services,210.5,West Michael MN,1975,Peter Anderson,267480,68.8
+CO042,"Greene, Rios and Booth",JIQ,Beverages,Consumer Staples,332.2,Lake Calebville WY,2004,Angela Glass,62854,46.0
+CO043,"Frey, Howard and Mcclure",FUXI,Telecommunications,Communication Services,34.1,Nicholaschester MD,2010,Amy Gonzales,7535,7.9
+CO044,"Davis, Salazar and Brown",JUWI,Utilities,Utilities,68.0,Nelsonside DE,1992,Kenneth Kelly,72258,15.0
+CO045,Johnson-Ayers,RJUG,Beverages,Consumer Staples,15.6,Turnerview CO,1999,Karen Miller,16691,5.4
+CO046,Leon and Sons,IHL,Consumer Products,Consumer Staples,31.7,South Markshire VA,1999,Shane Nielsen,27354,7.1
+CO047,Howard-Yu,HZYB,Agriculture,Consumer Staples,27.7,South Rogerfort SD,1996,Glenn Lambert,39374,8.2
+CO048,"Adams, Snyder and Russell",ABUJ,Retail Investment,Financial Services,70.7,Lukeville MO,2017,Laura Montgomery,17630,15.7
+CO049,"Mccarthy, Molina and Barrera",KQGC,Retail Investment,Financial Services,79.8,Kimberlyfurt WV,1968,Kimberly Garrison,39319,20.7
+CO050,Smith Inc,ZHX,Fitness,Consumer Discretionary,38.5,West James NY,1970,Michael Hanson,10051,8.6
+CO051,Moore-George,SOHH,Energy Tech,Utilities,201.4,Morashire HI,1967,Adrian Escobar,39294,23.9
+CO052,Hawkins LLC,AOJU,Asset Management,Financial Services,96.7,New Valerieburgh OK,1961,Bruce Dawson,86471,17.3
+CO053,Macdonald Inc,TVBZ,Social Media,Communication Services,62.8,Choimouth TN,1954,Jonathan Pena,53400,11.9
+CO054,Maldonado Inc,TDN,Materials Science,Materials,83.3,Joseshire AR,1960,Scott Shaw,51985,11.0
+CO055,Peck Inc,VGQO,Solar,Energy,97.2,Evansberg FL,1983,Alison Bowman,91011,27.7
+CO056,Watson Group,RSP,Real Estate,Real Estate,112.4,Lorifort OR,1950,Brittany Sherman,93318,36.6
+CO057,Anderson Group,XOQH,Utilities,Utilities,57.1,Michaelton KS,1996,Ralph Garrett,15084,5.7
+CO058,Wheeler-Vazquez,IDW,Entertainment,Communication Services,50.7,Leslieshire MA,1989,Andrew Weiss,25384,9.2
+CO059,Kemp LLC,DBY,Fitness,Consumer Discretionary,36.6,Lake Amymouth SC,1998,Janet Smith,20500,9.7
+CO060,Mccall-Warren,MIAY,Financial Technology,Financial Services,63.0,East Ronnie NC,2003,Brenda Bennett,67587,15.0
+CO061,Perez-Allen,HACD,Environmental,Utilities,152.1,South Pamela KY,1991,Justin Walls,101287,31.7
+CO062,Horton-Martinez,BNTH,Solar,Energy,92.1,North Keithmouth SC,1960,Jason Smith,38632,11.6
+CO063,"Phelps, Yang and Stewart",BDI,Environmental Tech,Industrials,67.6,North Thomasville NM,2011,John Anderson,36146,16.6
+CO064,Ho Ltd,KQV,Sustainable Construction,Real Estate,81.9,Lambland PA,1988,Tonya Wright,61387,19.4
+CO065,Morton-Chavez,JRZ,Communications,Communication Services,424.2,West Jennifer PA,1984,Kristin Washington,116087,127.3
+CO066,Franco-Craig,SPE,Film & TV,Communication Services,14.6,Dianeland SD,1993,Ryan Collins,6217,1.3
+CO067,Salazar-Harrison,LKK,Healthcare Providers,Healthcare,80.6,Port Maureenton IN,1997,Jared Reyes,81155,18.6
+CO068,Jordan and Sons,OZM,Semiconductors,Technology,295.0,West Sarahburgh MO,1985,Anthony Allen,228672,73.9
+CO069,Spencer Group,PEGO,Environmental,Utilities,330.6,Georgechester IA,1983,Gregory Payne,283954,99.5
+CO070,Gibson Ltd,HOOX,Film & TV,Communication Services,50.8,South Adrianport MT,1989,Anita Walsh,35399,15.7
+CO071,Nelson-Pratt,TFVH,Internet,Communication Services,18.6,Jeremyfurt OK,1979,Jessica Parrish,9092,5.0
+CO072,"Ward, Esparza and Abbott",QBK,Environmental,Utilities,244.5,Garciaport VA,2005,Shelby Howard,416156,92.7
+CO073,Watson Group,THH,Internet,Communication Services,108.7,Huntertown AR,1956,Victoria Moore,150376,34.4
+CO074,Arnold Inc,WEXZ,Semiconductors,Technology,11.6,New Kevinville MT,2008,Gabrielle Black,8466,4.2
+CO075,Tanner-Sanders,OCZH,Software,Technology,112.3,East Rhonda TN,2014,Scott Robinson,40264,13.8
+CO076,Sanchez LLC,ITQ,Restaurants,Consumer Discretionary,25.8,North Gregoryport VA,1968,Joseph Mcconnell,16346,4.5
+CO077,Black-Gibson,VNCR,Renewable Energy,Energy,46.5,West Charlesville ID,1962,Aaron Evans,9162,3.8
+CO078,Woodward Ltd,YHSA,Communications,Communication Services,109.9,West Brandi TN,1991,Elizabeth Ramirez,26943,12.9
+CO079,Mays-Waller,RQYJ,Environmental Tech,Industrials,309.6,North Patriciamouth IA,1973,Lisa Carr,345728,69.8
+CO080,Gonzalez-Baker,TUVT,Coffee,Consumer Staples,87.0,Bradland UT,1955,Tyler Smith,79091,17.0
+CO081,Bolton-Lewis,ODI,Biotechnology,Healthcare,38.0,Rothchester ND,2001,Arthur Collins,11938,10.1
+CO082,Baker-Wilson,LNL,Paper & Packaging,Materials,59.2,North Stevenmouth AR,2016,James Serrano,45319,18.4
+CO083,Jordan-Martinez,BIB,Cybersecurity,Technology,331.5,Lake Kelsey AR,1953,Elizabeth Knight,88688,57.0
+CO084,"Ballard, Price and Thompson",JXLX,Cryptocurrency,Financial Services,155.9,North Lisa MO,1993,Darren Farmer,71924,55.4
+CO085,Watkins Group,SFA,Paper & Packaging,Materials,65.3,Patriciaberg AK,1983,Jill Hall,33741,14.1
+CO086,Bennett Inc,JHYS,Renewable Energy,Energy,182.1,Noahstad DE,1949,Jeremy Flowers,267097,59.2
+CO087,"Anderson, Chen and Santos",BPL,Cybersecurity,Technology,65.2,Port Steven UT,1951,Alex Harrison,85249,21.0
+CO088,Rivera PLC,GXOP,Retail Investment,Financial Services,66.5,Port Shawn WY,1986,Andrea Moore,56502,17.2
+CO089,Mason Ltd,OBIQ,Cryptocurrency,Financial Services,49.5,New Normanfort MO,2012,Kevin Holden,15001,6.3
+CO090,"Evans, Anderson and Walker",WHS,Paper & Packaging,Materials,1500.0,Michaelchester NJ,1952,Darren Johnson,528236,387.5
+CO091,Smith-Anderson,ICL,Solar,Energy,110.4,Greenstad MS,1956,Karen Reyes,25510,10.7
+CO092,"Jenkins, Johnson and Tucker",ETS,Real Estate,Real Estate,62.7,New Jennifershire OK,1972,Lisa Lawrence,56388,11.7
+CO093,Smith LLC,ZDZ,Cybersecurity,Technology,221.8,Spencestad NM,1976,Courtney Robinson,82858,45.9
+CO094,Romero LLC,JNJG,Alternative Proteins,Consumer Staples,61.3,Natashaland NC,2008,Jennifer Merritt,76378,19.1
+CO095,Reed-Martin,IBWT,Beverages,Consumer Staples,97.5,Port Jennifer AK,1978,Maria Roberson,61806,30.3
+CO096,Smith and Sons,JVM,Solar,Energy,9.8,Ashleyland TN,1988,Karen Conrad,13281,3.8
+CO097,Guzman-Espinoza,TJD,Entertainment,Communication Services,100.7,Lake Mary OH,2007,Curtis Smith,44474,10.5
+CO098,"Nichols, Hudson and Oconnell",DQBD,Software,Technology,74.4,Brianview IN,2009,William Carlson,99643,21.1
+CO099,Hernandez-Smith,ANKA,Internet,Communication Services,86.4,South Frankshire WA,1980,Christopher Williams,77605,20.8
+CO100,Oliver Inc,XNG,Construction,Industrials,44.3,North Amyburgh SC,2012,Brian Lucas,16752,14.8
+CO101,Holmes-Nguyen,ZFR,Unmanned Systems,Industrials,29.1,South Lindaside CO,1949,Joseph Flowers,7768,7.5
+CO102,"Martin, Morton and Gardner",MLU,Semiconductors,Technology,158.8,Bennettstad OR,1957,Joshua Cantrell,124059,26.5
+CO103,Ross Ltd,EWA,Energy Tech,Utilities,39.3,Lyonsview IN,2020,Kenneth Rodriguez,44987,10.3
+CO104,Gomez-Rodriguez,JTUR,Environmental,Utilities,142.8,Theresaton CO,2009,Shawn Willis,28223,15.9
+CO105,Hoffman Group,ZIQU,Health Tech,Healthcare,31.3,Austinside NH,2007,Melissa Lopez,9955,6.3
+CO106,Moore-Roberts,UHG,Sustainable Construction,Real Estate,44.9,West Michaelport CA,1955,Tanya Johnson,21575,14.9
+CO107,Silva Inc,CAIJ,Manufacturing Tech,Industrials,39.8,Rogerstown LA,1958,Patrick Mcclure,27856,8.9
+CO108,Roberson PLC,COP,Transportation,Industrials,43.8,North Kaylaside DC,1986,Nancy Wallace,43156,13.7
+CO109,Barnes-Mayer,REG,Alternative Energy,Energy,41.5,West Brittanyland LA,2008,Jonathan Juarez,14413,7.0
+CO110,Lowe Inc,YSMQ,Health Tech,Healthcare,28.9,Hillton NJ,1958,Justin Miller,25643,5.8
+CO111,Jordan LLC,VWZD,Film & TV,Communication Services,76.9,Michaelberg MA,1970,Gina Wallace,34246,16.0
+CO112,Morgan-Davis,IHU,Energy Tech,Utilities,184.1,Davidview MS,1959,Rachel Collins,114344,73.5
+CO113,Allen-Harrell,YFUV,Mining,Materials,109.1,Port Frank CA,1997,Nicholas Burns,35922,19.3
+CO114,"Flores, Krueger and Jenkins",UBZM,Cryptocurrency,Financial Services,90.9,North Kevinfort MT,2013,Laurie Green,84483,27.4
+CO115,"Fitzgerald, Gutierrez and King",CGR,Food Science,Consumer Staples,105.3,Donnastad HI,1950,Scott Miles,146790,30.2
+CO116,Aguirre-Sanchez,CCFT,Alternative Proteins,Consumer Staples,116.0,South Kristin OK,2019,Oscar Oliver,63681,23.2
+CO117,"Stone, Ortiz and Green",IAC,Environmental,Utilities,35.8,Chasehaven NE,1955,Felicia Mendoza,13518,8.1
+CO118,Johnson LLC,CSLB,Film & TV,Communication Services,26.0,Tarabury AZ,1959,Connor Ramos,12481,3.0
+CO119,Petersen-Simpson,OIL,Alternative Energy,Energy,276.9,Lake Johnborough NJ,1974,Pamela Cox,137799,38.7
+CO120,Edwards-Ellis,LLA,Aerospace,Industrials,25.2,Wilcoxland IN,1971,Todd Lane,27089,8.4
+CO121,"Haynes, Russell and Koch",ILGW,Chemicals,Materials,117.6,West Adrian ND,1985,Carlos Jones,71230,31.5
+CO122,Patel Group,VSH,Social Media,Communication Services,34.2,Williamsland SC,2020,Troy Benson,17448,4.7
+CO123,Gallagher and Sons,POKM,Paper & Packaging,Materials,94.5,Justinstad OH,1967,Katherine Adams,25031,11.8
+CO124,"Cruz, Deleon and Frye",WYM,Social Media,Communication Services,340.4,East Erin IL,1994,James Dudley,298101,81.1
+CO125,Wade Ltd,EOUF,Unmanned Systems,Industrials,44.0,Riveraton AZ,1980,Antonio Macdonald,46048,14.5
+CO126,Solomon LLC,OGO,Social Media,Communication Services,168.6,North Christian MS,2014,John Henderson,82297,66.9
+CO127,Webb LLC,WAGW,Utilities,Utilities,147.2,Natashafort CO,2001,Sarah Murray,171788,46.5
+CO128,"Benson, Flores and Alvarez",QUV,Sustainable Construction,Real Estate,58.1,North Marissafort AR,2017,Rhonda Graves,31742,14.7
+CO129,"Stevens, Fisher and Schmidt",YNXV,Consumer Electronics,Consumer Discretionary,153.1,Nicolestad FL,1997,Michael Barron,101121,54.7
+CO130,Ramsey Inc,TRM,Alternative Proteins,Consumer Staples,109.7,Cabreramouth OR,1979,Brad Doyle,47165,11.4
+CO131,Kelly LLC,SWLM,Biopharmaceuticals,Healthcare,159.1,South Rebeccastad PA,1945,Jessica Keller,231943,56.0
+CO132,Tate LLC,VMIH,Defense,Industrials,263.8,Shannonburgh OK,2018,Karen Mathis,105831,22.5
+CO133,"Price, Price and Sanchez",AYFR,Financial Technology,Financial Services,29.1,East Juliefort FL,1983,Jamie Brown,11100,4.7
+CO134,Walters LLC,KHS,Utilities,Utilities,179.9,Williamfurt IA,1999,Gary Berry,40638,14.5
+CO135,Simpson PLC,NLA,Retail Investment,Financial Services,294.9,Peterside MI,1960,Catherine Ford,39619,36.1
+CO136,Brewer PLC,CJH,Transportation,Industrials,157.4,Jessicahaven MO,1962,Becky Miller,50653,16.0
+CO137,Cox Inc,JFTX,Real Estate,Real Estate,100.1,Jenniferborough SC,2001,Shelby Warren,82504,38.9
+CO138,Schmidt-Wilson,QGPS,Asset Management,Financial Services,385.5,Caitlinchester ME,1948,Brandon Edwards,202567,68.1
+CO139,Ray-Jones,HBXY,Chemicals,Materials,24.2,Jessicaburgh NY,1994,Kerry Ellis,19622,6.5
+CO140,Bullock-Serrano,DWOJ,Data Infrastructure,Technology,32.4,South Lucas UT,1967,Kelly Villarreal,3162,3.0
+CO141,Allison-Lee,QNKS,Environmental Tech,Industrials,85.7,New Jessicamouth CO,2013,Jacob Anderson,10300,9.1
+CO142,"Hopkins, Collier and Brown",NKQ,Marine Energy,Energy,47.5,Davisview TN,1953,Nancy Mata,32982,18.3
+CO143,James and Sons,DPBR,Oil & Gas,Energy,116.1,Williamstad TX,1967,Lindsay Thomas,133949,44.7
+CO144,"Lopez, Williams and Frederick",DUGX,Hotels,Consumer Discretionary,51.2,Gonzalezville WY,1948,Shawn Simmons,24186,12.7
+CO145,"Stanton, Good and Adams",LJMO,Real Estate,Real Estate,52.5,Lake Amandaberg MS,1965,Danny Harvey,52932,13.8
+CO146,Hoffman Group,BWG,Energy Storage,Energy,64.7,East Veronica NM,1991,Jennifer Newman,107835,24.5
+CO147,Mason Inc,FGXI,Materials Science,Materials,53.9,Port Gregory CA,2018,Christopher Mendoza,30910,19.9
+CO148,Price-Crawford,BMHV,Mining,Materials,86.9,Maryville MA,1956,Angela Lee,39600,12.5
+CO149,Thomas-Fox,MPM,Textiles,Consumer Discretionary,176.5,Herrerabury WY,1970,Danielle Garza,84654,59.1
+CO150,Bennett Group,OQS,Aerospace,Industrials,576.8,Matthewtown AL,1987,Whitney Levine,197547,65.3
+CO151,"Watts, Burke and Barnett",YZDH,Nuclear Energy,Energy,286.9,Lake Kara AZ,1974,Stephanie Montgomery,206418,87.3
+CO152,Becker-Reese,NQK,Personalized Medicine,Healthcare,35.8,Floresbury PA,2017,Jasmine Wang,59086,12.6
+CO153,"Ruiz, Jones and Russell",LGYD,Manufacturing Tech,Industrials,71.4,Arnoldville WY,2019,Lisa Jefferson,19591,8.5
+CO154,"Reynolds, Watkins and Spencer",MWCU,Nuclear Energy,Energy,12.2,Kingview MD,1950,Taylor Evans,11828,4.8
+CO155,Sanders-Peterson,VEYW,AI Services,Technology,39.0,West Kevin OK,2015,Cathy Carey,18310,13.2
+CO156,Lucas and Sons,DVJ,Software,Technology,95.0,South Franciscoshire SD,1955,Dustin Drake,28797,32.3
+CO157,Cabrera-Mack,VCWV,Healthcare Providers,Healthcare,254.0,Richardsonville DE,1950,Keith Terry,228391,79.2
+CO158,Ho-Baker,JXH,Robotics,Industrials,45.8,Osborneberg NH,1964,Wendy Bennett,30195,9.7
+CO159,Wright and Sons,JKQU,Cloud Services,Technology,157.8,Nelsonport KS,2014,Jamie Gardner,113710,40.1
+CO160,"Sutton, Lopez and Hernandez",HAPA,Sustainable Construction,Real Estate,97.2,Guerraville WY,1980,Erin Foster,190249,38.9
+CO161,Bates-Perkins,GVX,Healthcare Providers,Healthcare,5.6,Reedfort AR,1973,Alexandra Sanders,3365,2.2
+CO162,"Ramirez, Graham and Martin",USXA,Alternative Energy,Energy,389.7,West Elizabethfurt VT,1990,Ethan Thomas,161285,101.4
+CO163,Wagner-Braun,EABP,Social Media,Communication Services,76.0,Robinshire AK,2012,Michael Wilson,87928,21.0
+CO164,Gomez-Novak,XVI,Food Science,Consumer Staples,402.4,New Stevenville AK,1963,Michelle Martinez,574453,131.9
+CO165,"Ramirez, Shepherd and Ruiz",SRPI,Consumer Products,Consumer Staples,61.1,Williamsfort MA,1962,Sylvia Murray,30709,14.4
+CO166,"Rodriguez, Garcia and Hensley",FPEH,Materials Science,Materials,592.3,Leeport VT,1982,Kevin Jones,398767,230.8
+CO167,Potter Inc,DTGZ,Real Estate,Real Estate,360.4,Ryanfurt HI,1956,Johnny Bradshaw,249526,112.9
+CO168,Lane-Arroyo,GBG,AI Services,Technology,23.1,North Tinastad CT,1945,Robin Braun,7493,5.0
+CO169,Johnson-Case,JJVU,Unmanned Systems,Industrials,170.6,Blakechester OR,1973,Julie Martin,148706,31.0
+CO170,Vargas-Wells,XEB,Health Tech,Healthcare,116.5,East Steven CO,1988,Sherri Knight,25394,27.3
+CO171,"Armstrong, Ramirez and Evans",ECFE,Utilities,Utilities,284.8,Smithstad VT,2015,Sara Nichols,93173,47.0
+CO172,Hernandez PLC,KOM,Oil & Gas,Energy,303.7,New Kennethfurt AR,1991,Elizabeth Hale,85721,71.0
+CO173,Sawyer Ltd,ZMDU,Renewable Energy,Energy,183.4,Joshualand NM,2007,Stephanie Roberts,126964,52.3
+CO174,Bonilla-Anderson,EBLG,Coffee,Consumer Staples,106.1,Heathermouth LA,2017,Seth Compton,62097,20.2
+CO175,Richardson Inc,VVK,Real Estate,Real Estate,92.7,North Debbieburgh OH,2005,Kristin Chase,40068,16.3
+CO176,"Ross, Munoz and Lowery",DTE,Banking Software,Technology,138.0,Port Annahaven HI,1972,John Gray,147038,29.7
+CO177,Ray Group,VGX,Defense,Industrials,60.1,Lake Lisaborough CA,1956,Cynthia Thomas,21756,11.1
+CO178,Berger-Ayala,UQN,Communications,Communication Services,68.5,Michaelberg NE,1959,Emily White,73327,18.4
+CO179,Thomas-Moore,UWW,Pharmaceuticals,Healthcare,56.3,West Peter NE,1978,Andrew Smith,14839,15.5
+CO180,"Wilson, Young and Larsen",QRK,Home Furnishings,Consumer Discretionary,109.0,South Katherine MT,1987,Susan Hubbard,48780,25.3
+CO181,"Lee, Williams and Massey",VHHM,Consumer Products,Consumer Staples,24.0,West Samuel VT,1957,Eric Grimes,16966,7.9
+CO182,"Shaw, Lee and Hall",EFV,Space Industry,Industrials,222.4,North Frankshire WV,2007,Tim Kelley,61305,29.1
+CO183,"Green, Sweeney and Dunn",UNO,Paper & Packaging,Materials,165.1,Robertchester ID,1969,Steven Rivas,15304,16.3
+CO184,Garcia PLC,HVN,Data Infrastructure,Technology,115.7,Grantshire SD,1960,Ian Macdonald,73258,27.4
+CO185,"Hughes, Acosta and Robinson",IVGV,Social Media,Communication Services,45.4,Lake Rachael CO,1981,John Martin,11511,6.9
+CO186,"Washington, Smith and Barnes",WZR,Energy Tech,Utilities,141.5,Holmesmouth NM,1961,Jackie Lee,21762,11.7
+CO187,Webster-Hampton,LJJG,Wearable Tech,Consumer Discretionary,379.6,Port Audreyton NJ,1983,Beth Moreno,96655,78.6
+CO188,Nelson and Sons,OPHR,Materials Science,Materials,56.4,Derekmouth NM,1953,George Santiago,20414,10.4
+CO189,Hamilton-Perry,ENGB,Environmental,Utilities,173.9,West Stephanie RI,1996,Jason Hicks,191845,54.0
+CO190,Smith-Bridges,KTPZ,Consumer Electronics,Consumer Discretionary,125.4,Jonesshire IL,1988,Leslie Sharp,129042,31.5
+CO191,"Hall, Martin and White",VVWE,Energy Tech,Utilities,36.9,Mcgeemouth CT,2005,Eric Hughes,50053,12.5
+CO192,Hall PLC,RFFW,Cryptocurrency,Financial Services,49.6,Diazshire NE,1987,Sandra Peck,14630,11.3
+CO193,Boyd-Brooks,MFD,Computing,Technology,86.5,New Timothy UT,1993,Luis Mcneil,44431,31.0
+CO194,"Adkins, Miller and Maxwell",ZXZD,Solar,Energy,185.4,Port Joseph VA,1968,Debbie Berry,80681,52.3
+CO195,"Castro, Montgomery and Burke",LFU,Utilities,Utilities,74.7,Courtneybury OR,1965,Erica Edwards,27385,8.1
+CO196,Pena Inc,LMAN,Energy Tech,Utilities,186.4,South Rachel WA,1992,James Guerrero,13077,16.0
+CO197,Weaver-Jones,ICNH,Renewable Energy,Energy,51.6,North Joseph CA,1950,Ethan Walsh,53207,16.1
+CO198,"Matthews, Shannon and Carpenter",IXJ,Coffee,Consumer Staples,65.9,West Sonyamouth IL,1966,Brian Guerrero,27832,20.6
+CO199,Velazquez PLC,DSU,Computing,Technology,243.1,New Thomasborough MO,1977,Carlos Fisher,65794,65.7
+CO200,"Hall, Jackson and Garcia",BDL,Neurotechnology,Healthcare,22.2,Richardside DE,2015,Tara Hebert,11776,3.2

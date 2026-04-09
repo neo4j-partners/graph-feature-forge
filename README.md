@@ -78,17 +78,17 @@ uv sync
 # Copy environment template and fill in values
 cp .env.example .env
 
-# Generate synthetic data
-uv sync --extra generator
+# Generate synthetic data (self-contained project in data/)
+cd data && uv sync && cd ..
 
 # Part 1: Generate CSV files (500 customers, 50 banks, 200 companies — runs locally)
-uv run python -m data.csv_generator
+cd data && uv run csv_generator && cd ..
 
 # Part 2: Generate HTML documents + embeddings (dry-run: templates + random vectors, no Databricks needed)
-uv run python -m data.html_generator --dry-run
+cd data && uv run html_generator --dry-run && cd ..
 
 # Part 2 (live): Generate HTML + embeddings via Databricks endpoints (requires DATABRICKS_HOST + DATABRICKS_TOKEN)
-# uv run python -m data.html_generator
+# cd data && uv run html_generator && cd ..
 
 # Install dev tools and run tests
 uv sync --extra dev

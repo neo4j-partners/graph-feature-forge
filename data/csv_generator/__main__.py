@@ -1,4 +1,4 @@
-"""Allow running via `python -m data.csv_generator`."""
+"""Allow running via `python -m csv_generator`."""
 
 from .main import main
 

@@ -1,4 +1,4 @@
-"""Allow running via `python -m data.html_generator`."""
+"""Allow running via `python -m html_generator`."""
 
 from .main import main
 

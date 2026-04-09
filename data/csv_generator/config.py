@@ -65,4 +65,4 @@ class GeneratorConfig(BaseSettings):
 
     # --- Generator settings ---
     random_seed: int = 42
-    output_dir: str = "data/csv"
+    output_dir: str = "csv"
