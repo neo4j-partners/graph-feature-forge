@@ -206,7 +206,7 @@ def _train_and_register(cfg: GDSFastRPConfig) -> Any:
 
     summary = train_sklearn_classifier(
         feature_table=cfg.feature_table,
-        experiment_name="/Shared/graph_feature_forge/fastrp_risk_classification",
+        experiment_name=f"{os.environ['DATABRICKS_WORKSPACE_DIR']}/fastrp_risk_classification",
         test_size=cfg.test_size,
         pca_components=cfg.pca_components,
     )

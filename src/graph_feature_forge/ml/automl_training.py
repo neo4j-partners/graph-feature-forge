@@ -92,13 +92,9 @@ def reapply_holdout(
             "Re-run gds_fastrp_features.py to regenerate the holdout split."
         )
 
-    held_out_ids = set(
-        ground_truth_pdf[ground_truth_pdf["is_held_out"]]["customer_id"]
-    )
+    held_out_ids = set(ground_truth_pdf[ground_truth_pdf["is_held_out"]]["customer_id"])
     features_pdf = features_pdf.copy()
-    features_pdf.loc[
-        features_pdf["customer_id"].isin(held_out_ids), label_col
-    ] = None
+    features_pdf.loc[features_pdf["customer_id"].isin(held_out_ids), label_col] = None
     kept = features_pdf[label_col].notna().sum()
     held_out = len(held_out_ids)
     print(f"  Re-applied holdout: {kept} labels kept, {held_out} held out")
@@ -113,7 +109,9 @@ def reapply_holdout(
 class _SklearnTrial:
     """Minimal result object matching the AutoML summary.best_trial interface."""
 
-    def __init__(self, model_path: str, evaluation_metric_score: float, model_description: str):
+    def __init__(
+        self, model_path: str, evaluation_metric_score: float, model_description: str
+    ):
         self.model_path = model_path
         self.evaluation_metric_score = evaluation_metric_score
         self.model_description = model_description
@@ -160,7 +158,11 @@ def train_sklearn_classifier(
     from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
     from sklearn.linear_model import LogisticRegression
     from sklearn.metrics import classification_report, confusion_matrix
-    from sklearn.model_selection import StratifiedKFold, cross_val_score, train_test_split
+    from sklearn.model_selection import (
+        StratifiedKFold,
+        cross_val_score,
+        train_test_split,
+    )
     from sklearn.pipeline import Pipeline
     from sklearn.preprocessing import StandardScaler
 
@@ -184,12 +186,20 @@ def train_sklearn_classifier(
     X_train, X_test, y_train, y_test = X, None, y, None
     if test_size is not None:
         X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=test_size, stratify=y, random_state=42,
+            X,
+            y,
+            test_size=test_size,
+            stratify=y,
+            random_state=42,
         )
-        print(f"  Train/test split: {len(y_train)} train, {len(y_test)} test (test_size={test_size})")
+        print(
+            f"  Train/test split: {len(y_train)} train, {len(y_test)} test (test_size={test_size})"
+        )
 
-    print(f"  Training data: {len(y_train)} rows, {len(feature_cols)} features, "
-          f"{len(classes)} classes ({classes})")
+    print(
+        f"  Training data: {len(y_train)} rows, {len(feature_cols)} features, "
+        f"{len(classes)} classes ({classes})"
+    )
 
     if experiment_name:
         mlflow.set_experiment(experiment_name)
@@ -200,16 +210,26 @@ def train_sklearn_classifier(
 
     if pca_components is not None and fastrp_cols:
         n_components = min(pca_components, len(fastrp_cols))
-        preprocessor = ColumnTransformer([
-            ("fastrp_pca", Pipeline([
-                ("scaler", StandardScaler()),
-                ("pca", PCA(n_components=n_components)),
-            ]), fastrp_cols),
-            ("passthrough", StandardScaler(), other_cols),
-        ])
+        preprocessor = ColumnTransformer(
+            [
+                (
+                    "fastrp_pca",
+                    Pipeline(
+                        [
+                            ("scaler", StandardScaler()),
+                            ("pca", PCA(n_components=n_components)),
+                        ]
+                    ),
+                    fastrp_cols,
+                ),
+                ("passthrough", StandardScaler(), other_cols),
+            ]
+        )
         effective_features = n_components + len(other_cols)
-        print(f"  PCA: {len(fastrp_cols)} FastRP dims -> {n_components} components "
-              f"+ {len(other_cols)} tabular = {effective_features} features")
+        print(
+            f"  PCA: {len(fastrp_cols)} FastRP dims -> {n_components} components "
+            f"+ {len(other_cols)} tabular = {effective_features} features"
+        )
     else:
         preprocessor = StandardScaler()
         effective_features = len(feature_cols)
@@ -221,7 +241,9 @@ def train_sklearn_classifier(
 
     classifiers = {
         "RandomForest": RandomForestClassifier(n_estimators=100, random_state=42),
-        "GradientBoosting": GradientBoostingClassifier(n_estimators=100, random_state=42),
+        "GradientBoosting": GradientBoostingClassifier(
+            n_estimators=100, random_state=42
+        ),
         "LogisticRegression": LogisticRegression(max_iter=1000, random_state=42),
     }
 
@@ -254,18 +276,28 @@ def train_sklearn_classifier(
             if X_test is not None:
                 y_pred = pipe.predict(X_test)
                 report = classification_report(
-                    y_test, y_pred, target_names=classes, output_dict=True,
+                    y_test,
+                    y_pred,
+                    target_names=classes,
+                    output_dict=True,
                 )
                 for cls_name in classes:
-                    mlflow.log_metric(f"test_f1_{cls_name}", report[cls_name]["f1-score"])
-                    mlflow.log_metric(f"test_precision_{cls_name}", report[cls_name]["precision"])
-                    mlflow.log_metric(f"test_recall_{cls_name}", report[cls_name]["recall"])
+                    mlflow.log_metric(
+                        f"test_f1_{cls_name}", report[cls_name]["f1-score"]
+                    )
+                    mlflow.log_metric(
+                        f"test_precision_{cls_name}", report[cls_name]["precision"]
+                    )
+                    mlflow.log_metric(
+                        f"test_recall_{cls_name}", report[cls_name]["recall"]
+                    )
                 mlflow.log_metric("test_f1_macro", report["macro avg"]["f1-score"])
                 mlflow.log_metric("test_accuracy", report["accuracy"])
 
                 # Confusion matrix
                 try:
                     import matplotlib
+
                     matplotlib.use("Agg")
                     import matplotlib.pyplot as plt
                     from sklearn.metrics import ConfusionMatrixDisplay
@@ -282,9 +314,15 @@ def train_sklearn_classifier(
             # Log PCA explained variance
             if pca_components is not None and fastrp_cols:
                 try:
-                    pca_step = pipe.named_steps["preprocess"].transformers_[0][1].named_steps["pca"]
+                    pca_step = (
+                        pipe.named_steps["preprocess"]
+                        .transformers_[0][1]
+                        .named_steps["pca"]
+                    )
                     ratios = pca_step.explained_variance_ratio_
-                    mlflow.log_param("pca_explained_variance_total", f"{sum(ratios):.4f}")
+                    mlflow.log_param(
+                        "pca_explained_variance_total", f"{sum(ratios):.4f}"
+                    )
                     for i, r in enumerate(ratios):
                         mlflow.log_metric(f"pca_variance_pc{i}", r)
                 except Exception:
@@ -366,8 +404,12 @@ def train_automl_classifier(
     spark = SparkSession.builder.getOrCreate()
     labeled_df = spark.table(feature_table).filter(F.col(target_col).isNotNull())
 
-    training_table = feature_table.replace("customer_graph_features", "automl_training_input")
-    labeled_df.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable(training_table)
+    training_table = feature_table.replace(
+        "customer_graph_features", "automl_training_input"
+    )
+    labeled_df.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable(
+        training_table
+    )
     row_count = spark.table(training_table).count()
     print(f"  Training table: {training_table} ({row_count} labeled rows)")
 
@@ -522,9 +564,11 @@ def run_knn_analysis(
         for name in spotlight_customers:
             parts = name.split()
             first, last = parts[0], parts[1]
-            neighbors = gds.run_cypher(f"""
-                MATCH (c:Customer {{first_name: '{first}', last_name: '{last}'}})
+            neighbors = gds.run_cypher(
+                """
+                MATCH (c:Customer {first_name: $first, last_name: $last})
                 MATCH (c)-[r:SIMILAR_TO]->(neighbor:Customer)
+                WHERE r.similarity IS NOT NULL
                 RETURN c.first_name + ' ' + c.last_name AS customer,
                        c.community_id AS community,
                        neighbor.first_name + ' ' + neighbor.last_name AS neighbor_name,
@@ -532,7 +576,9 @@ def run_knn_analysis(
                        r.similarity AS similarity
                 ORDER BY r.similarity DESC
                 LIMIT 5
-            """)
+            """,
+                params={"first": first, "last": last},
+            )
             if not neighbors.empty:
                 print(f"\n  {name} (community {neighbors.iloc[0]['community']}):")
                 print(neighbors.to_string(index=False))
@@ -540,10 +586,9 @@ def run_knn_analysis(
     # Community overlap summary
     overlap = gds.run_cypher("""
         MATCH (c:Customer)-[r:SIMILAR_TO]->(n:Customer)
-        RETURN
-            CASE WHEN c.community_id = n.community_id THEN 'same' ELSE 'different' END AS community_match,
-            count(*) AS count,
-            avg(r.similarity) AS avg_similarity
+        WITH CASE WHEN c.community_id = n.community_id THEN 'same' ELSE 'different' END AS community_match,
+             r.similarity AS similarity
+        RETURN community_match, count(*) AS count, avg(similarity) AS avg_similarity
     """)
     print("\n  kNN community overlap:")
     print(overlap.to_string(index=False))

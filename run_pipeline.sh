@@ -18,6 +18,7 @@ usage() {
     echo "  seed     Seed Neo4j from Delta tables + embeddings"
     echo "  enrich   Run enrichment pipeline"
     echo "  gds      Run GDS feature engineering (FastRP → Community → Baseline)"
+    echo "  gds_demo Run GDS demo (PageRank + Louvain + Node Similarity)"
     echo "  html     Generate HTML documents + embeddings via LLM endpoint"
     echo "  clean    Wipe UC volume, workspace dir, and job runs"
     echo ""
@@ -100,6 +101,23 @@ phase_gds() {
     echo "============================================================"
 }
 
+phase_gds_demo() {
+    echo "=== Build and upload wheel ==="
+    uv run python -m cli upload --wheel
+
+    echo ""
+    echo "=== Upload GDS demo script ==="
+    uv run python -m cli upload gds_demo.py
+
+    echo ""
+    echo "=== Run GDS demo ==="
+    uv run python -m cli submit gds_demo.py --compute cluster
+
+    echo ""
+    echo "=== Logs ==="
+    uv run python -m cli logs
+}
+
 phase_clean() {
     echo "=== Wipe UC volume ==="
     uv run python -c "
@@ -146,8 +164,9 @@ case "$PHASE" in
     load)    phase_load ;;
     seed)    phase_seed ;;
     enrich)  phase_enrich ;;
-    gds)     phase_gds ;;
-    html)    phase_html ;;
+    gds)      phase_gds ;;
+    gds_demo) phase_gds_demo ;;
+    html)     phase_html ;;
     clean)   phase_clean ;;
     all)
         phase_load

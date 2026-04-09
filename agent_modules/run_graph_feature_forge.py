@@ -198,6 +198,10 @@ def _configure_dspy(
         )
 
         experiment_path = os.getenv("DATABRICKS_WORKSPACE_DIR", "/Shared/graph_feature_forge")
+        try:
+            mlflow.create_experiment(experiment_path)
+        except mlflow.MlflowException:
+            pass  # already exists
         mlflow.set_experiment(experiment_path)
         mlflow.dspy.autolog()
         print(f"  MLflow DSPy tracing enabled (experiment: {experiment_path})")

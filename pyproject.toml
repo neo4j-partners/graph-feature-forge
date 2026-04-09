@@ -1,6 +1,6 @@
 [project]
 name = "graph_feature_forge"
-version = "0.5.1"
+version = "0.5.3"
 description = "Graph feature engineering pipeline using LLMs to enrich Neo4j knowledge graphs with Databricks"
 requires-python = ">=3.12"
 dependencies = [
@@ -14,7 +14,7 @@ dependencies = [
 
 [project.optional-dependencies]
 cli = [
-    "databricks-job-runner>=0.3.1",
+    "databricks-job-runner>=0.4.1",
 ]
 dev = [
     "pytest>=8.0",
