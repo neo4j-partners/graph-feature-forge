@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Run the full graph-feature-forge pipeline on Databricks.
+# Run the full graph_feature_forge pipeline on Databricks.
 #
 # Usage:
 #   ./run_pipeline.sh          # Run all steps (upload + load + seed + enrich)
@@ -19,6 +19,7 @@ usage() {
     echo "  enrich   Run enrichment pipeline"
     echo "  gds      Run GDS feature engineering (FastRP → Community → Baseline)"
     echo "  html     Generate HTML documents + embeddings via LLM endpoint"
+    echo "  clean    Wipe UC volume, workspace dir, and job runs"
     echo ""
     echo "With no argument, load + seed + enrich run in order."
     echo "The gds phase runs separately and requires a ML Runtime cluster."
@@ -99,6 +100,32 @@ phase_gds() {
     echo "============================================================"
 }
 
+phase_clean() {
+    echo "=== Wipe UC volume ==="
+    uv run python -c "
+from databricks.sdk import WorkspaceClient
+w = WorkspaceClient()
+path = '/Volumes/graph_feature_forge/enrichment/source-data'
+count = 0
+def delete_recursive(dir_path):
+    global count
+    for f in w.files.list_directory_contents(dir_path):
+        if f.is_directory:
+            delete_recursive(f.path)
+            w.files.delete_directory(f.path)
+        else:
+            w.files.delete(f.path)
+        print(f'  Deleted: {f.path}')
+        count += 1
+delete_recursive(path)
+print(f'  Removed {count} items from volume')
+"
+
+    echo ""
+    echo "=== Clean workspace dir + job runs ==="
+    uv run python -m cli clean
+}
+
 phase_html() {
     echo "=== Build and upload wheel + entry point ==="
     uv run python -m cli upload --wheel
@@ -121,6 +148,7 @@ case "$PHASE" in
     enrich)  phase_enrich ;;
     gds)     phase_gds ;;
     html)    phase_html ;;
+    clean)   phase_clean ;;
     all)
         phase_load
         echo ""

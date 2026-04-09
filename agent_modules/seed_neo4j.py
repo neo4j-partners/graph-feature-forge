@@ -26,7 +26,7 @@ def main() -> None:
 
     source_catalog = os.getenv("SOURCE_CATALOG", "neo4j_augmentation_demo")
     source_schema = os.getenv("SOURCE_SCHEMA", "raw_data")
-    catalog_name = os.getenv("CATALOG_NAME", "graph-feature-forge")
+    catalog_name = os.getenv("CATALOG_NAME", "graph_feature_forge")
     schema_name = os.getenv("SCHEMA_NAME", "enrichment")
     volume_name = os.getenv("VOLUME_NAME", "source-data")
     neo4j_uri = os.getenv("NEO4J_URI")

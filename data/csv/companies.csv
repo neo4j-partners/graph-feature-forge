@@ -1,0 +1,104 @@
+company_id,name,ticker_symbol,industry,sector,market_cap_billions,headquarters,founded_year,ceo,employee_count,annual_revenue_billions
+CO001,TechCore Solutions,TCOR,Software,Technology,145.6,San Francisco CA,2005,Sarah Mitchell,12500,18.3
+CO002,Global Finance Corp,GFIN,Banking,Financial Services,287.4,New York NY,1952,Michael Chen,45000,42.7
+CO003,BioMed Innovations,BIOM,Biotechnology,Healthcare,92.3,Boston MA,2010,Jennifer Park,8200,11.4
+CO004,Energy Dynamics Inc,ENDY,Oil & Gas,Energy,176.5,Houston TX,1978,Robert Williams,32000,89.6
+CO005,RetailWorld Markets,RTWM,Retail,Consumer Discretionary,68.9,Seattle WA,1995,Amanda Foster,28000,35.2
+CO006,AutoTech Systems,AUTS,Automotive,Consumer Discretionary,124.7,Detroit MI,1985,David Johnson,19500,56.3
+CO007,CloudFirst Technologies,CLFT,Cloud Services,Technology,213.8,Austin TX,2008,Lisa Anderson,15000,28.9
+CO008,PharmaLife Global,PHLG,Pharmaceuticals,Healthcare,198.2,Philadelphia PA,1965,Thomas Garcia,38000,73.5
+CO009,Industrial Metals Corp,IMCO,Mining,Materials,45.7,Phoenix AZ,1982,Emily Roberts,6700,12.8
+CO010,ConsumerGoods Plus,CGPL,Consumer Products,Consumer Staples,87.4,Chicago IL,1972,Christopher Lee,21000,29.6
+CO011,AeroSpace Dynamics,ASDY,Aerospace,Industrials,156.3,Los Angeles CA,1968,Jessica Martinez,27000,64.2
+CO012,TeleConnect Networks,TCON,Telecommunications,Communication Services,234.9,Dallas TX,1990,Matthew Brown,52000,98.4
+CO013,RealEstate Capital,RECA,Real Estate,Real Estate,63.2,Miami FL,2000,Amanda White,4200,15.7
+CO014,Investment Holdings Ltd,IHLD,Asset Management,Financial Services,112.8,Boston MA,1988,Daniel Harris,9800,22.4
+CO015,Media Entertainment Group,MENG,Media,Communication Services,178.4,New York NY,1955,Sarah Thompson,35000,47.3
+CO016,FoodService Global,FSGB,Restaurants,Consumer Discretionary,42.8,Atlanta GA,1998,Michael Davis,67000,18.9
+CO017,Logistics Express,LGEX,Transportation,Industrials,95.6,Memphis TN,1987,Jennifer Wilson,23000,32.1
+CO018,Semiconductor Tech,SMTC,Semiconductors,Technology,267.3,San Jose CA,2001,Robert Anderson,18000,41.6
+CO019,Insurance Solutions,ISOL,Insurance,Financial Services,143.7,Hartford CT,1945,Lisa Martinez,28000,56.8
+CO020,Construction Materials,CNMT,Construction,Industrials,56.4,Denver CO,1979,David Taylor,12000,19.3
+CO021,AgriTech Innovations,AGTI,Agriculture,Consumer Staples,38.9,Des Moines IA,2005,Emily Garcia,5400,8.7
+CO022,Renewable Power Inc,RPOW,Renewable Energy,Energy,89.2,Portland OR,2012,Thomas Johnson,7800,14.2
+CO023,Financial Analytics,FIAN,Retail Investment,Financial Services,73.5,Charlotte NC,2015,Amanda Chen,3600,9.8
+CO024,Hospitality Resorts,HOSR,Hotels,Consumer Discretionary,51.3,Las Vegas NV,1988,Christopher White,34000,21.4
+CO025,Defense Systems Corp,DSYS,Defense,Industrials,189.6,Washington DC,1963,Jessica Lee,41000,72.9
+CO026,Chemical Industries,CHIN,Chemicals,Materials,102.4,Houston TX,1971,Matthew Rodriguez,16000,38.5
+CO027,Gaming Entertainment,GENT,Gaming,Consumer Discretionary,67.8,Las Vegas NV,2003,Daniel Brown,12000,16.7
+CO028,Medical Devices Inc,MDEV,Medical Equipment,Healthcare,134.6,Minneapolis MN,1980,Sarah Harris,22000,42.3
+CO029,Beverage Corporation,BEVC,Beverages,Consumer Staples,156.7,Atlanta GA,1962,Michael Thompson,58000,67.4
+CO030,Textile Manufacturing,TXTM,Textiles,Consumer Discretionary,28.4,Charlotte NC,1985,Jennifer Davis,14000,7.6
+CO031,Security Systems,SECY,Cybersecurity,Technology,118.9,San Francisco CA,2009,Robert Wilson,9200,17.5
+CO032,Marine Shipping,MRSH,Shipping,Industrials,45.2,Seattle WA,1992,Lisa Anderson,8700,13.9
+CO033,Furniture Designs,FURN,Home Furnishings,Consumer Discretionary,32.6,Grand Rapids MI,1978,David Martinez,11000,9.4
+CO034,Education Tech,EDTC,EdTech,Technology,56.8,Boston MA,2011,Emily Taylor,4800,7.2
+CO035,Water Utilities,WTUT,Utilities,Utilities,78.3,San Diego CA,1956,Thomas Garcia,12000,18.6
+CO036,Paper Products,PAPR,Paper & Packaging,Materials,41.7,Portland OR,1974,Amanda Johnson,9500,11.8
+CO037,Healthcare Services,HCSR,Healthcare Providers,Healthcare,167.9,Nashville TN,1985,Christopher Chen,45000,54.3
+CO038,Electronics Retail,ELRT,Consumer Electronics,Consumer Discretionary,89.4,Minneapolis MN,1989,Jessica White,42000,38.7
+CO039,Data Centers Corp,DTCR,Data Infrastructure,Technology,142.3,Dallas TX,2006,Matthew Lee,6700,21.9
+CO040,Coffee Roasters,COFR,Coffee,Consumer Staples,34.2,Seattle WA,1999,Daniel Rodriguez,8900,12.5
+CO041,Luxury Brands,LUXB,Luxury Goods,Consumer Discretionary,123.5,New York NY,1987,Sarah Brown,15000,28.4
+CO042,Steel Production,STLP,Steel,Materials,67.9,Pittsburgh PA,1969,Michael Harris,18000,23.7
+CO043,Banking Solutions Tech,BSOL,Banking Software,Technology,94.6,Austin TX,2007,Jennifer Thompson,7200,13.4
+CO044,Airline Services,AIRS,Airlines,Industrials,108.7,Atlanta GA,1973,Robert Davis,35000,47.6
+CO045,Solar Energy Systems,SOEN,Solar,Energy,76.4,Phoenix AZ,2010,Lisa Wilson,6100,11.9
+CO046,Entertainment Studios,ENST,Film & TV,Communication Services,145.8,Los Angeles CA,1965,David Anderson,12000,32.8
+CO047,Fitness Centers,FITC,Fitness,Consumer Discretionary,23.7,Irving TX,2002,Emily Martinez,18000,6.4
+CO048,Grocery Chains,GROC,Supermarkets,Consumer Staples,112.3,Cincinnati OH,1958,Thomas Taylor,89000,56.2
+CO049,Internet Services,INSR,Internet,Communication Services,298.4,Mountain View CA,1998,Amanda Garcia,67000,89.3
+CO050,Mobile Devices,MOBD,Consumer Electronics,Technology,342.6,Cupertino CA,1976,Christopher Johnson,147000,156.8
+CO051,Payment Processing,PAYP,Financial Technology,Financial Services,187.3,San Jose CA,2009,Jessica Chen,8900,24.7
+CO052,Artificial Intelligence,ARTI,AI Services,Technology,256.7,San Francisco CA,2015,Matthew White,12000,18.9
+CO053,Genetic Testing,GENT,Biotechnology,Healthcare,42.8,San Diego CA,2013,Daniel Lee,3400,4.6
+CO054,Space Technology,SPTC,Aerospace,Industrials,168.9,Hawthorne CA,2002,Sarah Rodriguez,9500,23.4
+CO055,Streaming Media,STRM,Entertainment,Communication Services,234.5,Los Gatos CA,1997,Michael Brown,11000,31.6
+CO056,E-Commerce Global,ECOM,Online Retail,Consumer Discretionary,1245.7,Seattle WA,1994,Jennifer Harris,1298000,386.4
+CO057,Social Networks Inc,SNET,Social Media,Communication Services,678.9,Menlo Park CA,2004,Robert Thompson,58604,113.6
+CO058,Quantum Computing,QCOM,Computing,Technology,89.4,Cambridge MA,2016,Lisa Davis,2800,3.7
+CO059,Drone Technology,DRON,Unmanned Systems,Industrials,34.6,San Francisco CA,2014,David Wilson,4200,5.8
+CO060,3D Printing Systems,TDPR,Manufacturing Tech,Industrials,28.9,Minneapolis MN,2011,Emily Anderson,3100,4.2
+CO061,Augmented Reality,AUGR,AR/VR,Technology,67.3,Redmond WA,2017,Thomas Martinez,5600,8.9
+CO062,Blockchain Solutions,BLCH,Cryptocurrency,Financial Services,45.2,San Francisco CA,2012,Amanda Taylor,2700,6.4
+CO063,Autonomous Vehicles,AUVO,Transportation Tech,Technology,156.8,Palo Alto CA,2009,Christopher Garcia,7800,14.2
+CO064,Robotics Industries,ROBO,Robotics,Industrials,92.7,Boston MA,2008,Jessica Johnson,6400,12.8
+CO065,Nanotechnology Corp,NANO,Advanced Materials,Materials,23.4,Santa Barbara CA,2015,Matthew Chen,1900,2.9
+CO066,Green Buildings,GRNB,Sustainable Construction,Real Estate,38.7,Portland OR,2010,Daniel White,4300,7.1
+CO067,Electric Vehicles,ELEV,Automotive,Consumer Discretionary,687.3,Fremont CA,2003,Sarah Lee,70757,31.5
+CO068,Battery Technology,BATT,Energy Storage,Technology,124.6,Reno NV,2011,Michael Rodriguez,8900,15.7
+CO069,Satellite Communications,SATC,Communications,Communication Services,78.4,Arlington VA,2002,Jennifer Brown,5200,11.3
+CO070,Genomics Research,GENR,Biotechnology,Healthcare,56.8,South San Francisco CA,2012,Robert Harris,4100,7.8
+CO071,Immunotherapy Inc,IMMU,Biopharmaceuticals,Healthcare,89.3,Cambridge MA,2013,Lisa Thompson,6700,9.4
+CO072,Digital Payments,DIGP,FinTech,Financial Services,167.4,San Francisco CA,2010,David Davis,12000,21.8
+CO073,Cybersecurity Defense,CYBD,Security Software,Technology,143.8,Sunnyvale CA,2007,Emily Wilson,9800,18.3
+CO074,Agricultural Biotech,AGBT,AgTech,Consumer Staples,34.2,St Louis MO,2006,Thomas Anderson,5200,6.9
+CO075,Smart Home Tech,SMHT,IoT Devices,Technology,72.6,San Jose CA,2014,Amanda Martinez,6300,10.4
+CO076,Clean Water Solutions,CLWS,Environmental,Utilities,28.9,Boulder CO,2012,Christopher Taylor,3400,5.2
+CO077,Carbon Capture Tech,CARC,Environmental Tech,Industrials,42.1,Houston TX,2015,Jessica Garcia,2800,4.1
+CO078,Vertical Farming,VTFM,Agriculture Tech,Consumer Staples,18.7,Newark NJ,2016,Matthew Johnson,1600,2.3
+CO079,Ocean Energy Systems,OCES,Renewable Energy,Energy,31.4,San Diego CA,2013,Daniel Chen,2200,3.8
+CO080,Biofuel Production,BIOF,Alternative Energy,Energy,23.6,Des Moines IA,2009,Sarah White,3100,4.7
+CO081,Medical Imaging,MEDI,Healthcare Technology,Healthcare,98.7,Cleveland OH,1985,Michael Lee,11000,16.9
+CO082,Telemedicine Services,TMED,Digital Health,Healthcare,67.4,New York NY,2015,Jennifer Rodriguez,4800,8.3
+CO083,Mental Health Apps,MHAP,Health Tech,Healthcare,12.8,San Francisco CA,2017,Robert Brown,1200,1.4
+CO084,Precision Agriculture,PRAG,AgTech,Consumer Staples,21.3,Lincoln NE,2014,Lisa Harris,2400,3.6
+CO085,Smart Grid Solutions,SMGR,Energy Tech,Utilities,54.7,Austin TX,2011,David Thompson,4700,7.8
+CO086,Nuclear Innovation,NUCL,Nuclear Energy,Energy,87.3,Charlotte NC,2008,Emily Davis,6200,12.4
+CO087,Hydrogen Fuel Cells,HYDR,Alternative Energy,Energy,45.8,Los Angeles CA,2013,Thomas Wilson,3800,6.2
+CO088,Wind Power Systems,WIND,Renewable Energy,Energy,92.4,Des Moines IA,2005,Amanda Anderson,8300,14.7
+CO089,Geothermal Energy,GEOT,Renewable Energy,Energy,19.4,San Francisco CA,2014,Christopher Martinez,1800,2.9
+CO090,Tidal Power Tech,TIDL,Marine Energy,Energy,14.6,Portland ME,2016,Jessica Taylor,1100,1.6
+CO091,Advanced Composites,ADVC,Materials Science,Materials,38.2,Seattle WA,2010,Matthew Garcia,3600,6.4
+CO092,Smart Textiles,SMTX,Wearable Tech,Consumer Discretionary,15.7,New York NY,2015,Daniel Johnson,1900,2.7
+CO093,Food Tech Innovation,FTEC,Food Science,Consumer Staples,34.9,San Francisco CA,2013,Sarah Chen,3200,5.8
+CO094,Plant-Based Foods,PLBT,Alternative Proteins,Consumer Staples,28.4,Los Angeles CA,2011,Michael White,4100,7.3
+CO095,Microbiome Research,MICR,Biotechnology,Healthcare,21.7,Cambridge MA,2016,Jennifer Lee,1600,2.4
+CO096,Personalized Medicine,PMED,Healthcare Tech,Healthcare,56.3,Boston MA,2014,Robert Rodriguez,4300,8.1
+CO097,Neural Interfaces,NEUR,Neurotechnology,Healthcare,42.8,San Francisco CA,2017,Lisa Brown,2100,3.2
+CO098,Longevity Research,LONG,Biotechnology,Healthcare,67.9,Mountain View CA,2013,David Harris,3900,6.7
+CO099,Space Mining Corp,SPCM,Space Resources,Industrials,23.1,Seattle WA,2018,Emily Thompson,900,0.8
+CO100,Asteroid Mining,ASTM,Space Industry,Industrials,18.6,Los Angeles CA,2019,Thomas Davis,650,0.4
+CO101,Lunar Industries,LUNR,Space Commerce,Industrials,34.2,Houston TX,2017,Amanda Wilson,1800,2.1
+CO102,Mars Development,MARS,Space Exploration,Industrials,89.7,Hawthorne CA,2016,Christopher Anderson,3400,4.9
+

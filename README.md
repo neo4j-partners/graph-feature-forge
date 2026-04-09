@@ -78,6 +78,18 @@ uv sync
 # Copy environment template and fill in values
 cp .env.example .env
 
+# Generate synthetic data
+uv sync --extra generator
+
+# Part 1: Generate CSV files (500 customers, 50 banks, 200 companies — runs locally)
+uv run python -m data.csv_generator
+
+# Part 2: Generate HTML documents + embeddings (dry-run: templates + random vectors, no Databricks needed)
+uv run python -m data.html_generator --dry-run
+
+# Part 2 (live): Generate HTML + embeddings via Databricks endpoints (requires DATABRICKS_HOST + DATABRICKS_TOKEN)
+# uv run python -m data.html_generator
+
 # Install dev tools and run tests
 uv sync --extra dev
 uv run pytest
@@ -102,6 +114,9 @@ uv sync --extra gds
 
 # Run GDS feature engineering (requires ML Runtime cluster)
 ./run_pipeline.sh gds
+
+# Wipe UC volume, workspace dir, and job runs for a fresh start
+./run_pipeline.sh clean
 ```
 
 ### Option B: Manual steps
@@ -181,9 +196,9 @@ Each notebook writes to a separate MLflow experiment for side-by-side comparison
 
 | Experiment | Features used |
 |------------|--------------|
-| `/Shared/graph-feature-forge/fastrp_risk_classification` | 128 FastRP dimensions + tabular |
-| `/Shared/graph-feature-forge/fastrp_louvain_risk_classification` | 128 FastRP dimensions + community_id + tabular |
-| `/Shared/graph-feature-forge/tabular_only_baseline` | Tabular only (annual_income, credit_score) |
+| `/Shared/graph_feature_forge/fastrp_risk_classification` | 128 FastRP dimensions + tabular |
+| `/Shared/graph_feature_forge/fastrp_louvain_risk_classification` | 128 FastRP dimensions + community_id + tabular |
+| `/Shared/graph_feature_forge/tabular_only_baseline` | Tabular only (annual_income, credit_score) |
 
 ### Automated Job Deployment
 
@@ -196,6 +211,7 @@ The `cli/` module wraps `databricks-job-runner` — it reads `.env` and forwards
 ./run_pipeline.sh enrich   # Phase 3: Run enrichment pipeline
 ./run_pipeline.sh gds      # Phase 4: GDS feature engineering (ML Runtime cluster)
 ./run_pipeline.sh html     # Generate HTML documents + embeddings via LLM endpoint
+./run_pipeline.sh clean    # Wipe UC volume, workspace dir, and job runs
 ```
 
 Each phase builds the wheel, uploads the entry point, and submits a job. The enrichment entry points run on serverless compute. The GDS entry points require a Databricks Runtime 17.x LTS ML cluster with the Neo4j Spark Connector.
@@ -230,7 +246,7 @@ Copy `.env.example` to `.env`. Key variables:
 ## Project Structure
 
 ```
-graph-feature-forge/
+graph_feature_forge/
 ├── data/
 │   ├── csv/                   # 7 CSV files (customers, banks, accounts, etc.)
 │   ├── html/                  # HTML documents (profiles, analyses, guides)

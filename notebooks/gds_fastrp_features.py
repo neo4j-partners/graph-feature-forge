@@ -2,7 +2,7 @@
 # MAGIC %md
 # MAGIC # GDS FastRP Feature Engineering
 # MAGIC
-# MAGIC Proves the full lifecycle: project the graph-feature-forge portfolio graph in GDS,
+# MAGIC Proves the full lifecycle: project the graph_feature_forge portfolio graph in GDS,
 # MAGIC compute FastRP embeddings, export to a Delta feature table, train a classifier
 # MAGIC with AutoML, score unlabeled customers, and write predictions back to Neo4j.
 # MAGIC
@@ -25,7 +25,7 @@ dbutils.library.restartPython()
 
 import os
 
-SECRET_SCOPE = os.environ.get("DATABRICKS_SECRET_SCOPE", "graph-feature-forge")
+SECRET_SCOPE = os.environ.get("DATABRICKS_SECRET_SCOPE", "graph_feature_forge")
 
 NEO4J_URI = dbutils.secrets.get(scope=SECRET_SCOPE, key="NEO4J_URI")
 NEO4J_USERNAME = dbutils.secrets.get(scope=SECRET_SCOPE, key="NEO4J_USERNAME")
@@ -269,7 +269,7 @@ summary = automl.classify(
     primary_metric="f1",
     exclude_cols=["customer_id"],
     timeout_minutes=30,
-    experiment_name="/Shared/graph-feature-forge/fastrp_risk_classification",
+    experiment_name="/Shared/graph_feature_forge/fastrp_risk_classification",
 )
 
 # COMMAND ----------
@@ -410,11 +410,11 @@ display(verify)
 # MAGIC %md
 # MAGIC ## Run the Enrichment Pipeline
 # MAGIC
-# MAGIC Run the existing graph-feature-forge enrichment pipeline against the graph that now
+# MAGIC Run the existing graph_feature_forge enrichment pipeline against the graph that now
 # MAGIC has predicted risk profiles on every customer. Compare enrichment results
 # MAGIC against a baseline run without the predictions.
 # MAGIC
-# MAGIC This step is run separately via the graph-feature-forge pipeline orchestrator:
+# MAGIC This step is run separately via the graph_feature_forge pipeline orchestrator:
 # MAGIC ```
 # MAGIC python agent_modules/run_graph_feature_forge.py --execute
 # MAGIC ```

@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         description="Generate HTML documents and embedding vectors "
-        "for graph-feature-forge.",
+        "for graph_feature_forge.",
     )
     parser.add_argument(
         "--dry-run",

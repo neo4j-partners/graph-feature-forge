@@ -1,1 +1,1 @@
-"""Financial portfolio data generator for graph-feature-forge."""
+"""Financial portfolio data generator for graph_feature_forge."""

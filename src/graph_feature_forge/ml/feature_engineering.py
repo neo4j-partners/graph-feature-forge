@@ -1,4 +1,4 @@
-"""GDS feature engineering for the graph-feature-forge enrichment pipeline.
+"""GDS feature engineering for the graph_feature_forge enrichment pipeline.
 
 Connects to a Neo4j Aura instance with the GDS plugin enabled, projects
 the portfolio graph, computes FastRP embeddings and Louvain community IDs,

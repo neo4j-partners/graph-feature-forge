@@ -28,7 +28,7 @@ dbutils.library.restartPython()
 
 import os
 
-SECRET_SCOPE = os.environ.get("DATABRICKS_SECRET_SCOPE", "graph-feature-forge")
+SECRET_SCOPE = os.environ.get("DATABRICKS_SECRET_SCOPE", "graph_feature_forge")
 
 NEO4J_URI = dbutils.secrets.get(scope=SECRET_SCOPE, key="NEO4J_URI")
 NEO4J_USERNAME = dbutils.secrets.get(scope=SECRET_SCOPE, key="NEO4J_USERNAME")
@@ -222,7 +222,7 @@ summary = automl.classify(
     primary_metric="f1",
     exclude_cols=["customer_id"],
     timeout_minutes=30,
-    experiment_name="/Shared/graph-feature-forge/fastrp_louvain_risk_classification",
+    experiment_name="/Shared/graph_feature_forge/fastrp_louvain_risk_classification",
 )
 
 # COMMAND ----------
@@ -235,8 +235,8 @@ print(f"Number of trials: {len(summary.trials)}")
 
 # Check if community_id contributes to the model
 print(f"\nCompare in MLflow:")
-print(f"  FastRP only:      /Shared/graph-feature-forge/fastrp_risk_classification")
-print(f"  FastRP + Louvain: /Shared/graph-feature-forge/fastrp_louvain_risk_classification")
+print(f"  FastRP only:      /Shared/graph_feature_forge/fastrp_risk_classification")
+print(f"  FastRP + Louvain: /Shared/graph_feature_forge/fastrp_louvain_risk_classification")
 print(f"\nOpen the MLflow UI to compare best runs side by side.")
 
 # COMMAND ----------

@@ -25,7 +25,7 @@ def main() -> None:
     # Volume FUSE paths — CSVs are already uploaded via `cli upload --data`
     volume_path = os.environ.get(
         "DATABRICKS_VOLUME_PATH",
-        "/Volumes/graph-feature-forge/enrichment/source-data",
+        "/Volumes/graph_feature_forge/enrichment/source-data",
     )
     csv_dir = f"{volume_path}/csv"
     html_output_dir = f"{volume_path}/html"

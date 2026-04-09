@@ -94,7 +94,7 @@ def _train_tabular_baseline(cfg: BaselineConfig) -> None:
     train_sklearn_classifier(
         feature_table=cfg.feature_table,
         exclude_cols=exclude_cols,
-        experiment_name="/Shared/graph-feature-forge/tabular_only_baseline",
+        experiment_name="/Shared/graph_feature_forge/tabular_only_baseline",
         test_size=cfg.test_size,
     )
 
@@ -104,9 +104,9 @@ def _compare_all() -> None:
     from graph_feature_forge.ml.automl_training import compare_experiments
 
     compare_experiments({
-        "FastRP only": "/Shared/graph-feature-forge/fastrp_risk_classification",
-        "FastRP + Louvain": "/Shared/graph-feature-forge/fastrp_louvain_risk_classification",
-        "Tabular only": "/Shared/graph-feature-forge/tabular_only_baseline",
+        "FastRP only": "/Shared/graph_feature_forge/fastrp_risk_classification",
+        "FastRP + Louvain": "/Shared/graph_feature_forge/fastrp_louvain_risk_classification",
+        "Tabular only": "/Shared/graph_feature_forge/tabular_only_baseline",
     })
 
 
@@ -115,7 +115,7 @@ def _feature_importance() -> None:
     from graph_feature_forge.ml.automl_training import extract_feature_importance
 
     extract_feature_importance(
-        experiment_path="/Shared/graph-feature-forge/fastrp_louvain_risk_classification",
+        experiment_path="/Shared/graph_feature_forge/fastrp_louvain_risk_classification",
     )
 
 

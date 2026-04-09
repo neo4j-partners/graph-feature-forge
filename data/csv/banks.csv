@@ -1,0 +1,104 @@
+bank_id,name,headquarters,bank_type,total_assets_billions,established_year,routing_number,swift_code
+B001,First National Trust,New York NY,Commercial,245.7,1924,021000021,FNTRUS33
+B002,Pacific Coast Bank,San Francisco CA,Commercial,189.3,1952,121000358,PCBKUS6S
+B003,Mountain States Financial,Denver CO,Regional,87.4,1968,102000076,MSFIUS44
+B004,Atlantic Banking Corp,Boston MA,Commercial,312.8,1889,011000015,ABCPUS33
+B005,Southern Trust Company,Atlanta GA,Commercial,156.2,1945,061000052,STCOUS33
+B006,Midwest Federal Bank,Chicago IL,Commercial,278.9,1932,071000505,MFBKUS44
+B007,Desert Valley Bank,Phoenix AZ,Regional,42.3,1985,122105155,DVBKUS66
+B008,Great Lakes Banking,Detroit MI,Regional,98.7,1958,072000326,GLBKUS42
+B009,Capital Savings & Loan,Washington DC,Savings,67.8,1976,054001220,CSLNUS33
+B010,Northwest Credit Union,Seattle WA,Credit Union,34.5,1992,125000024,NWCUUS6S
+B011,Sunshine State Bank,Miami FL,Regional,123.4,1967,063100277,SSBKUS33
+B012,Rocky Mountain Trust,Salt Lake City UT,Regional,56.9,1979,124000054,RMTRUS82
+B013,Empire State Financial,Buffalo NY,Regional,89.2,1963,022000046,ESFIUS33
+B014,Liberty Banking Group,Philadelphia PA,Commercial,198.5,1928,031000503,LBGPUS33
+B015,Coastal Federal Bank,Portland OR,Regional,45.6,1988,123000220,CFBKUS6P
+B016,Metropolitan Trust,Minneapolis MN,Commercial,167.3,1941,091000019,MTBKUS44
+B017,Heritage Community Bank,Nashville TN,Community,23.8,1995,064000017,HCBKUS44
+B018,Pioneer Bank & Trust,Dallas TX,Commercial,234.6,1951,111000025,PBTXUS44
+B019,Evergreen Financial,Portland ME,Regional,38.9,1983,011100012,EFINUS11
+B020,Cornerstone Bank,Kansas City MO,Regional,72.1,1972,101000187,CSBKUS44
+B021,Summit National Bank,Charlotte NC,Commercial,145.8,1959,053000196,SNBKUS33
+B022,Valley Vista Bank,Fresno CA,Community,18.7,1998,121141819,VVBKUS6S
+B023,Riverbend Financial,Cincinnati OH,Regional,91.4,1966,042000013,RBFIUS42
+B024,Maple Leaf Bank,Burlington VT,Community,12.3,2001,011103093,MLBKUS5A
+B025,Granite State Trust,Manchester NH,Regional,34.2,1987,011400071,GSTRUS5M
+B026,Horizon Banking Corp,Indianapolis IN,Regional,103.7,1955,074000010,HBCIUS44
+B027,Gateway Commerce Bank,St Louis MO,Commercial,176.5,1947,081000032,GCBKUS44
+B028,Silverado Bank,Las Vegas NV,Regional,67.9,1982,122400724,SLBKUS6L
+B029,Compass Point Bank,Baltimore MD,Regional,54.3,1978,052000113,CPBKUS33
+B030,Anchor Trust Company,Providence RI,Community,21.4,1993,011500010,ATCOUS5P
+B031,Bridgeview National,Milwaukee WI,Regional,82.6,1969,075000022,BVNKUS44
+B032,Eastside Federal,Richmond VA,Regional,48.7,1984,051000017,ESFEUS5R
+B033,Westwood Banking Group,Sacramento CA,Regional,95.8,1961,121000248,WBGKUS6S
+B034,Northern Lights Bank,Anchorage AK,Regional,29.3,1991,125200057,NLBKUS6A
+B035,Delta Commerce Bank,New Orleans LA,Regional,63.5,1975,065000171,DCBKUS33
+B036,Pinnacle Trust,Birmingham AL,Regional,41.8,1986,062000019,PTBKUS33
+B037,Keystone Federal Bank,Pittsburgh PA,Commercial,134.9,1938,043000096,KFBKUS33
+B038,Blue Ridge Bank,Roanoke VA,Community,16.5,1999,051402372,BRBKUS5R
+B039,Prairie Financial,Omaha NE,Regional,57.2,1977,104000058,PFIKUS41
+B040,Sunbelt Banking,Houston TX,Commercial,203.4,1956,113000609,SBBKUS44
+B041,Lakeside Trust,Madison WI,Community,19.8,1996,075900575,LTBKUS44
+B042,Mountain View Bank,Boise ID,Regional,33.6,1989,123100001,MVBKUS6B
+B043,Colonial Bank & Trust,Williamsburg VA,Community,14.7,2000,051503394,CBTRUS5W
+B044,Frontier National Bank,Oklahoma City OK,Regional,69.4,1973,103000648,FNBKUS44
+B045,Redwood Financial,Sacramento CA,Regional,88.1,1965,121042882,RDFIUS6S
+B046,Harbourside Bank,Charleston SC,Community,22.9,1994,053207766,HSBKUS33
+B047,Continental Trust,Cleveland OH,Commercial,157.3,1943,041000153,CTBKUS44
+B048,Timberline Bank,Spokane WA,Regional,36.4,1990,125008547,TLBKUS6S
+B049,Magnolia Federal,Jackson MS,Regional,44.2,1981,065300223,MFFIUS33
+B050,High Desert Bank,Albuquerque NM,Regional,51.7,1980,107000325,HDBKUS5A
+B051,Crossroads Banking,Wichita KS,Regional,39.5,1988,101089742,CRBKUS44
+B052,Lighthouse Financial,Honolulu HI,Regional,62.3,1970,121301015,LHFIUS6H
+B053,Ironwood Bank,Tucson AZ,Community,17.2,1997,122105278,IWBKUS66
+B054,Riverside Commerce,Little Rock AR,Regional,46.8,1983,082000073,RCCBUS33
+B055,Cascade Federal,Eugene OR,Community,25.6,1992,123205054,CFFEUS6P
+B056,Sterling Trust Company,Hartford CT,Regional,73.9,1967,021100361,STCOUS3H
+B057,Clearwater Bank,Tampa FL,Regional,108.5,1962,063113057,CWBKUS33
+B058,Mesa Financial,Mesa AZ,Community,20.1,1995,122105321,MFIKUS66
+B059,Bayshore Banking,Mobile AL,Community,15.3,1998,062201383,BSBKUS33
+B060,Summit Ridge Bank,Asheville NC,Community,18.6,1996,053112592,SRBKUS33
+B061,Crystal Lake Financial,Aurora IL,Community,24.7,1993,071925743,CLFIUS44
+B062,Parkside National,Grand Rapids MI,Regional,58.3,1976,072413925,PNBKUS42
+B063,Aspen Grove Bank,Colorado Springs CO,Community,21.5,1994,102301092,AGBKUS44
+B064,Driftwood Bank,Corpus Christi TX,Community,19.4,1995,113122655,DWBKUS44
+B065,Elmwood Trust,Des Moines IA,Regional,47.9,1982,073000228,ETWOUS41
+B066,Fairview Banking,Fargo ND,Community,16.8,1997,091311229,FVBKUS41
+B067,Greenbriar Bank,Louisville KY,Regional,52.6,1979,083000137,GRBKUS4L
+B068,Hawthorne Financial,Memphis TN,Regional,64.7,1974,084000026,HFINUS44
+B069,Irongate Trust,Tulsa OK,Regional,49.3,1981,103000648,IGTRUS44
+B070,Juniper Bank,Reno NV,Community,22.3,1993,321270742,JPBKUS6L
+B071,Kirkwood Federal,Spokane WA,Community,17.9,1996,125170024,KFFEUS6S
+B072,Linden Trust Company,Lincoln NE,Regional,41.7,1985,104000029,LTCOUS41
+B073,Maplewood Bank,St Paul MN,Community,26.4,1991,091000022,MWBKUS44
+B074,Northbrook Financial,Sioux Falls SD,Community,19.7,1995,091400606,NBFIUS41
+B075,Oakmont Bank,Oakland CA,Regional,87.5,1964,121042882,OKBKUS6S
+B076,Pineview Trust,Billings MT,Community,14.2,1999,092905278,PVTRUS8B
+B077,Quail Creek Bank,San Antonio TX,Regional,69.8,1975,114000093,QCBKUS44
+B078,Rosewood Financial,Fort Worth TX,Regional,76.3,1971,111000025,RWFIUS44
+B079,Sagebrush Bank,Cheyenne WY,Community,12.8,2000,102301089,SGBKUS82
+B080,Thornwood Trust,Savannah GA,Community,23.5,1992,061120084,TWTRUS33
+B081,Uptown Banking,Columbus OH,Regional,93.2,1963,044000024,UTBKUS44
+B082,Valley Brook Bank,Baton Rouge LA,Regional,55.4,1978,065000096,VBBKUS33
+B083,Willow Creek Financial,Boise ID,Community,18.1,1996,123103729,WCFIUS6B
+B084,Cedar Point Bank,Annapolis MD,Community,21.9,1993,052000113,CPBKUS33
+B085,Dogwood Trust,Durham NC,Community,27.3,1990,053000219,DWTRUS33
+B086,Firwood Bank,Tacoma WA,Community,24.8,1992,125008547,FWBKUS6S
+B087,Grove Street Financial,Jersey City NJ,Regional,81.4,1968,021201383,GSFIUS33
+B088,Hickory Bank,Knoxville TN,Community,16.4,1997,064000017,HKBKUS44
+B089,Ivywood Trust,Augusta GA,Community,15.7,1998,061120084,IVTRUS33
+B090,Juniper Creek Bank,Santa Fe NM,Community,13.9,1999,107000325,JCBKUS5A
+B091,Lakewood Financial,Lakeland FL,Community,28.6,1991,063103915,LWFIUS33
+B092,Meadowbrook Bank,Green Bay WI,Community,19.2,1995,075911988,MBBKUS44
+B093,Northwind Trust,Anchorage AK,Community,17.6,1996,125200057,NWTRUS6A
+B094,Overland Bank,Laredo TX,Community,22.7,1993,114000093,OLBKUS44
+B095,Parkwood Financial,Springfield IL,Community,20.4,1994,071925743,PWFIUS44
+B096,Quailwood Bank,Tucson AZ,Community,18.3,1996,122105278,QWBKUS66
+B097,Ridgewood Trust,Santa Barbara CA,Regional,64.2,1977,121000358,RWTRUS6S
+B098,Streamside Bank,Eugene OR,Community,15.8,1997,123205054,SSBKUS6P
+B099,Timberwood Financial,Burlington VT,Community,14.5,1998,011103093,TWFIUS5A
+B100,Vista Bank & Trust,San Diego CA,Commercial,142.6,1960,122000661,VBTRUS6S
+B101,Woodland Trust,Portland ME,Community,16.1,1997,011100012,WLTRUS11
+B102,Zenith Banking Group,Rochester NY,Regional,72.8,1972,022000046,ZBGKUS33
+

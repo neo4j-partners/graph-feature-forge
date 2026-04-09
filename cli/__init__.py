@@ -1,4 +1,4 @@
-"""CLI wrapper — wires Runner to the graph-feature-forge project layout."""
+"""CLI wrapper — wires Runner to the graph_feature_forge project layout."""
 
 from databricks_job_runner import Runner
 

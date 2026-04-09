@@ -59,7 +59,7 @@ class GeneratorConfig(BaseSettings):
     csv_dir: Path = Path("data/csv")
     html_output_dir: Path = Path("data/html")
     embedding_output_dir: Path = Path("data/embeddings")
-    volume_base_path: str = "/Volumes/graph-feature-forge/enrichment/source-data"
+    volume_base_path: str = "/Volumes/graph_feature_forge/enrichment/source-data"
 
     # --- Mode ---
     dry_run: bool = False
