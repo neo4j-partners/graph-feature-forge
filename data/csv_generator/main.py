@@ -71,7 +71,7 @@ def main() -> None:
     customers, risk_profile_map = generate_customers(config, rng)
 
     logger.info("Generating accounts...")
-    accounts = generate_accounts(config, rng, customers, banks)
+    accounts = generate_accounts(config, rng, customers, banks, risk_profile_map)
 
     logger.info("Generating portfolio holdings...")
     holdings = generate_portfolio_holdings(

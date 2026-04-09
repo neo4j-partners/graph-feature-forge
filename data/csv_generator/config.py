@@ -22,7 +22,7 @@ class GeneratorConfig(BaseSettings):
 
     # --- Labeling ---
     labeled_fraction: float = 0.30
-    labels_per_class: int = 50  # Aggressive, Conservative, Moderate
+    labels_per_class: int = 100  # Aggressive, Conservative, Moderate
 
     # --- Accounts per customer distribution (weights for 1, 2, 3 accounts) ---
     accounts_weight_one: float = 0.40
@@ -36,7 +36,7 @@ class GeneratorConfig(BaseSettings):
     # --- Risk-aware portfolio settings ---
     # Controls how strongly stock selection correlates with risk profile.
     # 0.0 = purely random (backward-compatible), 1.0 = default bias, 2.0 = strong bias.
-    sector_preference_strength: float = 1.0
+    sector_preference_strength: float = 1.8
 
     # --- Transactions per account ---
     min_transactions_per_account: int = 3

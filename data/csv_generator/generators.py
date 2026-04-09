@@ -777,41 +777,42 @@ def generate_customers(
             config.credit_score_max,
         )
 
+        # Employment adjustment FIRST so the risk nudge (applied second)
+        # is not overwritten.
+        if employment_status == "Retired":
+            annual_income = max(
+                config.income_min, round(annual_income * rng.uniform(0.7, 0.85))
+            )
+        elif employment_status == "Unemployed":
+            annual_income = max(
+                config.income_min, round(annual_income * rng.uniform(0.5, 0.7))
+            )
+
         # Apply income/credit nudges based on true risk profile for ALL
         # customers (not just labeled ones).  This ensures unlabeled
         # customers also have realistic attribute correlations.
         true_risk = risk_profile_map[customer_id]
         if true_risk == "Aggressive":
             annual_income = min(
-                config.income_max, round(annual_income * rng.uniform(1.05, 1.25))
+                config.income_max, round(annual_income * rng.uniform(1.3, 1.6))
             )
             credit_score = max(
-                config.credit_score_min, credit_score - rng.randint(0, 30)
+                config.credit_score_min, credit_score - rng.randint(20, 60)
             )
         elif true_risk == "Conservative":
             credit_score = min(
-                config.credit_score_max, credit_score + rng.randint(0, 40)
+                config.credit_score_max, credit_score + rng.randint(30, 80)
             )
             annual_income = max(
-                config.income_min, round(annual_income * rng.uniform(0.85, 1.05))
+                config.income_min, round(annual_income * rng.uniform(0.65, 0.85))
             )
         elif true_risk == "Moderate":
             credit_score = _normal_int_sample(
                 rng,
-                720,
-                60,
+                710,
+                40,
                 config.credit_score_min,
                 config.credit_score_max,
-            )
-
-        # Retired people tend to have lower income
-        if employment_status == "Retired":
-            annual_income = max(
-                config.income_min, round(annual_income * rng.uniform(0.5, 0.75))
-            )
-        elif employment_status == "Unemployed":
-            annual_income = max(
-                config.income_min, round(annual_income * rng.uniform(0.3, 0.6))
             )
 
         # Only labeled customers expose their profile in the CSV
@@ -845,20 +846,29 @@ def generate_accounts(
     rng: random.Random,
     customers: list[Customer],
     banks: list[Bank],
+    risk_profile_map: dict[str, str] | None = None,
 ) -> list[Account]:
     """Generate accounts for each customer. Depends on customers and banks."""
     accounts: list[Account] = []
     account_counter = 0
     account_number_counter = 1001000000
 
-    account_count_weights = [
+    # Risk-aware account count weights: [1-account, 2-account, 3-account]
+    _risk_account_weights: dict[str, list[float]] = {
+        "Aggressive": [0.15, 0.40, 0.45],   # more accounts
+        "Conservative": [0.55, 0.35, 0.10],  # fewer accounts
+        "Moderate": [0.35, 0.40, 0.25],      # balanced
+    }
+    default_weights = [
         config.accounts_weight_one,
         config.accounts_weight_two,
         config.accounts_weight_three,
     ]
 
     for customer in customers:
-        num_accounts = rng.choices([1, 2, 3], weights=account_count_weights)[0]
+        risk = (risk_profile_map or {}).get(customer.customer_id, "")
+        weights = _risk_account_weights.get(risk, default_weights)
+        num_accounts = rng.choices([1, 2, 3], weights=weights)[0]
 
         # Pick a primary bank for this customer (customers share banks)
         bank = rng.choice(banks)
@@ -1043,10 +1053,11 @@ def generate_transactions(
         min_txns = config.min_transactions_per_account
         max_txns = config.max_transactions_per_account
         if risk == "Aggressive":
-            max_txns += 2
+            min_txns += 3
+            max_txns += 5
         elif risk == "Conservative":
-            min_txns = max(1, min_txns - 1)
-            max_txns = max(min_txns, max_txns - 1)
+            min_txns = max(1, min_txns - 2)
+            max_txns = max(min_txns, max_txns - 2)
         num_txns = rng.randint(min_txns, max_txns)
 
         # Pre-build candidate lists for this account (avoids rebuilding per txn)
@@ -1065,11 +1076,17 @@ def generate_transactions(
             else:
                 to_account_id = rng.choice(other_accounts)
 
-            # Amount: log-normal
+            # Amount: log-normal, scaled by risk profile
+            if risk == "Aggressive":
+                amount_median = config.transaction_amount_median * 2.5
+            elif risk == "Conservative":
+                amount_median = config.transaction_amount_median * 0.5
+            else:
+                amount_median = config.transaction_amount_median
             amount = round(
                 _log_normal_sample(
                     rng,
-                    config.transaction_amount_median,
+                    amount_median,
                     config.transaction_amount_sigma,
                     config.transaction_amount_min,
                     config.transaction_amount_max,
