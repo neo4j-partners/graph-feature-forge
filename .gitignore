@@ -65,6 +65,7 @@ $RECYCLE.BIN/
 
 # Downloaded results
 results/
+fraud_report.json
 
 # Databricks
 .databricks/

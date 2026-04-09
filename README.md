@@ -162,6 +162,10 @@ uv run python -m cli clean
 
 ## Architecture
 
+Every pipeline stage runs as a remote Databricks job, orchestrated by [`databricks-job-runner`](https://pypi.org/project/databricks-job-runner/). `databricks-job-runner` is a reusable CLI library that wraps the Databricks SDK — it builds the project wheel, uploads it alongside entry point scripts and data files to a UC Volume and workspace directory, submits `SparkPythonTask` jobs (serverless or classic cluster), and tails logs until completion. The thin `cli/` module in this repo instantiates a `Runner` configured for the `graph_feature_forge` package and routes Neo4j credentials through a Databricks secret scope. All non-core `.env` variables are forwarded to the remote job as `KEY=VALUE` parameters.
+
+The `agent_modules/` directory contains the entry point scripts that run inside those jobs. Each script is a self-contained orchestrator: it calls `inject_params()` to load the forwarded environment variables, then imports and composes library functions from `src/graph_feature_forge/` to execute one pipeline phase. Entry points are intentionally separate from the library so they can be uploaded and executed independently — the runner attaches the project wheel as a dependency so imports resolve on the remote cluster.
+
 ### Pipeline Phases
 
 The enrichment pipeline runs as a sequence of Databricks jobs. Each phase builds on the previous one, and the enrichment loop is designed to run repeatedly — each cycle discovers new proposals from an increasingly rich graph.

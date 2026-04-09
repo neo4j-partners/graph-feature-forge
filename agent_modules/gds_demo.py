@@ -44,7 +44,7 @@ RELATIONSHIP_SPEC = {
     "BENEFITS_TO": {"orientation": "UNDIRECTED"},
 }
 
-REPORT_PATH = os.getenv("FRAUD_REPORT_PATH", "fraud_report.json")
+REPORT_FILENAME = "fraud_report.json"
 
 
 # ---------------------------------------------------------------------------
@@ -524,6 +524,13 @@ def main() -> None:
         print("ERROR: NEO4J_URI, NEO4J_USERNAME, and NEO4J_PASSWORD are required.")
         sys.exit(1)
 
+    # Resolve report path — write to UC volume results/ dir if available
+    volume_path = os.getenv("DATABRICKS_VOLUME_PATH", "")
+    if volume_path:
+        report_path = os.path.join(volume_path, "results", REPORT_FILENAME)
+    else:
+        report_path = os.getenv("FRAUD_REPORT_PATH", REPORT_FILENAME)
+
     print("=" * 60)
     print("  GDS Demo: PageRank + Louvain + Node Similarity")
     print("=" * 60)
@@ -601,7 +608,7 @@ def main() -> None:
     }
 
     print("\nWriting report:")
-    write_fraud_report(report, REPORT_PATH)
+    write_fraud_report(report, report_path)
 
     print("\nGDS Demo + Fraud Detection complete.")
 
