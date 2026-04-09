@@ -22,6 +22,7 @@ class Customer(BaseModel):
     employment_status: str  # Employed, Self-Employed, Retired, Unemployed
     annual_income: int
     credit_score: int
+    is_fraudulent: bool = False
 
 
 class Bank(BaseModel):

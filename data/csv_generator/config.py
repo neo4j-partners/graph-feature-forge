@@ -63,6 +63,13 @@ class GeneratorConfig(BaseSettings):
     bank_assets_min_billions: float = 1.0
     bank_assets_max_billions: float = 500.0
 
+    # --- Fraud ring settings ---
+    num_fraud_rings: int = 1
+    fraud_ring_size: int = 5  # customers per ring
+    fraud_transactions_per_pair: int = 8  # circular txns between each adjacent pair
+    fraud_amount_min: float = 8_000.0  # structuring: just under $10k
+    fraud_amount_max: float = 9_999.0
+
     # --- Generator settings ---
     random_seed: int = 42
     output_dir: str = "csv"

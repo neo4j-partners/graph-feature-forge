@@ -18,6 +18,7 @@ from .generators import (
     generate_banks,
     generate_companies,
     generate_customers,
+    generate_fraud_rings,
     generate_portfolio_holdings,
     generate_stocks,
     generate_transactions,
@@ -74,11 +75,30 @@ def main() -> None:
 
     logger.info("Generating portfolio holdings...")
     holdings = generate_portfolio_holdings(
-        config, rng, accounts, stocks, companies, risk_profile_map,
+        config,
+        rng,
+        accounts,
+        stocks,
+        companies,
+        risk_profile_map,
     )
 
     logger.info("Generating transactions...")
     transactions = generate_transactions(config, rng, accounts, risk_profile_map)
+
+    logger.info("Generating fraud rings...")
+    generate_fraud_rings(
+        config,
+        rng,
+        customers,
+        accounts,
+        banks,
+        stocks,
+        companies,
+        holdings,
+        transactions,
+        risk_profile_map,
+    )
 
     # --- Write CSVs ---
 
@@ -96,13 +116,17 @@ def main() -> None:
 
     labeled_count = sum(1 for c in customers if c.risk_profile)
     investment_count = sum(1 for a in accounts if a.account_type == "Investment")
+    fraud_count = sum(1 for c in customers if c.is_fraudulent)
 
     logger.info("--- Generation Summary ---")
     logger.info("  Banks:              %d", len(banks))
     logger.info("  Companies:          %d", len(companies))
     logger.info("  Stocks:             %d", len(stocks))
     logger.info("  Customers:          %d (labeled: %d)", len(customers), labeled_count)
-    logger.info("  Accounts:           %d (investment: %d)", len(accounts), investment_count)
+    logger.info("  Fraud customers:    %d", fraud_count)
+    logger.info(
+        "  Accounts:           %d (investment: %d)", len(accounts), investment_count
+    )
     logger.info("  Portfolio holdings:  %d", len(holdings))
     logger.info("  Transactions:       %d", len(transactions))
     logger.info("Done.")

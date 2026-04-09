@@ -10,6 +10,11 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
+# Load .env so all phases pick up DATABRICKS_PROFILE, etc.
+if [[ -f .env ]]; then
+    set -a; source .env; set +a
+fi
+
 usage() {
     echo "Usage: $0 [load|seed|enrich|gds|html]"
     echo ""
@@ -120,6 +125,7 @@ phase_gds_demo() {
 
 phase_clean() {
     echo "=== Wipe UC volume ==="
+    export DATABRICKS_CONFIG_PROFILE="${DATABRICKS_PROFILE}"
     uv run python -c "
 from databricks.sdk import WorkspaceClient
 w = WorkspaceClient()

@@ -33,31 +33,125 @@ from .models import (
 # ---------------------------------------------------------------------------
 
 US_STATES = [
-    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
-    "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
-    "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
-    "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
-    "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY",
+    "AL",
+    "AK",
+    "AZ",
+    "AR",
+    "CA",
+    "CO",
+    "CT",
+    "DE",
+    "FL",
+    "GA",
+    "HI",
+    "ID",
+    "IL",
+    "IN",
+    "IA",
+    "KS",
+    "KY",
+    "LA",
+    "ME",
+    "MD",
+    "MA",
+    "MI",
+    "MN",
+    "MS",
+    "MO",
+    "MT",
+    "NE",
+    "NV",
+    "NH",
+    "NJ",
+    "NM",
+    "NY",
+    "NC",
+    "ND",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VT",
+    "VA",
+    "WA",
+    "WV",
+    "WI",
+    "WY",
     "DC",
 ]
 
 BANK_NAME_PREFIXES = [
-    "First", "National", "Pacific", "Mountain", "Atlantic",
-    "Southern", "Midwest", "Great Lakes", "Capital", "Northwest",
-    "Sunshine", "Rocky Mountain", "Empire", "Liberty", "Coastal",
-    "Metropolitan", "Heritage", "Pioneer", "Evergreen", "Cornerstone",
-    "Summit", "Valley", "Riverbend", "Horizon", "Gateway",
-    "Silverado", "Compass", "Anchor", "Bridgeview", "Eastside",
-    "Westwood", "Northern", "Delta", "Pinnacle", "Keystone",
-    "Blue Ridge", "Prairie", "Sunbelt", "Lakeside", "Mountain View",
-    "Colonial", "Frontier", "Redwood", "Harbourside", "Continental",
-    "Timberline", "Magnolia", "High Desert", "Crossroads", "Lighthouse",
+    "First",
+    "National",
+    "Pacific",
+    "Mountain",
+    "Atlantic",
+    "Southern",
+    "Midwest",
+    "Great Lakes",
+    "Capital",
+    "Northwest",
+    "Sunshine",
+    "Rocky Mountain",
+    "Empire",
+    "Liberty",
+    "Coastal",
+    "Metropolitan",
+    "Heritage",
+    "Pioneer",
+    "Evergreen",
+    "Cornerstone",
+    "Summit",
+    "Valley",
+    "Riverbend",
+    "Horizon",
+    "Gateway",
+    "Silverado",
+    "Compass",
+    "Anchor",
+    "Bridgeview",
+    "Eastside",
+    "Westwood",
+    "Northern",
+    "Delta",
+    "Pinnacle",
+    "Keystone",
+    "Blue Ridge",
+    "Prairie",
+    "Sunbelt",
+    "Lakeside",
+    "Mountain View",
+    "Colonial",
+    "Frontier",
+    "Redwood",
+    "Harbourside",
+    "Continental",
+    "Timberline",
+    "Magnolia",
+    "High Desert",
+    "Crossroads",
+    "Lighthouse",
 ]
 
 BANK_NAME_SUFFIXES = [
-    "Trust", "Bank", "Financial", "Banking Corp", "Federal Bank",
-    "Credit Union", "Savings & Loan", "Trust Company", "Banking Group",
-    "Commerce Bank", "National Bank", "Bank & Trust",
+    "Trust",
+    "Bank",
+    "Financial",
+    "Banking Corp",
+    "Federal Bank",
+    "Credit Union",
+    "Savings & Loan",
+    "Trust Company",
+    "Banking Group",
+    "Commerce Bank",
+    "National Bank",
+    "Bank & Trust",
 ]
 
 BANK_TYPES = ["Commercial", "Regional", "Credit Union", "Savings", "Community"]
@@ -65,51 +159,106 @@ BANK_TYPE_WEIGHTS = [25, 30, 10, 10, 25]
 
 INDUSTRIES_BY_SECTOR: dict[str, list[str]] = {
     "Technology": [
-        "Software", "Cloud Services", "Semiconductors", "Cybersecurity",
-        "AI Services", "Data Infrastructure", "IoT Devices", "EdTech",
-        "Banking Software", "Computing",
+        "Software",
+        "Cloud Services",
+        "Semiconductors",
+        "Cybersecurity",
+        "AI Services",
+        "Data Infrastructure",
+        "IoT Devices",
+        "EdTech",
+        "Banking Software",
+        "Computing",
     ],
     "Healthcare": [
-        "Biotechnology", "Pharmaceuticals", "Medical Equipment",
-        "Healthcare Providers", "Digital Health", "Health Tech",
-        "Biopharmaceuticals", "Healthcare Technology", "Genetic Testing",
-        "Personalized Medicine", "Neurotechnology",
+        "Biotechnology",
+        "Pharmaceuticals",
+        "Medical Equipment",
+        "Healthcare Providers",
+        "Digital Health",
+        "Health Tech",
+        "Biopharmaceuticals",
+        "Healthcare Technology",
+        "Genetic Testing",
+        "Personalized Medicine",
+        "Neurotechnology",
     ],
     "Financial Services": [
-        "Banking", "Asset Management", "Insurance", "Financial Technology",
-        "Retail Investment", "Cryptocurrency",
+        "Banking",
+        "Asset Management",
+        "Insurance",
+        "Financial Technology",
+        "Retail Investment",
+        "Cryptocurrency",
     ],
     "Energy": [
-        "Oil & Gas", "Renewable Energy", "Solar", "Nuclear Energy",
-        "Alternative Energy", "Energy Storage", "Marine Energy",
+        "Oil & Gas",
+        "Renewable Energy",
+        "Solar",
+        "Nuclear Energy",
+        "Alternative Energy",
+        "Energy Storage",
+        "Marine Energy",
     ],
     "Consumer Discretionary": [
-        "Retail", "Automotive", "Hotels", "Restaurants",
-        "Consumer Electronics", "Luxury Goods", "Home Furnishings",
-        "Fitness", "Gaming", "Textiles", "Wearable Tech",
+        "Retail",
+        "Automotive",
+        "Hotels",
+        "Restaurants",
+        "Consumer Electronics",
+        "Luxury Goods",
+        "Home Furnishings",
+        "Fitness",
+        "Gaming",
+        "Textiles",
+        "Wearable Tech",
     ],
     "Consumer Staples": [
-        "Consumer Products", "Beverages", "Supermarkets", "Coffee",
-        "Agriculture", "Food Science", "Alternative Proteins",
+        "Consumer Products",
+        "Beverages",
+        "Supermarkets",
+        "Coffee",
+        "Agriculture",
+        "Food Science",
+        "Alternative Proteins",
     ],
     "Industrials": [
-        "Aerospace", "Transportation", "Construction", "Defense",
-        "Shipping", "Manufacturing Tech", "Robotics", "Unmanned Systems",
-        "Environmental Tech", "Space Industry",
+        "Aerospace",
+        "Transportation",
+        "Construction",
+        "Defense",
+        "Shipping",
+        "Manufacturing Tech",
+        "Robotics",
+        "Unmanned Systems",
+        "Environmental Tech",
+        "Space Industry",
     ],
     "Communication Services": [
-        "Telecommunications", "Media", "Film & TV", "Entertainment",
-        "Social Media", "Internet", "Communications",
+        "Telecommunications",
+        "Media",
+        "Film & TV",
+        "Entertainment",
+        "Social Media",
+        "Internet",
+        "Communications",
     ],
     "Materials": [
-        "Mining", "Chemicals", "Steel", "Paper & Packaging",
-        "Advanced Materials", "Materials Science",
+        "Mining",
+        "Chemicals",
+        "Steel",
+        "Paper & Packaging",
+        "Advanced Materials",
+        "Materials Science",
     ],
     "Real Estate": [
-        "Real Estate", "Sustainable Construction",
+        "Real Estate",
+        "Sustainable Construction",
     ],
     "Utilities": [
-        "Utilities", "Energy Tech", "Environmental",
+        "Utilities",
+        "Energy Tech",
+        "Environmental",
     ],
 }
 
@@ -132,27 +281,69 @@ TRANSACTION_TYPES = ["Transfer", "Payment", "Deposit", "Withdrawal"]
 TRANSACTION_TYPE_WEIGHTS = [35, 30, 20, 15]
 
 TRANSACTION_DESCRIPTIONS = [
-    "Payment for services", "Investment transfer", "Rent payment",
-    "Utility bill", "Contract payment", "Grocery shopping",
-    "Car payment", "Insurance premium", "Tuition payment",
-    "Medical expenses", "Business invoice", "Restaurant bill",
-    "Phone bill", "Consulting fee", "Internet service",
-    "Property tax", "Gas bill", "Legal fees",
-    "Home repair", "Quarterly tax", "Gym membership",
-    "Equipment purchase", "Software subscription", "Loan repayment",
-    "Credit card payment", "Contract work", "Delivery service",
-    "Equipment lease", "Maintenance fee", "Marketing services",
-    "Event ticket", "Security deposit", "Cleaning service",
-    "Accounting fees", "Design work", "Printing services",
-    "Training program", "Travel expenses", "Catering service",
-    "Refund", "Subscription renewal", "Course enrollment",
-    "Auto repair", "Appliance purchase", "Moving expenses",
-    "Furniture", "Landscaping", "Pool maintenance",
-    "HVAC repair", "Plumbing work", "Painting services",
-    "Roofing repair", "Window cleaning", "Office supplies",
-    "Network upgrade", "Phone system", "Conference room",
-    "App development", "Database setup", "Cloud migration",
-    "Data backup", "Website design", "SEO services",
+    "Payment for services",
+    "Investment transfer",
+    "Rent payment",
+    "Utility bill",
+    "Contract payment",
+    "Grocery shopping",
+    "Car payment",
+    "Insurance premium",
+    "Tuition payment",
+    "Medical expenses",
+    "Business invoice",
+    "Restaurant bill",
+    "Phone bill",
+    "Consulting fee",
+    "Internet service",
+    "Property tax",
+    "Gas bill",
+    "Legal fees",
+    "Home repair",
+    "Quarterly tax",
+    "Gym membership",
+    "Equipment purchase",
+    "Software subscription",
+    "Loan repayment",
+    "Credit card payment",
+    "Contract work",
+    "Delivery service",
+    "Equipment lease",
+    "Maintenance fee",
+    "Marketing services",
+    "Event ticket",
+    "Security deposit",
+    "Cleaning service",
+    "Accounting fees",
+    "Design work",
+    "Printing services",
+    "Training program",
+    "Travel expenses",
+    "Catering service",
+    "Refund",
+    "Subscription renewal",
+    "Course enrollment",
+    "Auto repair",
+    "Appliance purchase",
+    "Moving expenses",
+    "Furniture",
+    "Landscaping",
+    "Pool maintenance",
+    "HVAC repair",
+    "Plumbing work",
+    "Painting services",
+    "Roofing repair",
+    "Window cleaning",
+    "Office supplies",
+    "Network upgrade",
+    "Phone system",
+    "Conference room",
+    "App development",
+    "Database setup",
+    "Cloud migration",
+    "Data backup",
+    "Website design",
+    "SEO services",
 ]
 
 EMPLOYMENT_STATUSES = ["Employed", "Self-Employed", "Retired", "Unemployed"]
@@ -278,10 +469,12 @@ def _select_stocks_by_risk(
     """
     prefs = SECTOR_PREFERENCE_WEIGHTS.get(risk_profile, {})
 
-    raw = np.array([
-        prefs.get(sector_by_company.get(s.company_id, ""), 1.0) ** strength
-        for s in stocks
-    ])
+    raw = np.array(
+        [
+            prefs.get(sector_by_company.get(s.company_id, ""), 1.0) ** strength
+            for s in stocks
+        ]
+    )
     probs = raw / raw.sum()
 
     n = min(num_stocks, len(stocks))
@@ -320,7 +513,13 @@ def generate_banks(config: GeneratorConfig, rng: random.Random) -> list[Bank]:
 
         # Assets: log-uniform spread across 1B-500B
         assets = round(
-            _log_normal_sample(rng, 50.0, 1.0, config.bank_assets_min_billions, config.bank_assets_max_billions),
+            _log_normal_sample(
+                rng,
+                50.0,
+                1.0,
+                config.bank_assets_min_billions,
+                config.bank_assets_max_billions,
+            ),
             1,
         )
 
@@ -328,16 +527,18 @@ def generate_banks(config: GeneratorConfig, rng: random.Random) -> list[Bank]:
         routing_number = _generate_routing_number(rng)
         swift_code = _generate_swift_code(rng)
 
-        banks.append(Bank(
-            bank_id=bank_id,
-            name=name,
-            headquarters=headquarters,
-            bank_type=bank_type,
-            total_assets_billions=assets,
-            established_year=established_year,
-            routing_number=routing_number,
-            swift_code=swift_code,
-        ))
+        banks.append(
+            Bank(
+                bank_id=bank_id,
+                name=name,
+                headquarters=headquarters,
+                bank_type=bank_type,
+                total_assets_billions=assets,
+                established_year=established_year,
+                routing_number=routing_number,
+                swift_code=swift_code,
+            )
+        )
 
     return banks
 
@@ -389,19 +590,21 @@ def generate_companies(config: GeneratorConfig, rng: random.Random) -> list[Comp
         employees_per_billion_rev = rng.uniform(800, 5000)
         employee_count = max(500, round(revenue * employees_per_billion_rev))
 
-        companies.append(Company(
-            company_id=company_id,
-            name=name,
-            ticker_symbol=ticker,
-            industry=industry,
-            sector=sector,
-            market_cap_billions=market_cap,
-            headquarters=headquarters,
-            founded_year=founded_year,
-            ceo=ceo,
-            employee_count=employee_count,
-            annual_revenue_billions=revenue,
-        ))
+        companies.append(
+            Company(
+                company_id=company_id,
+                name=name,
+                ticker_symbol=ticker,
+                industry=industry,
+                sector=sector,
+                market_cap_billions=market_cap,
+                headquarters=headquarters,
+                founded_year=founded_year,
+                ceo=ceo,
+                employee_count=employee_count,
+                annual_revenue_billions=revenue,
+            )
+        )
 
     return companies
 
@@ -438,8 +641,16 @@ def generate_stocks(
             previous_close + (current_price - previous_close) * rng.uniform(0.2, 0.8),
             2,
         )
-        day_high = round(max(current_price, opening_price, previous_close) * (1 + abs(rng.gauss(0, 0.008))), 2)
-        day_low = round(min(current_price, opening_price, previous_close) * (1 - abs(rng.gauss(0, 0.008))), 2)
+        day_high = round(
+            max(current_price, opening_price, previous_close)
+            * (1 + abs(rng.gauss(0, 0.008))),
+            2,
+        )
+        day_low = round(
+            min(current_price, opening_price, previous_close)
+            * (1 - abs(rng.gauss(0, 0.008))),
+            2,
+        )
 
         # Volume correlates with market cap
         base_volume = int(company.market_cap_billions * rng.uniform(10000, 80000))
@@ -451,7 +662,9 @@ def generate_stocks(
 
         # Dividend yield: tech/growth = 0, value = higher
         if company.sector in ("Technology", "Healthcare"):
-            dividend_yield = round(rng.choices([0.0, rng.uniform(0.3, 1.5)], weights=[60, 40])[0], 1)
+            dividend_yield = round(
+                rng.choices([0.0, rng.uniform(0.3, 1.5)], weights=[60, 40])[0], 1
+            )
         elif company.sector in ("Utilities", "Materials", "Energy"):
             dividend_yield = round(rng.uniform(1.5, 4.5), 1)
         else:
@@ -463,23 +676,25 @@ def generate_stocks(
 
         exchange = rng.choice(["NYSE", "NASDAQ"])
 
-        stocks.append(Stock(
-            stock_id=stock_id,
-            ticker=company.ticker_symbol,
-            company_id=company.company_id,
-            current_price=current_price,
-            previous_close=previous_close,
-            opening_price=opening_price,
-            day_high=day_high,
-            day_low=day_low,
-            volume=volume,
-            market_cap_billions=company.market_cap_billions,
-            pe_ratio=pe_ratio,
-            dividend_yield=dividend_yield,
-            fifty_two_week_high=fifty_two_week_high,
-            fifty_two_week_low=fifty_two_week_low,
-            exchange=exchange,
-        ))
+        stocks.append(
+            Stock(
+                stock_id=stock_id,
+                ticker=company.ticker_symbol,
+                company_id=company.company_id,
+                current_price=current_price,
+                previous_close=previous_close,
+                opening_price=opening_price,
+                day_high=day_high,
+                day_low=day_low,
+                volume=volume,
+                market_cap_billions=company.market_cap_billions,
+                pe_ratio=pe_ratio,
+                dividend_yield=dividend_yield,
+                fifty_two_week_high=fifty_two_week_high,
+                fifty_two_week_low=fifty_two_week_low,
+                exchange=exchange,
+            )
+        )
 
     return stocks
 
@@ -512,7 +727,6 @@ def generate_customers(
         labeled_ids.update(rng.sample(candidates, sample_size))
 
     for i, customer_id in enumerate(customer_ids):
-
         first_name = fake.first_name()
         last_name = fake.last_name()
         email = f"{first_name.lower()}.{last_name.lower()}@email.com"
@@ -525,17 +739,22 @@ def generate_customers(
 
         # Registration date: spread over 3 years (2018-2021)
         registration_date = _random_date(
-            rng, date(2018, 1, 1), date(2021, 12, 31),
+            rng,
+            date(2018, 1, 1),
+            date(2021, 12, 31),
         )
 
         # Date of birth: ages 25-65 (born 1960-2000 relative to ~2025)
         date_of_birth = _random_date(
-            rng, date(1960, 1, 1), date(2000, 12, 31),
+            rng,
+            date(1960, 1, 1),
+            date(2000, 12, 31),
         )
 
         # Employment status
         employment_status = rng.choices(
-            EMPLOYMENT_STATUSES, weights=EMPLOYMENT_WEIGHTS,
+            EMPLOYMENT_STATUSES,
+            weights=EMPLOYMENT_WEIGHTS,
         )[0]
 
         # Annual income: log-normal
@@ -563,42 +782,60 @@ def generate_customers(
         # customers also have realistic attribute correlations.
         true_risk = risk_profile_map[customer_id]
         if true_risk == "Aggressive":
-            annual_income = min(config.income_max, round(annual_income * rng.uniform(1.05, 1.25)))
-            credit_score = max(config.credit_score_min, credit_score - rng.randint(0, 30))
+            annual_income = min(
+                config.income_max, round(annual_income * rng.uniform(1.05, 1.25))
+            )
+            credit_score = max(
+                config.credit_score_min, credit_score - rng.randint(0, 30)
+            )
         elif true_risk == "Conservative":
-            credit_score = min(config.credit_score_max, credit_score + rng.randint(0, 40))
-            annual_income = max(config.income_min, round(annual_income * rng.uniform(0.85, 1.05)))
+            credit_score = min(
+                config.credit_score_max, credit_score + rng.randint(0, 40)
+            )
+            annual_income = max(
+                config.income_min, round(annual_income * rng.uniform(0.85, 1.05))
+            )
         elif true_risk == "Moderate":
             credit_score = _normal_int_sample(
-                rng, 720, 60, config.credit_score_min, config.credit_score_max,
+                rng,
+                720,
+                60,
+                config.credit_score_min,
+                config.credit_score_max,
             )
 
         # Retired people tend to have lower income
         if employment_status == "Retired":
-            annual_income = max(config.income_min, round(annual_income * rng.uniform(0.5, 0.75)))
+            annual_income = max(
+                config.income_min, round(annual_income * rng.uniform(0.5, 0.75))
+            )
         elif employment_status == "Unemployed":
-            annual_income = max(config.income_min, round(annual_income * rng.uniform(0.3, 0.6)))
+            annual_income = max(
+                config.income_min, round(annual_income * rng.uniform(0.3, 0.6))
+            )
 
         # Only labeled customers expose their profile in the CSV
         risk_profile = true_risk if customer_id in labeled_ids else ""
 
-        customers.append(Customer(
-            customer_id=customer_id,
-            first_name=first_name,
-            last_name=last_name,
-            email=email,
-            phone=phone,
-            address=address,
-            city=city,
-            state=state,
-            zip_code=zip_code,
-            registration_date=registration_date.isoformat(),
-            date_of_birth=date_of_birth.isoformat(),
-            risk_profile=risk_profile,
-            employment_status=employment_status,
-            annual_income=annual_income,
-            credit_score=credit_score,
-        ))
+        customers.append(
+            Customer(
+                customer_id=customer_id,
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                phone=phone,
+                address=address,
+                city=city,
+                state=state,
+                zip_code=zip_code,
+                registration_date=registration_date.isoformat(),
+                date_of_birth=date_of_birth.isoformat(),
+                risk_profile=risk_profile,
+                employment_status=employment_status,
+                annual_income=annual_income,
+                credit_score=credit_score,
+            )
+        )
 
     return customers, risk_profile_map
 
@@ -663,18 +900,20 @@ def generate_accounts(
                 min(reg_date + timedelta(days=180), date(2022, 12, 31)),
             )
 
-            accounts.append(Account(
-                account_id=account_id,
-                account_number=account_number,
-                customer_id=customer.customer_id,
-                bank_id=bank.bank_id,
-                account_type=acct_type,
-                balance=balance,
-                currency="USD",
-                opened_date=opened_date.isoformat(),
-                status="Active",
-                interest_rate=interest_rate,
-            ))
+            accounts.append(
+                Account(
+                    account_id=account_id,
+                    account_number=account_number,
+                    customer_id=customer.customer_id,
+                    bank_id=bank.bank_id,
+                    account_type=acct_type,
+                    balance=balance,
+                    currency="USD",
+                    opened_date=opened_date.isoformat(),
+                    status="Active",
+                    interest_rate=interest_rate,
+                )
+            )
 
     return accounts
 
@@ -696,9 +935,9 @@ def generate_portfolio_holdings(
 
     # Risk-aware holding count ranges
     _holdings_range: dict[str, tuple[int, int]] = {
-        "Aggressive": (2, 3),   # concentrated
-        "Conservative": (3, 5), # diversified
-        "Moderate": (2, 4),     # default
+        "Aggressive": (2, 3),  # concentrated
+        "Conservative": (3, 5),  # diversified
+        "Moderate": (2, 4),  # default
     }
 
     # Pre-build lookups used by _select_stocks_by_risk
@@ -709,14 +948,21 @@ def generate_portfolio_holdings(
 
     for account in investment_accounts:
         risk = risk_profile_map.get(account.customer_id, "Moderate")
-        lo, hi = _holdings_range.get(risk, (
-            config.min_holdings_per_account,
-            config.max_holdings_per_account,
-        ))
+        lo, hi = _holdings_range.get(
+            risk,
+            (
+                config.min_holdings_per_account,
+                config.max_holdings_per_account,
+            ),
+        )
         num_holdings = rng.randint(lo, hi)
 
         selected_stocks = _select_stocks_by_risk(
-            rng_np, stocks, sector_by_company, num_holdings, risk,
+            rng_np,
+            stocks,
+            sector_by_company,
+            num_holdings,
+            risk,
             strength=config.sector_preference_strength,
         )
 
@@ -740,7 +986,9 @@ def generate_portfolio_holdings(
 
             # Purchase date: within the last 3 years
             purchase_date = _random_date(
-                rng, date(2019, 1, 1), date(2022, 12, 31),
+                rng,
+                date(2019, 1, 1),
+                date(2022, 12, 31),
             )
 
             # Shares based on portfolio allocation and account balance
@@ -749,16 +997,18 @@ def generate_portfolio_holdings(
 
             current_value = round(shares * stock.current_price, 2)
 
-            holdings.append(PortfolioHolding(
-                holding_id=holding_id,
-                account_id=account.account_id,
-                stock_id=stock.stock_id,
-                shares=shares,
-                purchase_price=purchase_price,
-                purchase_date=purchase_date.isoformat(),
-                current_value=current_value,
-                percentage_of_portfolio=pct,
-            ))
+            holdings.append(
+                PortfolioHolding(
+                    holding_id=holding_id,
+                    account_id=account.account_id,
+                    stock_id=stock.stock_id,
+                    shares=shares,
+                    purchase_price=purchase_price,
+                    purchase_date=purchase_date.isoformat(),
+                    current_value=current_value,
+                    percentage_of_portfolio=pct,
+                )
+            )
 
     return holdings
 
@@ -802,8 +1052,7 @@ def generate_transactions(
         # Pre-build candidate lists for this account (avoids rebuilding per txn)
         other_accounts = [a for a in account_ids if a != account.account_id]
         same_bank_others = [
-            a for a in bank_accounts.get(account.bank_id, [])
-            if a != account.account_id
+            a for a in bank_accounts.get(account.bank_id, []) if a != account.account_id
         ]
 
         for _ in range(num_txns):
@@ -829,7 +1078,8 @@ def generate_transactions(
             )
 
             txn_type = rng.choices(
-                TRANSACTION_TYPES, weights=TRANSACTION_TYPE_WEIGHTS,
+                TRANSACTION_TYPES,
+                weights=TRANSACTION_TYPE_WEIGHTS,
             )[0]
 
             # Date: spread over past year (2023)
@@ -841,17 +1091,234 @@ def generate_transactions(
 
             description = rng.choice(TRANSACTION_DESCRIPTIONS)
 
-            transactions.append(Transaction(
-                transaction_id=transaction_id,
-                from_account_id=account.account_id,
-                to_account_id=to_account_id,
-                amount=amount,
-                currency="USD",
-                transaction_date=txn_date.isoformat(),
-                transaction_time=txn_time,
-                type=txn_type,
-                status="Completed",
-                description=description,
-            ))
+            transactions.append(
+                Transaction(
+                    transaction_id=transaction_id,
+                    from_account_id=account.account_id,
+                    to_account_id=to_account_id,
+                    amount=amount,
+                    currency="USD",
+                    transaction_date=txn_date.isoformat(),
+                    transaction_time=txn_time,
+                    type=txn_type,
+                    status="Completed",
+                    description=description,
+                )
+            )
 
     return transactions
+
+
+def generate_fraud_rings(
+    config: GeneratorConfig,
+    rng: random.Random,
+    customers: list[Customer],
+    accounts: list[Account],
+    banks: list[Bank],
+    stocks: list[Stock],
+    companies: list[Company],
+    holdings: list[PortfolioHolding],
+    transactions: list[Transaction],
+    risk_profile_map: dict[str, str],
+) -> None:
+    """Mutate the entity lists in-place to add fraud ring patterns.
+
+    For each ring:
+    1. Create new customers with is_fraudulent=True
+    2. Create checking + investment accounts at the same bank
+    3. Generate circular transactions with structuring amounts ($8k-$9.999k)
+    4. Add cross-ring transactions for density
+    5. Give all ring members identical stock positions (coordinated pump-and-dump)
+    """
+    fake = _create_faker(config.random_seed + 99)
+
+    # Determine starting IDs from existing data
+    next_customer_num = len(customers) + 1
+    next_account_num = len(accounts) + 1
+    next_txn_num = len(transactions) + 1
+    next_holding_num = len(holdings) + 1
+    account_number_counter = 1001000000 + len(accounts) + 1
+
+    # Pick 2-3 penny stocks (low market cap) for coordinated positions
+    sorted_by_mcap = sorted(stocks, key=lambda s: s.market_cap_billions)
+    penny_stocks = sorted_by_mcap[:3]
+
+    for ring_idx in range(config.num_fraud_rings):
+        # Pick one bank for the entire ring
+        ring_bank = rng.choice(banks)
+
+        ring_customers: list[Customer] = []
+        ring_checking: list[Account] = []
+        ring_investment: list[Account] = []
+
+        # --- Step 1: Create fraud customers ---
+        for i in range(config.fraud_ring_size):
+            cid = f"C{next_customer_num:04d}"
+            next_customer_num += 1
+
+            first_name = fake.first_name()
+            last_name = fake.last_name()
+
+            customer = Customer(
+                customer_id=cid,
+                first_name=first_name,
+                last_name=last_name,
+                email=f"{first_name.lower()}.{last_name.lower()}@email.com",
+                phone=f"555-{rng.randint(100, 999):03d}-{rng.randint(1000, 9999):04d}",
+                address=fake.street_address(),
+                city=fake.city(),
+                state=rng.choice(US_STATES),
+                zip_code=f"{rng.randint(10000, 99999)}",
+                registration_date=_random_date(
+                    rng, date(2022, 6, 1), date(2022, 9, 30)
+                ).isoformat(),
+                date_of_birth=_random_date(
+                    rng, date(1975, 1, 1), date(1995, 12, 31)
+                ).isoformat(),
+                risk_profile="",
+                employment_status=rng.choice(["Employed", "Self-Employed"]),
+                annual_income=round(rng.uniform(50_000, 90_000)),
+                credit_score=rng.randint(580, 680),
+                is_fraudulent=True,
+            )
+            ring_customers.append(customer)
+            customers.append(customer)
+            risk_profile_map[cid] = "Aggressive"
+
+        # --- Step 2: Create accounts (Checking + Investment) at the same bank ---
+        for customer in ring_customers:
+            for acct_type in ["Checking", "Investment"]:
+                aid = f"A{next_account_num:05d}"
+                next_account_num += 1
+                account_number_counter += 1
+
+                if acct_type == "Checking":
+                    balance = round(rng.uniform(15_000, 50_000), 2)
+                    interest_rate = 0.05
+                else:
+                    balance = round(rng.uniform(80_000, 200_000), 2)
+                    interest_rate = 0.00
+
+                reg_date = date.fromisoformat(customer.registration_date)
+                opened_date = _random_date(
+                    rng,
+                    reg_date,
+                    min(reg_date + timedelta(days=30), date(2022, 12, 31)),
+                )
+
+                acct = Account(
+                    account_id=aid,
+                    account_number=str(account_number_counter),
+                    customer_id=customer.customer_id,
+                    bank_id=ring_bank.bank_id,
+                    account_type=acct_type,
+                    balance=balance,
+                    currency="USD",
+                    opened_date=opened_date.isoformat(),
+                    status="Active",
+                    interest_rate=interest_rate,
+                )
+                accounts.append(acct)
+                if acct_type == "Checking":
+                    ring_checking.append(acct)
+                else:
+                    ring_investment.append(acct)
+
+        # --- Step 3: Circular transactions (A→B→C→D→E→A) ---
+        # Transactions happen on checking accounts, clustered in a 2-week burst
+        burst_start = date(2023, 10, 1)
+        burst_end = date(2023, 10, 14)
+
+        for i in range(len(ring_checking)):
+            from_acct = ring_checking[i]
+            to_acct = ring_checking[(i + 1) % len(ring_checking)]
+
+            for _ in range(config.fraud_transactions_per_pair):
+                tid = f"T{next_txn_num:06d}"
+                next_txn_num += 1
+
+                amount = round(
+                    rng.uniform(config.fraud_amount_min, config.fraud_amount_max), 2
+                )
+                txn_date = _random_date(rng, burst_start, burst_end)
+                txn_hour = rng.randint(8, 23)
+                txn_time = (
+                    f"{txn_hour:02d}:{rng.randint(0, 59):02d}:{rng.randint(0, 59):02d}"
+                )
+
+                transactions.append(
+                    Transaction(
+                        transaction_id=tid,
+                        from_account_id=from_acct.account_id,
+                        to_account_id=to_acct.account_id,
+                        amount=amount,
+                        currency="USD",
+                        transaction_date=txn_date.isoformat(),
+                        transaction_time=txn_time,
+                        type="Transfer",
+                        status="Completed",
+                        description="Investment transfer",
+                    )
+                )
+
+        # --- Step 4: Cross-ring transactions (non-adjacent pairs) ---
+        for i in range(len(ring_checking)):
+            for j in range(i + 2, len(ring_checking)):
+                if j == (i - 1) % len(ring_checking):
+                    continue  # skip adjacent (already covered)
+                # 2 cross-ring transactions per non-adjacent pair
+                for _ in range(2):
+                    tid = f"T{next_txn_num:06d}"
+                    next_txn_num += 1
+
+                    amount = round(
+                        rng.uniform(config.fraud_amount_min, config.fraud_amount_max), 2
+                    )
+                    txn_date = _random_date(rng, burst_start, burst_end)
+                    txn_time = (
+                        f"{rng.randint(8, 23):02d}:"
+                        f"{rng.randint(0, 59):02d}:"
+                        f"{rng.randint(0, 59):02d}"
+                    )
+
+                    transactions.append(
+                        Transaction(
+                            transaction_id=tid,
+                            from_account_id=ring_checking[i].account_id,
+                            to_account_id=ring_checking[j].account_id,
+                            amount=amount,
+                            currency="USD",
+                            transaction_date=txn_date.isoformat(),
+                            transaction_time=txn_time,
+                            type="Transfer",
+                            status="Completed",
+                            description="Contract payment",
+                        )
+                    )
+
+        # --- Step 5: Coordinated positions (all hold same penny stocks) ---
+        for inv_acct in ring_investment:
+            total_weight = sum(range(1, len(penny_stocks) + 1))
+            for rank, stock in enumerate(penny_stocks):
+                next_holding_num += 1
+                hid = f"H{next_holding_num:05d}"
+
+                pct = round((len(penny_stocks) - rank) / total_weight * 100, 1)
+                purchase_price = round(stock.current_price * rng.uniform(0.85, 1.10), 2)
+                purchase_date = _random_date(rng, date(2023, 9, 15), date(2023, 9, 30))
+                allocation_value = inv_acct.balance * (pct / 100)
+                shares = max(1, round(allocation_value / stock.current_price))
+                current_value = round(shares * stock.current_price, 2)
+
+                holdings.append(
+                    PortfolioHolding(
+                        holding_id=hid,
+                        account_id=inv_acct.account_id,
+                        stock_id=stock.stock_id,
+                        shares=shares,
+                        purchase_price=purchase_price,
+                        purchase_date=purchase_date.isoformat(),
+                        current_value=current_value,
+                        percentage_of_portfolio=pct,
+                    )
+                )
