@@ -70,7 +70,7 @@ The package is organized into subpackages by concern:
 
 **`ml/`** — Feature engineering and AutoML (opt-in):
 - `feature_engineering.py` — GDS FastRP + Louvain, feature table export, scoring.
-- `automl_training.py` — AutoML training, holdout simulation, model registration.
+- `model_training.py` — Scikit-learn training, holdout simulation, model registration.
 
 ## Key Design Decisions
 
@@ -89,7 +89,7 @@ The package is organized into subpackages by concern:
 
 Copy `.env.example` to `.env`. Key variables:
 - `DATABRICKS_COMPUTE_MODE=serverless` — run mode
-- `SOURCE_CATALOG` / `SOURCE_SCHEMA` — workshop Delta tables
+- `SOURCE_CATALOG` / `SOURCE_SCHEMA` — source Delta tables (Neo4j export)
 - `CATALOG_NAME` / `SCHEMA_NAME` / `VOLUME_NAME` — enrichment artifacts
 - `LLM_ENDPOINT` / `EMBEDDING_ENDPOINT` — model serving endpoints
 - `WAREHOUSE_ID` — required for local SDK-based SQL execution (not needed on-cluster)

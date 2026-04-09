@@ -185,7 +185,7 @@ def _export_features(spark: Any, cfg: GDSFastRPConfig) -> None:
 
 def _create_holdout(spark: Any, cfg: GDSFastRPConfig) -> None:
     """Stratified holdout simulation — null most labels, save ground truth."""
-    from graph_feature_forge.ml.automl_training import create_holdout
+    from graph_feature_forge.ml.model_training import create_holdout
 
     features_pdf = spark.table(cfg.feature_table).toPandas()
     holdout_pdf, ground_truth_pdf = create_holdout(
@@ -202,7 +202,7 @@ def _create_holdout(spark: Any, cfg: GDSFastRPConfig) -> None:
 
 def _train_and_register(cfg: GDSFastRPConfig) -> Any:
     """Train sklearn classifier and register as Champion."""
-    from graph_feature_forge.ml.automl_training import register_model, train_sklearn_classifier
+    from graph_feature_forge.ml.model_training import register_model, train_sklearn_classifier
 
     summary = train_sklearn_classifier(
         feature_table=cfg.feature_table,
@@ -225,7 +225,7 @@ def _score_and_evaluate(spark: Any, cfg: GDSFastRPConfig) -> None:
     import mlflow
     from pyspark.sql import functions as F
 
-    from graph_feature_forge.ml.automl_training import evaluate_predictions
+    from graph_feature_forge.ml.model_training import evaluate_predictions
     from graph_feature_forge.graph.extraction import spark_neo4j_options
 
     mlflow.set_registry_uri("databricks-uc")

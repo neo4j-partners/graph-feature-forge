@@ -197,7 +197,7 @@ def _export_features_with_community(spark: Any, cfg: GDSCommunityConfig) -> None
 def _reapply_holdout(spark: Any, cfg: GDSCommunityConfig) -> None:
     """Re-apply the holdout split from gds_fastrp_features using the
     ``is_held_out`` column saved in the ground truth table."""
-    from graph_feature_forge.ml.automl_training import reapply_holdout
+    from graph_feature_forge.ml.model_training import reapply_holdout
 
     ground_truth_table = f"`{cfg.catalog}`.`{cfg.schema}`.holdout_ground_truth"
     ground_truth_pdf = spark.table(ground_truth_table).toPandas()
@@ -209,7 +209,7 @@ def _reapply_holdout(spark: Any, cfg: GDSCommunityConfig) -> None:
 
 def _train_and_promote(cfg: GDSCommunityConfig, summary: Any) -> None:
     """Promote to Champion only if F1 improves."""
-    from graph_feature_forge.ml.automl_training import promote_if_improved
+    from graph_feature_forge.ml.model_training import promote_if_improved
 
     promote_if_improved(
         model_uri=summary.best_trial.model_path,
@@ -220,7 +220,7 @@ def _train_and_promote(cfg: GDSCommunityConfig, summary: Any) -> None:
 
 def _run_knn(gds: Any, G: Any) -> None:
     """Run kNN nearest-neighbor analysis on the projection."""
-    from graph_feature_forge.ml.automl_training import run_knn_analysis
+    from graph_feature_forge.ml.model_training import run_knn_analysis
 
     run_knn_analysis(
         gds=gds,
@@ -261,7 +261,7 @@ def main() -> None:
         _reapply_holdout(spark, cfg)
 
     print("\nStep 4/5: Retraining with combined features ...")
-    from graph_feature_forge.ml.automl_training import train_sklearn_classifier
+    from graph_feature_forge.ml.model_training import train_sklearn_classifier
 
     summary = train_sklearn_classifier(
         feature_table=cfg.feature_table,

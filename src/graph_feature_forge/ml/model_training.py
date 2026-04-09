@@ -1,6 +1,6 @@
-"""AutoML training utilities for GDS feature engineering notebooks.
+"""Model training utilities for GDS feature engineering.
 
-Provides reusable functions for holdout simulation, AutoML training,
+Provides reusable functions for holdout simulation, scikit-learn training,
 model registration and promotion, scoring evaluation, and MLflow
 experiment comparison.  Used by the ``agent_modules/gds_*`` entry
 points.
@@ -366,66 +366,6 @@ def train_sklearn_classifier(
     print(f"  Trials: {len(trials)}")
 
     return _SklearnSummary(best_trial=best_trial, trials=trials)
-
-
-# ---------------------------------------------------------------------------
-# AutoML training (deprecated — kept for reference, see NUCLEAR.md)
-# ---------------------------------------------------------------------------
-
-
-def train_automl_classifier(
-    feature_table: str,
-    target_col: str = "risk_category",
-    exclude_cols: list[str] | None = None,
-    experiment_name: str | None = None,
-    timeout_minutes: int = 30,
-) -> Any:
-    """Run ``databricks.automl.classify`` and return the summary."""
-    from databricks import automl
-
-    if exclude_cols is None:
-        exclude_cols = ["customer_id"]
-
-    # AutoML stores experiments under /Users/<username>/databricks_automl/<experiment_name>.
-    # Ensure the parent directory exists so the experiment can be created.
-    if experiment_name:
-        from databricks.sdk import WorkspaceClient
-
-        ws = WorkspaceClient()
-        username = ws.current_user.me().user_name
-        full_path = f"/Users/{username}/databricks_automl/{experiment_name}"
-        parent_dir = full_path.rsplit("/", 1)[0]
-        ws.workspace.mkdirs(parent_dir)
-
-    # AutoML Service mode can't see global temp views created from DataFrames.
-    # Persist labeled-only rows to a real table and pass the table name as a string.
-    from pyspark.sql import SparkSession, functions as F
-
-    spark = SparkSession.builder.getOrCreate()
-    labeled_df = spark.table(feature_table).filter(F.col(target_col).isNotNull())
-
-    training_table = feature_table.replace(
-        "customer_graph_features", "automl_training_input"
-    )
-    labeled_df.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable(
-        training_table
-    )
-    row_count = spark.table(training_table).count()
-    print(f"  Training table: {training_table} ({row_count} labeled rows)")
-
-    summary = automl.classify(
-        dataset=training_table,
-        target_col=target_col,
-        primary_metric="f1",
-        exclude_cols=exclude_cols,
-        timeout_minutes=timeout_minutes,
-        experiment_name=experiment_name,
-    )
-
-    print(f"  Best F1: {summary.best_trial.evaluation_metric_score:.4f}")
-    print(f"  Best model: {summary.best_trial.model_description}")
-    print(f"  Trials: {len(summary.trials)}")
-    return summary
 
 
 # ---------------------------------------------------------------------------

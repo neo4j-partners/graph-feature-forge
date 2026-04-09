@@ -1,4 +1,4 @@
-"""graph_feature_forge: Graph enrichment without Genie, Knowledge Agents, or Supervisor Agent."""
+"""graph_feature_forge: LLM-driven graph enrichment pipeline for Neo4j knowledge graphs."""
 
 from __future__ import annotations
 

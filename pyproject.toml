@@ -1,6 +1,6 @@
 [project]
 name = "graph_feature_forge"
-version = "0.5.3"
+version = "0.5.4"
 description = "Graph feature engineering pipeline using LLMs to enrich Neo4j knowledge graphs with Databricks"
 requires-python = ">=3.12"
 dependencies = [
@@ -24,7 +24,7 @@ dev = [
 enrichment = [
     "mlflow[databricks]>=3.7",
 ]
-# GDS feature engineering notebooks (AutoML + Neo4j GDS)
+# GDS feature engineering (AutoML + Neo4j GDS)
 gds = [
     "graphdatascience>=1.7",
     "mlflow[databricks]>=3.7",

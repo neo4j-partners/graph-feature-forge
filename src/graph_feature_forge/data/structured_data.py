@@ -1,10 +1,9 @@
 """Structured data access for gap analysis.
 
-Executes SQL queries against the workshop's 14 Delta tables exported
-from Neo4j by Lab 4 and formats results as context strings for LLM
-synthesis.
+Executes SQL queries against the 14 Delta tables exported from Neo4j
+and formats results as context strings for LLM synthesis.
 
-Tables live in the workshop catalog (default: neo4j_augmentation_demo).
+Tables live in the source catalog (default: neo4j_augmentation_demo).
 Node tables have standard column names (customer_id, first_name, etc.).
 Relationship tables have source/target node properties prefixed with
 ``source.`` and ``target.`` — the Neo4j Spark Connector convention when
@@ -84,7 +83,7 @@ def make_sdk_executor(warehouse_id: str) -> SQLExecutor:
 
 
 class StructuredDataAccess:
-    """Query workshop Delta tables and format results as LLM context.
+    """Query Delta tables and format results as LLM context.
 
     Args:
         execute_sql: Callable that takes a SQL string and returns rows
@@ -127,7 +126,7 @@ class StructuredDataAccess:
 
         Run this first to verify column names before running gap
         analysis queries. The relationship table columns depend on
-        the Neo4j Spark Connector version used during the Lab 4 export.
+        the Neo4j Spark Connector version used during the export.
         """
         schema_map: dict[str, list[str]] = {}
         for table in NODE_TABLE_NAMES + RELATIONSHIP_TABLE_NAMES:

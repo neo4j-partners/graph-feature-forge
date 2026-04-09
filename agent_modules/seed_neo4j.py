@@ -1,6 +1,6 @@
 """Seed a Neo4j instance from Delta tables and embeddings JSON.
 
-Replicates the graph-enrichment workshop's Lab 1 import:
+Imports:
 - 7 node types (Customer, Bank, Account, Company, Stock, Position, Transaction)
 - 7 relationship types (HAS_ACCOUNT, AT_BANK, OF_COMPANY, etc.)
 - Document graph (Documents, Chunks with embeddings, DESCRIBES/FROM_DOCUMENT/NEXT_CHUNK)

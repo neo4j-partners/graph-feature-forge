@@ -16,9 +16,9 @@ The feature engineering stage:
 - Exports graph features to Delta tables alongside tabular features
 - Trains classifiers with Databricks AutoML on the combined feature set
 - Scores the undocumented customers and writes predictions back to Neo4j so the next enrichment cycle has richer context for everyone
-- Three standalone notebooks demonstrate the full ML lifecycle with a three-way model comparison (FastRP-only, FastRP + Louvain, tabular-only baseline)
+- Three agent modules demonstrate the full ML lifecycle with a three-way model comparison (FastRP-only, FastRP + Louvain, tabular-only baseline)
 
-The entire enrichment pipeline runs as automated Databricks jobs via a CLI that wraps `databricks-job-runner`. Data upload, Delta table creation, Neo4j seeding, and enrichment execute on serverless compute with a single `./run_pipeline.sh` command. The GDS feature engineering notebooks run on Databricks Runtime 17.x LTS ML clusters with the Neo4j Spark Connector.
+The entire enrichment pipeline runs as automated Databricks jobs via a CLI that wraps `databricks-job-runner`. Data upload, Delta table creation, Neo4j seeding, and enrichment execute on serverless compute with a single `./run_pipeline.sh` command. The GDS feature engineering jobs run on Databricks Runtime 17.x LTS ML clusters with the Neo4j Spark Connector.
 
 The project demonstrates these Databricks services end-to-end:
 
@@ -65,9 +65,9 @@ The project demonstrates these Databricks services end-to-end:
 1. **Databricks workspace** with Unity Catalog enabled
 2. **Neo4j database** (Neo4j AuraDB recommended)
 3. Foundation model serving endpoints for LLM and embeddings
-4. **Neo4j GDS plugin** (AuraDS recommended) for feature engineering notebooks
-5. **Databricks Runtime 17.x LTS ML** for notebooks (AutoML removed as built-in in 18.0+)
-6. **Neo4j Spark Connector** (`org.neo4j:neo4j-connector-apache-spark_2.12:5.x`) as a cluster library for notebooks
+4. **Neo4j GDS plugin** (AuraDS recommended) for feature engineering
+5. **Databricks Runtime 17.x LTS ML** for GDS jobs (AutoML removed as built-in in 18.0+)
+6. **Neo4j Spark Connector** (`org.neo4j:neo4j-connector-apache-spark_2.12:5.x`) as a cluster library for GDS jobs
 
 ## Quick Start
 
@@ -182,15 +182,15 @@ The enrichment pipeline runs as a sequence of Databricks jobs. Each phase builds
 
 ### GDS Feature Engineering
 
-The GDS feature engineering stage runs as three sequential Databricks jobs via `./run_pipeline.sh gds`. Each job has a corresponding entry point in `agent_modules/` and an interactive notebook in `notebooks/` for exploration.
+The GDS feature engineering stage runs as three sequential Databricks jobs via `./run_pipeline.sh gds`. Each job has a corresponding entry point in `agent_modules/`.
 
-| Entry point | Notebook | What it does | Depends on |
-|-------------|----------|-------------|------------|
-| `gds_fastrp_features.py` | `notebooks/gds_fastrp_features.py` | Projects portfolio graph in GDS, computes 128-dim FastRP embeddings, exports to Delta, trains AutoML classifier, scores held-out customers, writes predictions to Neo4j. Registers model with Champion alias. | Neo4j Aura with GDS |
-| `gds_community_features.py` | `notebooks/gds_community_features.py` | Adds Louvain community detection as a categorical feature. Retrains AutoML with combined features, promotes Champion if F1 improves. Runs kNN for nearest-neighbor visualization. | `gds_fastrp_features` |
-| `ml_baseline_comparison.py` | `notebooks/ml_baseline_comparison.py` | Trains tabular-only model (annual_income, credit_score). Produces three-way MLflow comparison and feature importance analysis. | `gds_fastrp_features` |
+| Entry point | What it does | Depends on |
+|-------------|-------------|------------|
+| `gds_fastrp_features.py` | Projects portfolio graph in GDS, computes 128-dim FastRP embeddings, exports to Delta, trains AutoML classifier, scores held-out customers, writes predictions to Neo4j. Registers model with Champion alias. | Neo4j Aura with GDS |
+| `gds_community_features.py` | Adds Louvain community detection as a categorical feature. Retrains AutoML with combined features, promotes Champion if F1 improves. Runs kNN for nearest-neighbor visualization. | `gds_fastrp_features` |
+| `ml_baseline_comparison.py` | Trains tabular-only model (annual_income, credit_score). Produces three-way MLflow comparison and feature importance analysis. | `gds_fastrp_features` |
 
-The entry points run on Databricks Runtime 17.x LTS ML clusters (AutoML removed as built-in in 18.0+). The notebooks remain for interactive exploration in the Databricks notebook UI.
+The entry points run on Databricks Runtime 17.x LTS ML clusters (AutoML removed as built-in in 18.0+).
 
 Each notebook writes to a separate MLflow experiment for side-by-side comparison:
 
@@ -273,11 +273,7 @@ graph_feature_forge/
 │   │   └── writeback.py       # Write enrichment proposals back to Neo4j
 │   └── ml/                    # Feature engineering & AutoML (opt-in)
 │       ├── feature_engineering.py # GDS FastRP + Louvain + feature table export
-│       └── automl_training.py # AutoML training, holdout, model registration
-├── notebooks/
-│   ├── gds_fastrp_features.py       # FastRP → AutoML → Neo4j writeback
-│   ├── gds_community_features.py    # + Louvain community detection
-│   └── ml_baseline_comparison.py   # Tabular-only baseline comparison
+│       └── model_training.py  # Scikit-learn training, holdout, model registration
 ├── agent_modules/
 │   ├── load_data.py                 # Create Delta tables from raw CSVs
 │   ├── seed_neo4j.py                # Seed Neo4j from Delta tables

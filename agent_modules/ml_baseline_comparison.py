@@ -83,7 +83,7 @@ def _train_tabular_baseline(cfg: BaselineConfig) -> None:
     """Train sklearn on tabular features only (exclude all graph columns)."""
     from pyspark.sql import SparkSession
 
-    from graph_feature_forge.ml.automl_training import train_sklearn_classifier
+    from graph_feature_forge.ml.model_training import train_sklearn_classifier
 
     spark = SparkSession.builder.getOrCreate()
     actual_cols = set(spark.table(cfg.feature_table).columns)
@@ -101,7 +101,7 @@ def _train_tabular_baseline(cfg: BaselineConfig) -> None:
 
 def _compare_all() -> None:
     """Three-way MLflow experiment comparison."""
-    from graph_feature_forge.ml.automl_training import compare_experiments
+    from graph_feature_forge.ml.model_training import compare_experiments
 
     ws_dir = os.environ["DATABRICKS_WORKSPACE_DIR"]
     compare_experiments({
@@ -113,7 +113,7 @@ def _compare_all() -> None:
 
 def _feature_importance() -> None:
     """Extract and print feature importance from the graph-augmented model."""
-    from graph_feature_forge.ml.automl_training import extract_feature_importance
+    from graph_feature_forge.ml.model_training import extract_feature_importance
 
     extract_feature_importance(
         experiment_path=f"{os.environ['DATABRICKS_WORKSPACE_DIR']}/fastrp_louvain_risk_classification",

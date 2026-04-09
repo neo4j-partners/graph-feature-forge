@@ -5,7 +5,7 @@ Neo4j database and extracts each as a Delta table.  Uses the neo4j
 Python driver for schema discovery and the Neo4j Spark Connector for
 bulk data extraction.
 
-The output format matches the Lab 4 workshop export:
+Output format:
 - Node tables: one per label, columns are node properties
 - Relationship tables: one per type, source/target node properties
   prefixed with ``source.`` and ``target.`` (connector convention
@@ -123,8 +123,7 @@ def extract_relationships(
 ) -> int:
     """Extract all relationships of the given type to a Delta table.
 
-    Uses ``relationship.nodes.map=false`` to match the Lab 4 export
-    convention where source/target properties are prefixed with
+    Uses ``relationship.nodes.map=false`` so source/target properties are prefixed with
     ``source.`` and ``target.``.
 
     Args:

@@ -214,6 +214,297 @@ def verify_results(gds):
 
 
 # ---------------------------------------------------------------------------
+# JSON encoder
+# ---------------------------------------------------------------------------
+
+
+class _ReportEncoder(json.JSONEncoder):
+    """Handle Neo4j date types and numpy scalars for JSON serialization."""
+
+    def default(self, obj):
+        if hasattr(obj, "isoformat"):
+            return obj.isoformat()
+        if hasattr(obj, "item"):
+            return obj.item()
+        return super().default(obj)
+
+
+# ---------------------------------------------------------------------------
+# Fraud detection functions
+# ---------------------------------------------------------------------------
+
+
+def detect_suspicious_communities(gds):
+    """Find communities where 3+ accounts share the same bank.
+
+    After Louvain assigns community_id to Account nodes, this query
+    identifies communities where multiple accounts cluster at a single
+    bank — a hallmark of coordinated fraud rings.
+    """
+    result = gds.run_cypher("""
+        MATCH (a:Account)-[:AT_BANK]->(b:Bank)
+        WHERE a.community_id IS NOT NULL
+        WITH a.community_id AS community, b.bank_id AS bank_id, b.name AS bank_name,
+             collect({
+                 account_id: a.account_id,
+                 risk_score: a.risk_score,
+                 similarity_score: a.similarity_score
+             }) AS accounts
+        WHERE size(accounts) >= 3
+        RETURN community, bank_id, bank_name, size(accounts) AS account_count, accounts
+        ORDER BY account_count DESC
+    """)
+    communities = []
+    for _, row in result.iterrows():
+        communities.append({
+            "community_id": int(row["community"]),
+            "bank_id": row["bank_id"],
+            "bank_name": row["bank_name"],
+            "account_count": int(row["account_count"]),
+            "accounts": [dict(a) for a in row["accounts"]],
+        })
+    print(f"  Found {len(communities)} suspicious communities (3+ accounts at same bank)")
+    for c in communities:
+        print(
+            f"    Community {c['community_id']}: "
+            f"{c['account_count']} accounts at {c['bank_name']}"
+        )
+    return communities
+
+
+def detect_structuring(gds):
+    """Find accounts with 3+ transactions in the $8k-$10k structuring range.
+
+    Currency structuring — keeping transactions just under the $10,000
+    reporting threshold — is a classic money-laundering signal.
+    """
+    result = gds.run_cypher("""
+        MATCH (a:Account)-[:PERFORMS]->(t:Transaction)
+        WHERE t.amount >= 8000 AND t.amount < 10000
+        WITH a, count(t) AS structuring_count,
+             round(avg(t.amount), 2) AS avg_amount,
+             round(sum(t.amount), 2) AS total_amount,
+             min(toString(t.transaction_date)) AS first_date,
+             max(toString(t.transaction_date)) AS last_date
+        WHERE structuring_count >= 3
+        RETURN a.account_id AS account_id,
+               a.risk_score AS risk_score,
+               a.community_id AS community_id,
+               structuring_count,
+               avg_amount,
+               total_amount,
+               first_date,
+               last_date
+        ORDER BY structuring_count DESC
+    """)
+    accounts = []
+    for _, row in result.iterrows():
+        accounts.append({
+            "account_id": row["account_id"],
+            "risk_score": float(row["risk_score"]) if row["risk_score"] is not None else None,
+            "community_id": int(row["community_id"]) if row["community_id"] is not None else None,
+            "structuring_count": int(row["structuring_count"]),
+            "avg_amount": float(row["avg_amount"]),
+            "total_amount": float(row["total_amount"]),
+            "date_range": {
+                "first": str(row["first_date"]),
+                "last": str(row["last_date"]),
+            },
+        })
+    print(f"  Found {len(accounts)} accounts with structuring patterns (3+ txns in $8k-$10k)")
+    for a in accounts:
+        print(
+            f"    {a['account_id']}: {a['structuring_count']} txns, "
+            f"avg ${a['avg_amount']:,.2f}, community {a['community_id']}"
+        )
+    return accounts
+
+
+def detect_circular_flows(gds):
+    """Detect circular money flows via structuring transactions.
+
+    Returns directed edges (from -> to with counts) and ring membership —
+    accounts that both send and receive structuring-amount transactions
+    within the same Louvain community.
+    """
+    edges = gds.run_cypher("""
+        MATCH (s:Account)-[:PERFORMS]->(t:Transaction)-[:BENEFITS_TO]->(r:Account)
+        WHERE t.amount >= 8000 AND t.amount < 10000
+          AND s.community_id IS NOT NULL
+          AND s.community_id = r.community_id
+        RETURN s.community_id AS community,
+               s.account_id AS from_account,
+               r.account_id AS to_account,
+               count(t) AS txn_count,
+               round(sum(t.amount), 2) AS total_amount
+        ORDER BY community, from_account
+    """)
+
+    rings = gds.run_cypher("""
+        MATCH (s:Account)-[:PERFORMS]->(t:Transaction)-[:BENEFITS_TO]->(r:Account)
+        WHERE t.amount >= 8000 AND t.amount < 10000
+          AND s.community_id IS NOT NULL
+          AND s.community_id = r.community_id
+        WITH s.community_id AS community,
+             collect(DISTINCT s.account_id) AS senders,
+             collect(DISTINCT r.account_id) AS receivers
+        WITH community,
+             [x IN senders WHERE x IN receivers] AS ring_members
+        WHERE size(ring_members) >= 3
+        RETURN community, ring_members, size(ring_members) AS ring_size
+    """)
+
+    edge_list = []
+    for _, row in edges.iterrows():
+        edge_list.append({
+            "community_id": int(row["community"]),
+            "from_account": row["from_account"],
+            "to_account": row["to_account"],
+            "txn_count": int(row["txn_count"]),
+            "total_amount": float(row["total_amount"]),
+        })
+
+    ring_list = []
+    for _, row in rings.iterrows():
+        ring_list.append({
+            "community_id": int(row["community"]),
+            "ring_members": list(row["ring_members"]),
+            "ring_size": int(row["ring_size"]),
+        })
+
+    print(f"  Found {len(ring_list)} circular flow rings across {len(edge_list)} directed edges")
+    for r in ring_list:
+        print(
+            f"    Community {r['community_id']}: "
+            f"{r['ring_size']}-account ring — {r['ring_members']}"
+        )
+
+    return {"edges": edge_list, "rings": ring_list}
+
+
+def detect_coordinated_positions(gds):
+    """Find stocks held by 3+ accounts in the same Louvain community.
+
+    Coordinated positions in low-cap stocks across clustered accounts
+    may indicate pump-and-dump schemes.
+    """
+    result = gds.run_cypher("""
+        MATCH (a:Account)-[:HAS_POSITION]->(:Position)-[:OF_SECURITY]->(s:Stock)
+              -[:OF_COMPANY]->(co:Company)
+        WHERE a.community_id IS NOT NULL
+        WITH a.community_id AS community, s.stock_id AS stock_id, s.ticker AS ticker,
+             co.name AS company_name, s.market_cap_billions AS market_cap,
+             collect(DISTINCT a.account_id) AS holders
+        WHERE size(holders) >= 3
+        RETURN community, stock_id, ticker, company_name, market_cap,
+               holders, size(holders) AS holder_count
+        ORDER BY market_cap ASC
+    """)
+    positions = []
+    for _, row in result.iterrows():
+        positions.append({
+            "community_id": int(row["community"]),
+            "stock_id": row["stock_id"],
+            "ticker": row["ticker"],
+            "company_name": row["company_name"],
+            "market_cap_billions": float(row["market_cap"]),
+            "holders": list(row["holders"]),
+            "holder_count": int(row["holder_count"]),
+        })
+    print(f"  Found {len(positions)} coordinated positions (3+ accounts, same community)")
+    for p in positions:
+        print(
+            f"    {p['ticker']} ({p['company_name']}): "
+            f"{p['holder_count']} holders in community {p['community_id']}, "
+            f"mcap ${p['market_cap_billions']:.2f}B"
+        )
+    return positions
+
+
+def build_combined_risk_report(gds, structuring, circular_flows, positions):
+    """Aggregate all fraud signals per account with customer details."""
+    flagged = {}
+
+    for s in structuring:
+        aid = s["account_id"]
+        flagged.setdefault(aid, [])
+        flagged[aid].append(
+            f"structuring: {s['structuring_count']} txns, avg ${s['avg_amount']:,.2f}"
+        )
+
+    for ring in circular_flows["rings"]:
+        for aid in ring["ring_members"]:
+            flagged.setdefault(aid, [])
+            flagged[aid].append(f"circular_flow: {ring['ring_size']}-account ring")
+
+    for pos in positions:
+        for aid in pos["holders"]:
+            if aid in flagged:
+                flagged[aid].append(
+                    f"coordinated_position: {pos['ticker']} "
+                    f"(${pos['market_cap_billions']:.2f}B mcap)"
+                )
+
+    if not flagged:
+        print("  No flagged accounts")
+        return []
+
+    account_ids = list(flagged.keys())
+    details = gds.run_cypher(
+        """
+        MATCH (c:Customer)-[:HAS_ACCOUNT]->(a:Account)
+        WHERE a.account_id IN $ids
+        RETURN c.customer_id AS customer_id,
+               c.first_name + ' ' + c.last_name AS name,
+               c.annual_income AS annual_income,
+               c.credit_score AS credit_score,
+               a.account_id AS account_id,
+               a.account_type AS account_type,
+               a.risk_score AS risk_score,
+               a.community_id AS community_id,
+               a.similarity_score AS similarity_score
+        ORDER BY a.risk_score DESC
+        """,
+        params={"ids": account_ids},
+    )
+
+    report = []
+    for _, row in details.iterrows():
+        aid = row["account_id"]
+        report.append({
+            "customer_id": row["customer_id"],
+            "customer_name": row["name"],
+            "annual_income": float(row["annual_income"]) if row["annual_income"] is not None else None,
+            "credit_score": int(row["credit_score"]) if row["credit_score"] is not None else None,
+            "account_id": aid,
+            "account_type": row["account_type"],
+            "risk_score": float(row["risk_score"]) if row["risk_score"] is not None else None,
+            "community_id": int(row["community_id"]) if row["community_id"] is not None else None,
+            "similarity_score": float(row["similarity_score"]) if row["similarity_score"] is not None else None,
+            "signals": flagged.get(aid, []),
+            "signal_count": len(flagged.get(aid, [])),
+        })
+
+    customers = {r["customer_id"] for r in report}
+    print(f"  {len(report)} flagged accounts across {len(customers)} customers")
+    for r in report:
+        print(
+            f"    {r['customer_id']} ({r['customer_name']}): "
+            f"{r['account_id']} — {r['signal_count']} signals, "
+            f"risk={r['risk_score']}"
+        )
+
+    return report
+
+
+def write_fraud_report(report_data, path):
+    """Write the fraud detection report to JSON."""
+    with open(path, "w") as f:
+        json.dump(report_data, f, indent=2, cls=_ReportEncoder)
+    print(f"  Report written to {path}")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -265,10 +556,54 @@ def main() -> None:
     print("\nVerification:")
     verify_results(gds)
 
-    # --- Cleanup ---
+    # --- Cleanup projection (no longer needed for Cypher queries) ---
     G.drop()
     print(f"\nProjection '{PROJECTION_NAME}' dropped.")
-    print("\nGDS Demo complete.")
+
+    # ================================================================
+    # Fraud Detection Report
+    # ================================================================
+    print("\n" + "=" * 60)
+    print("  Fraud Detection Report")
+    print("=" * 60)
+
+    print("\nStep 7: Suspicious communities")
+    communities = detect_suspicious_communities(gds)
+
+    print("\nStep 8: Structuring detection")
+    structuring = detect_structuring(gds)
+
+    print("\nStep 9: Circular flow detection")
+    circular = detect_circular_flows(gds)
+
+    print("\nStep 10: Coordinated positions")
+    positions = detect_coordinated_positions(gds)
+
+    print("\nStep 11: Combined risk report")
+    combined = build_combined_risk_report(gds, structuring, circular, positions)
+
+    # --- Assemble and write JSON report ---
+    report = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "summary": {
+            "suspicious_communities": len(communities),
+            "structuring_accounts": len(structuring),
+            "circular_flow_rings": len(circular["rings"]),
+            "coordinated_position_groups": len(positions),
+            "total_flagged_accounts": len(combined),
+            "total_flagged_customers": len({r["customer_id"] for r in combined}),
+        },
+        "suspicious_communities": communities,
+        "structuring_detection": structuring,
+        "circular_flows": circular,
+        "coordinated_positions": positions,
+        "combined_risk_report": combined,
+    }
+
+    print("\nWriting report:")
+    write_fraud_report(report, REPORT_PATH)
+
+    print("\nGDS Demo + Fraud Detection complete.")
 
 
 if __name__ == "__main__":

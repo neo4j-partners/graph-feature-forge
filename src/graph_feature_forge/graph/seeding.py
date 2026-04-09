@@ -1,6 +1,6 @@
 """Seed a Neo4j instance from Delta tables and embeddings JSON.
 
-Replicates the graph-enrichment workshop's Lab 1 import flow:
+Import flow:
 1. Clear existing data
 2. Create uniqueness constraints
 3. Write 7 node types from Delta tables
@@ -173,7 +173,7 @@ def _read_embeddings_json(embeddings_path: str) -> dict:
 def load_document_graph(session: Any, embeddings_path: str) -> dict[str, int]:
     """Load Documents, Chunks, and embeddings from JSON file.
 
-    Replicates the Lab 1 document graph import:
+    Creates the document graph:
     - Document nodes with metadata
     - Chunk nodes with text and 1024-dim embeddings
     - FROM_DOCUMENT relationships (Chunk -> Document)

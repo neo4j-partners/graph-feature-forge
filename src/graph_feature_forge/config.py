@@ -16,7 +16,7 @@ from dataclasses import dataclass
 class Config:
     """Pipeline configuration."""
 
-    # Workshop Delta tables (source data from Lab 4 export)
+    # Source Delta tables (Neo4j export)
     source_catalog: str = "neo4j_augmentation_demo"
     source_schema: str = "raw_data"
 

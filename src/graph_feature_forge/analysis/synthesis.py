@@ -1,14 +1,11 @@
 """LLM synthesis for gap analysis.
 
-Replaces the Supervisor Agent from Labs 5-6 with direct LLM calls
-against ``databricks-claude-sonnet-4-6``.  Each query type assembles
-structured data context (from Phase 1's :class:`StructuredDataAccess`)
-and retrieved document chunks (from Phase 2's
+Each query type assembles structured data context (from
+:class:`StructuredDataAccess`) and retrieved document chunks (from
 :class:`DocumentRetrieval`) into a prompt, sends it to the foundation
 model endpoint, and returns the gap analysis text.
 
-The five query types mirror the Supervisor Agent prompts in the
-workshop's ``mas_client.py``:
+Five query types are supported:
 
 =========================  ============================  =========================
 Query type                 Structured data method        Document retrieval focus
@@ -20,10 +17,8 @@ investment_themes          (none — doc-only)              market research + th
 comprehensive              get_all_structured_context()   all documents
 =========================  ============================  =========================
 
-The ``fetch_gap_analysis()`` convenience function is a drop-in
-replacement for the workshop's ``mas_client.fetch_gap_analysis()`` —
-the pipeline entry point in Phase 4 calls it and feeds the result
-into ``GraphAugmentationAnalyzer``.
+The ``fetch_gap_analysis()`` convenience function runs a comprehensive
+analysis and feeds the result into ``GraphAugmentationAnalyzer``.
 """
 
 from __future__ import annotations
@@ -42,7 +37,7 @@ DocumentRetrievalLike = DocumentRetrieval | Neo4jRetrieval
 
 
 # ---------------------------------------------------------------------------
-# Gap analysis query prompts (adapted from the workshop's mas_client.py)
+# Gap analysis query prompts
 # ---------------------------------------------------------------------------
 
 INTEREST_HOLDING_GAP_INSTRUCTIONS = """\
@@ -231,9 +226,8 @@ Use customer IDs (e.g., C0001) when referencing customers."""
 class GapAnalysisSynthesizer:
     """Synthesize gap analysis by combining structured data and documents.
 
-    Replaces the Supervisor Agent from Labs 5-6.  Each method corresponds to one of
-    the five gap analysis query types and returns a
-    :class:`GapAnalysisResult`.
+    Each method corresponds to one of the five gap analysis query types
+    and returns a :class:`GapAnalysisResult`.
 
     Args:
         structured_data: A configured :class:`StructuredDataAccess`
@@ -421,7 +415,7 @@ def make_sdk_caller(
 
 
 # ---------------------------------------------------------------------------
-# Convenience function (drop-in for workshop's mas_client.fetch_gap_analysis)
+# Convenience function
 # ---------------------------------------------------------------------------
 
 
@@ -433,9 +427,8 @@ def fetch_gap_analysis(
 ) -> str:
     """Run comprehensive gap analysis and return the response text.
 
-    Drop-in replacement for the workshop's ``mas_client.fetch_gap_analysis()``.
-    The pipeline entry point in Phase 4 calls this and feeds the
-    result into ``GraphAugmentationAnalyzer``.
+    The pipeline entry point calls this and feeds the result into
+    ``GraphAugmentationAnalyzer``.
 
     Args:
         enrichment_context: Optional prior-enrichment summary to include
